@@ -1,0 +1,12 @@
+jobs:
+- job: ${{ parameters.name }}
+  displayName: Check minimum rust version
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - template: step-rust-install.yml
+    parameters:
+      rust_version: ${{ parameters.rust_version }}
+
+  - displayName: Run cargo check
+    script: cargo check --all
