@@ -6,7 +6,7 @@ jobs:
   steps:
   - template: step-rust-install.yml
     parameters:
-      rust_version: stable
+      rust_version: ${{ parameters.rust_version }}
 
   - displayName: Install rustfmt
     script: |

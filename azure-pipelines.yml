@@ -5,3 +5,4 @@ jobs:
 - template: ci/azure-pipelines/job-rust-lint.yml
   parameters:
     name: rust-lint
+    rust_version: stable
