@@ -8,10 +8,8 @@ jobs:
     parameters:
       rust_version: ${{ parameters.rust_version }}
 
-  - displayName: Install rustfmt
-    script: |
-      rustup component add rustfmt
+  - script: rustup component add rustfmt
+    displayName: Install rustfmt
 
-  - displayName: Run rustfmt
-    script: |
-      cargo fmt --all -- --check
+  - script: cargo fmt --all -- --check
+    displayName: Run rustfmt

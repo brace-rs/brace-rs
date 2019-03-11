@@ -8,5 +8,5 @@ jobs:
     parameters:
       rust_version: ${{ parameters.rust_version }}
 
-  - displayName: Run cargo test
-    script: cargo test --all
+  - script: cargo test --all
+    displayName: Run cargo test
