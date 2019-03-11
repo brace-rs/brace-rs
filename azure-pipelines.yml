@@ -21,3 +21,8 @@ jobs:
   parameters:
     name: rust-check-minver
     rust_version: 1.32.0
+
+- template: ci/azure-pipelines/job-rust-test.yml
+  parameters:
+    name: rust-test-stable
+    rust_version: stable
