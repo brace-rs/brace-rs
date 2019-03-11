@@ -9,5 +9,15 @@ jobs:
 
 - template: ci/azure-pipelines/job-rust-check.yml
   parameters:
+    name: rust-check-stable
+    rust_version: stable
+
+- template: ci/azure-pipelines/job-rust-check.yml
+  parameters:
+    name: rust-check-nightly
+    rust_version: nightly
+
+- template: ci/azure-pipelines/job-rust-check.yml
+  parameters:
     name: rust-check-minver
     rust_version: 1.32.0
