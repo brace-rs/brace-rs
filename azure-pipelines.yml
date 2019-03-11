@@ -1,0 +1,7 @@
+trigger: ["master"]
+pr: ["master"]
+
+jobs:
+- template: ci/azure-pipelines/job-rust-lint.yml
+  parameters:
+    name: rust-lint
