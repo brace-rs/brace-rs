@@ -11,7 +11,7 @@ jobs:
   steps:
   - template: step-rust-install.yml
     parameters:
-      rust_version: ${{ parameters.version }}
+      rust_version: ${{ parameters.rust_version }}
 
   - template: step-cross-install.yml
 
