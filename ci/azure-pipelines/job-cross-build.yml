@@ -35,5 +35,6 @@ jobs:
 
     - task: PublishBuildArtifacts@1
       displayName: Publish artifact ${{ target }}.tar.gz
-      pathToPublish: '$(Build.ArtifactStagingDirectory)/brace-${{ target }}.tar.gz'
-      artifactName: 'brace-${{ target }}.tar.gz'
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/brace-${{ target }}.tar.gz'
+        artifactName: 'brace-${{ target }}.tar.gz'
