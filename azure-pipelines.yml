@@ -33,3 +33,9 @@ jobs:
     rust_version: stable
     rust_targets:
     - x86_64-unknown-linux-musl
+
+- template: ci/azure-pipelines/job-docker-push.yml
+  parameters:
+    name: docker_push
+    images:
+    - alpine

@@ -1,0 +1,17 @@
+variables:
+- group: docker-auth
+
+jobs:
+- job: ${{ parameters.name }}
+  displayName: Docker
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - script: docker login -u $(docker-user) -p $(docker-pass)
+    displayName: Login
+  - ${{ each image in parameters.images }}:
+    - script: |
+        cd docker/${{ image }}
+        docker build -t bracers/brace:${{ image }}-master --build-arg BUILD_ID="$(Build.BuildId)" .
+        docker push bracers/brace:${{ image }}-master
+      displayName: Publish bracers/brace:${{ image }}-master
