@@ -32,5 +32,4 @@ jobs:
     name: build
     rust_version: stable
     rust_targets:
-    - x86_64-unknown-linux-gnu
     - x86_64-unknown-linux-musl
