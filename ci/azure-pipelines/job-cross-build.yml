@@ -32,11 +32,11 @@ jobs:
         archiveType: 'tar'
         tarCompression: 'gz'
         archiveFile: '$(Build.ArtifactStagingDirectory)/brace-${{ target }}.tar.gz'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
     - task: PublishBuildArtifacts@1
       displayName: Publish artifact ${{ target }}.tar.gz
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)/brace-${{ target }}.tar.gz'
         artifactName: 'brace-${{ target }}'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
