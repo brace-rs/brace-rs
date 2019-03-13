@@ -1,0 +1,42 @@
+parameters:
+  rust_version: stable
+  rust_targets:
+  - x86_64-unknown-linux-gnu
+
+jobs:
+- job: ${{ parameters.name }}
+  displayName: Build
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - template: step-rust-install.yml
+    parameters:
+      rust_version: ${{ parameters.rust_version }}
+
+  - template: step-cross-install.yml
+
+  - ${{ each target in parameters.rust_targets }}:
+    - script: cross build --all --target ${{ target }} --verbose
+      displayName: Build ${{ target }}
+
+    - script: cross test --all --target ${{ target }} --verbose
+      displayName: Test ${{ target }}
+
+    - script: cross build --release --target ${{ target }} --verbose
+      displayName: Release ${{ target }}
+
+    - task: ArchiveFiles@2
+      displayName: Create artifact ${{ target }}.tar.gz
+      inputs:
+        rootFolderOrFile: '$(Build.SourcesDirectory)/target/${{ target }}/release/brace'
+        archiveType: 'tar'
+        tarCompression: 'gz'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/brace-${{ target }}.tar.gz'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish artifact ${{ target }}.tar.gz
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/brace-${{ target }}.tar.gz'
+        artifactName: 'brace-${{ target }}'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))

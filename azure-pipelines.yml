@@ -26,3 +26,10 @@ jobs:
   parameters:
     name: rust_test_stable
     rust_version: stable
+
+- template: ci/azure-pipelines/job-cross-build.yml
+  parameters:
+    name: build
+    rust_version: stable
+    rust_targets:
+    - x86_64-unknown-linux-musl
