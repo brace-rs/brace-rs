@@ -18,10 +18,10 @@ fn main() {
             .middleware(Logger::default())
             .resource("/", |r| r.f(index))
     })
-    .bind("127.0.0.1:8080")
+    .bind("0.0.0.0:80")
     .unwrap()
     .start();
 
-    println!("Started http server: 127.0.0.1:8080");
+    println!("Started http server: 0.0.0.0:80");
     system.run();
 }
