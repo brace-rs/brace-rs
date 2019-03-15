@@ -14,15 +14,21 @@ jobs:
       checkLatestKubectl: true
 
   - ${{ each chart in parameters.charts }}:
+    - task: DeleteFiles@1
+      displayName: Clean artifact directory
+      inputs:
+        sourceFolder: '$(Build.ArtifactStagingDirectory)'
+        contents: '**'
+
     - task: HelmDeploy@0
       displayName: Package chart ${{ chart }}
       inputs:
         command: package
         chartPath: charts/${{ chart }}
-        destination: '$(Build.ArtifactStagingDirectory)/${{ chart }}'
+        destination: '$(Build.ArtifactStagingDirectory)'
 
     - task: PublishBuildArtifacts@1
       displayName: Publish chart artifact ${{ chart }}
       inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)/${{ chart }}'
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
         artifactName: 'chart-${{ chart }}'
