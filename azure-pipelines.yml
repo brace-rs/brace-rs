@@ -39,3 +39,9 @@ jobs:
     name: docker_push
     images:
     - alpine
+
+- template: ci/azure-pipelines/job-helm-chart.yml
+  parameters:
+    name: helm_chart
+    charts:
+    - brace
