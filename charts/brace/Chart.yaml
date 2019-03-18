@@ -1,0 +1,12 @@
+apiVersion: v1
+name: brace
+version: 0.1.0
+description: A content management system built with the rust programming language.
+home: "https://github.com/brace-rs/brace"
+sources:
+- "https://github.com/brace-rs/brace"
+maintainers:
+- name: Daniel Balcomb
+  email: daniel.balcomb@gmail.com
+  url: "https://github.com/dbalcomb"
+appVersion: 0.1.0
