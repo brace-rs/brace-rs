@@ -20,4 +20,6 @@ RUN \
 
 EXPOSE 80
 
-ENTRYPOINT /usr/local/bin/brace
+ENTRYPOINT ["/usr/local/bin/brace"]
+
+CMD ["web", "run"]
