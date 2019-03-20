@@ -1,4 +1,8 @@
-use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg, SubCommand};
+use clap::{
+    crate_authors, crate_description, crate_name, crate_version, App, Arg, ArgMatches, SubCommand,
+};
+use config::Config;
+use std::net::Ipv4Addr;
 
 mod config;
 mod init;
@@ -32,6 +36,20 @@ fn main() {
                                 .long("config")
                                 .value_name("FILE")
                                 .help("The configuration file to use"),
+                        )
+                        .arg(
+                            Arg::with_name("host")
+                                .short("h")
+                                .long("host")
+                                .value_name("HOST")
+                                .help("The host address"),
+                        )
+                        .arg(
+                            Arg::with_name("port")
+                                .short("p")
+                                .long("port")
+                                .value_name("PORT")
+                                .help("The port number"),
                         ),
                 ),
         )
@@ -47,13 +65,35 @@ fn main() {
             if let Some(matches) = matches.subcommand_matches("run") {
                 match matches.value_of("config") {
                     Some(file) => match config::load(file) {
-                        Ok(config) => web::run(config),
+                        Ok(config) => web::run(override_config(config, matches)),
                         Err(err) => println!("Error loading configuration: {}", err),
                     },
-                    None => web::run(config::Config::default()),
+                    None => web::run(override_config(config::Config::default(), matches)),
                 }
             }
         }
         _ => println!("{}", matches.usage()),
     }
+}
+
+fn override_config(mut config: Config, matches: &ArgMatches) -> Config {
+    if let Some(host) = matches.value_of("host") {
+        if let Ok(host) = host.parse::<Ipv4Addr>() {
+            config.web.host = host;
+        } else {
+            println!("Invalid host address: {}", host);
+            std::process::exit(1);
+        }
+    }
+
+    if let Some(port) = matches.value_of("port") {
+        if let Ok(port) = port.parse::<u16>() {
+            config.web.port = port;
+        } else {
+            println!("Invalid port number: {}", port);
+            std::process::exit(1);
+        }
+    }
+
+    config
 }

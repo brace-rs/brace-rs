@@ -22,4 +22,4 @@ EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/brace"]
 
-CMD ["web", "run"]
+CMD ["web", "run", "--host", "0.0.0.0", "--port", "80"]
