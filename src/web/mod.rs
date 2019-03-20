@@ -2,26 +2,12 @@ use actix::System;
 use actix_web::middleware::Logger;
 use actix_web::server::HttpServer;
 use actix_web::{App, HttpRequest};
-use serde::Deserialize;
-use std::error::Error;
-use std::net::Ipv4Addr;
+use config::Config;
 
-#[derive(Deserialize)]
-pub struct Config {
-    host: Ipv4Addr,
-    port: u16,
-    log_level: String,
-}
+pub mod config;
 
 fn index(_req: &HttpRequest) -> &'static str {
     "Hello world!"
-}
-
-pub fn load_config(path: &str) -> Result<Config, Box<dyn Error + 'static>> {
-    let string = std::fs::read_to_string(path)?;
-    let config = toml::from_str(&string)?;
-
-    Ok(config)
 }
 
 pub fn run(config: Config) {

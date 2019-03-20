@@ -27,7 +27,7 @@ fn main() {
 
     if let Some(matches) = matches.subcommand_matches("web") {
         if let Some(matches) = matches.subcommand_matches("run") {
-            match web::load_config(matches.value_of("config").unwrap()) {
+            match web::config::load(matches.value_of("config").unwrap()) {
                 Ok(config) => web::run(config),
                 Err(err) => println!("Error loading configuration: {}", err),
             }
