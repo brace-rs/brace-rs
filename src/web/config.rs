@@ -1,7 +1,7 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::net::Ipv4Addr;
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub host: Ipv4Addr,
@@ -19,7 +19,7 @@ impl Default for Config {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(default)]
 pub struct LogConfig {
     pub level: String,

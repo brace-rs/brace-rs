@@ -1,8 +1,8 @@
 use crate::web::config::Config as WebConfig;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub web: WebConfig,
