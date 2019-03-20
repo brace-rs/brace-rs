@@ -1,8 +1,8 @@
+use crate::config::Config;
 use actix::System;
 use actix_web::middleware::Logger;
 use actix_web::server::HttpServer;
 use actix_web::{App, HttpRequest};
-use config::Config;
 use log::info;
 
 pub mod config;
@@ -14,23 +14,29 @@ fn index(_req: &HttpRequest) -> &'static str {
 pub fn run(config: Config) {
     std::env::set_var(
         "RUST_LOG",
-        format!("actix_web={},brace={}", config.log.level, config.log.level),
+        format!(
+            "actix_web={},brace={}",
+            config.web.log.level, config.web.log.level
+        ),
     );
     env_logger::init();
 
     let system = System::new("brace");
-    let format = config.log.format;
+    let format = config.web.log.format;
 
     HttpServer::new(move || {
         App::new()
             .middleware(Logger::new(&format))
             .resource("/", |r| r.f(index))
     })
-    .bind(format!("{}:{}", config.host, config.port))
+    .bind(format!("{}:{}", config.web.host, config.web.port))
     .unwrap()
     .start();
 
-    info!("Started http server on {}:{}", config.host, config.port);
+    info!(
+        "Started http server on {}:{}",
+        config.web.host, config.web.port
+    );
 
     system.run();
 }

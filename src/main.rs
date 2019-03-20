@@ -1,5 +1,6 @@
 use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg, SubCommand};
 
+mod config;
 mod web;
 
 fn main() {
@@ -27,11 +28,11 @@ fn main() {
     if let Some(matches) = matches.subcommand_matches("web") {
         if let Some(matches) = matches.subcommand_matches("run") {
             match matches.value_of("config") {
-                Some(file) => match web::config::load(file) {
+                Some(file) => match config::load(file) {
                     Ok(config) => web::run(config),
                     Err(err) => println!("Error loading configuration: {}", err),
                 },
-                None => web::run(web::config::Config::default()),
+                None => web::run(config::Config::default()),
             }
         }
     }

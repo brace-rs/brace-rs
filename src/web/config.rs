@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use std::error::Error;
 use std::net::Ipv4Addr;
 
 #[derive(Deserialize)]
@@ -34,11 +33,4 @@ impl Default for LogConfig {
             format: r#"%a "%r" %s %b "%{Referer}i" "%{User-Agent}i" %T"#.to_string(),
         }
     }
-}
-
-pub fn load(path: &str) -> Result<Config, Box<dyn Error + 'static>> {
-    let string = std::fs::read_to_string(path)?;
-    let config = toml::from_str(&string)?;
-
-    Ok(config)
 }
