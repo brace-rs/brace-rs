@@ -2,7 +2,9 @@ use clap::{
     crate_authors, crate_description, crate_name, crate_version, App, Arg, ArgMatches, SubCommand,
 };
 use config::Config;
+use std::fmt::Display;
 use std::net::Ipv4Addr;
+use std::process::exit;
 
 mod config;
 mod init;
@@ -58,7 +60,7 @@ fn main() {
     match matches.subcommand() {
         ("init", Some(matches)) => {
             if let Err(err) = init::init(matches.value_of("directory").unwrap()) {
-                println!("Error initializing site: {}", err);
+                exit_with_msg(1, &format!("Error initializing site: {}", err));
             }
         }
         ("web", Some(matches)) => {
@@ -66,13 +68,15 @@ fn main() {
                 match matches.value_of("config") {
                     Some(file) => match config::load(file) {
                         Ok(config) => web::run(override_config(config, matches)),
-                        Err(err) => println!("Error loading configuration: {}", err),
+                        Err(err) => {
+                            exit_with_msg(1, &format!("Error: Invalid configuration: {}", err))
+                        }
                     },
                     None => web::run(override_config(config::Config::default(), matches)),
                 }
             }
         }
-        _ => println!("{}", matches.usage()),
+        _ => exit_with_msg(1, &format!("{}", matches.usage())),
     }
 }
 
@@ -81,8 +85,7 @@ fn override_config(mut config: Config, matches: &ArgMatches) -> Config {
         if let Ok(host) = host.parse::<Ipv4Addr>() {
             config.web.host = host;
         } else {
-            println!("Invalid host address: {}", host);
-            std::process::exit(1);
+            exit_with_msg(1, &format!("Error: Invalid host address {}", host));
         }
     }
 
@@ -90,10 +93,14 @@ fn override_config(mut config: Config, matches: &ArgMatches) -> Config {
         if let Ok(port) = port.parse::<u16>() {
             config.web.port = port;
         } else {
-            println!("Invalid port number: {}", port);
-            std::process::exit(1);
+            exit_with_msg(1, &format!("Error: Invalid port number {}", port));
         }
     }
 
     config
+}
+
+fn exit_with_msg(code: i32, err: &Display) -> ! {
+    println!("{}", err);
+    exit(code)
 }
