@@ -11,14 +11,15 @@ fn index(_req: &HttpRequest) -> &'static str {
 }
 
 pub fn run(config: Config) {
-    std::env::set_var("RUST_LOG", format!("actix_web={}", config.log_level));
+    std::env::set_var("RUST_LOG", format!("actix_web={}", config.log.level));
     env_logger::init();
 
     let system = System::new("brace");
+    let format = config.log.format;
 
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
-            .middleware(Logger::default())
+            .middleware(Logger::new(&format))
             .resource("/", |r| r.f(index))
     })
     .bind(format!("{}:{}", config.host, config.port))

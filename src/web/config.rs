@@ -6,7 +6,13 @@ use std::net::Ipv4Addr;
 pub struct Config {
     pub host: Ipv4Addr,
     pub port: u16,
-    pub log_level: String,
+    pub log: LogConfig,
+}
+
+#[derive(Deserialize)]
+pub struct LogConfig {
+    pub level: String,
+    pub format: String,
 }
 
 pub fn load(path: &str) -> Result<Config, Box<dyn Error + 'static>> {
