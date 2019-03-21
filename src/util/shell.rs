@@ -1,6 +1,5 @@
 use std::fmt::Display;
 use std::io::Write;
-use termcolor::Color::{Cyan, Red, Yellow};
 use termcolor::{
     self, Color, ColorChoice as TermColorChoice, ColorSpec, StandardStream, WriteColor,
 };
@@ -23,7 +22,7 @@ impl Shell {
         T: Display,
     {
         match self.verbosity {
-            Verbosity::Verbose => self.stderr.println(&"info:", &message, Cyan),
+            Verbosity::Verbose => self.stderr.println(&"info:", &message, Color::Cyan),
             _ => Ok(()),
         }
     }
@@ -33,7 +32,7 @@ impl Shell {
         T: Display,
     {
         match self.verbosity {
-            Verbosity::Verbose => self.stderr.println(&"warning:", &message, Yellow),
+            Verbosity::Verbose => self.stderr.println(&"warning:", &message, Color::Yellow),
             _ => Ok(()),
         }
     }
@@ -44,7 +43,7 @@ impl Shell {
     {
         match self.verbosity {
             Verbosity::Quiet => Ok(()),
-            _ => self.stderr.println(&"error:", &message, Red),
+            _ => self.stderr.println(&"error:", &message, Color::Red),
         }
     }
 
