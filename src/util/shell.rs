@@ -45,6 +45,22 @@ impl Shell {
     pub fn exit(&mut self, code: i32) -> ! {
         std::process::exit(code)
     }
+
+    pub fn set_color_choice(&mut self, color: &str) -> Result<(), failure::Error> {
+        let choice = match color {
+            "never" => ColorChoice::Never,
+            "always" => ColorChoice::Always,
+            "auto" => ColorChoice::Auto,
+            arg => {
+                self.error(format!("Invalid color choice: {}", arg))?;
+                self.exit(1);
+            }
+        };
+
+        self.stderr.stream = StandardStream::stderr(choice);
+
+        Ok(())
+    }
 }
 
 pub struct ShellWriter {
