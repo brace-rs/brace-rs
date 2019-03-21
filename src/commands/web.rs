@@ -1,16 +1,15 @@
-use crate::util::shell::Shell;
-use clap::{App, AppSettings, ArgMatches};
+use crate::util::command::*;
 
 pub mod run;
 
-pub fn cli() -> App<'static, 'static> {
-    App::new("web")
+pub fn cmd() -> Command {
+    Command::new("web")
         .about("The built-in web server")
-        .subcommand(run::cli())
+        .subcommand(run::cmd())
         .setting(AppSettings::AllowExternalSubcommands)
 }
 
-pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> Result<(), failure::Error> {
+pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.subcommand() {
         ("run", Some(matches)) => run::exec(shell, matches),
         ("", _) => {

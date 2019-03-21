@@ -1,9 +1,7 @@
-use crate::init;
-use crate::util::shell::Shell;
-use clap::{App, Arg, ArgMatches};
+use crate::util::command::*;
 
-pub fn cli() -> App<'static, 'static> {
-    App::new("init")
+pub fn cmd() -> Command {
+    Command::new("init")
         .about("Creates a new site in an existing directory")
         .arg(
             Arg::with_name("directory")
@@ -14,9 +12,9 @@ pub fn cli() -> App<'static, 'static> {
         )
 }
 
-pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> Result<(), failure::Error> {
+pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     let directory = matches.value_of("directory").unwrap();
-    match init::init(directory) {
+    match crate::init::init(directory) {
         Ok(()) => {
             shell.info(format!("Created new site at {}", directory))?;
             shell.exit(0);

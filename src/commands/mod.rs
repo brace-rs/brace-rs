@@ -1,13 +1,11 @@
-use crate::util::shell::*;
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches,
-};
+use crate::util::command::*;
+use clap::{crate_authors, crate_description, crate_name, crate_version};
 
 pub mod init;
 pub mod web;
 
-pub fn cli() -> App<'static, 'static> {
-    App::new(crate_name!())
+pub fn cmd() -> Command {
+    Command::new(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
         .author(crate_authors!())
@@ -32,12 +30,12 @@ pub fn cli() -> App<'static, 'static> {
                 .takes_value(true)
                 .possible_values(&["auto", "always", "never"]),
         )
-        .subcommand(init::cli())
-        .subcommand(web::cli())
+        .subcommand(init::cmd())
+        .subcommand(web::cmd())
         .setting(AppSettings::AllowExternalSubcommands)
 }
 
-pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> Result<(), failure::Error> {
+pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     if matches.is_present("verbose") {
         shell.set_verbosity(Verbosity::Verbose);
     }
@@ -71,7 +69,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> Result<(), failure::Erro
 pub fn run() {
     let mut shell = Shell::new();
 
-    if let Err(err) = exec(&mut shell, &cli().get_matches()) {
+    if let Err(err) = exec(&mut shell, &cmd().get_matches()) {
         shell.error(err).unwrap();
         shell.exit(1);
     }
