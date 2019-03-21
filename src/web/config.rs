@@ -13,8 +13,8 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            host: Ipv4Addr::new(0, 0, 0, 0),
-            port: 80,
+            host: Ipv4Addr::new(127, 0, 0, 1),
+            port: 8080,
             log: LogConfig::default(),
         }
     }
