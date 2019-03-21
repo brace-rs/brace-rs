@@ -1,4 +1,4 @@
-use crate::exit_with_msg;
+use crate::util::shell::Shell;
 use crate::web::config::Config as WebConfig;
 use clap::ArgMatches;
 use serde::{Deserialize, Serialize};
@@ -26,12 +26,17 @@ pub fn load(path: &str) -> Result<Config, Box<dyn Error + 'static>> {
     Ok(config)
 }
 
-pub fn overload(mut config: Config, matches: &ArgMatches) -> Config {
+pub fn overload(
+    mut config: Config,
+    shell: &mut Shell,
+    matches: &ArgMatches,
+) -> Result<Config, failure::Error> {
     if let Some(host) = matches.value_of("host") {
         if let Ok(host) = host.parse::<Ipv4Addr>() {
             config.web.host = host;
         } else {
-            exit_with_msg(1, &format!("Error: Invalid host address {}", host));
+            shell.error(format!("Invalid host address: {}", host))?;
+            shell.exit(1);
         }
     }
 
@@ -39,13 +44,14 @@ pub fn overload(mut config: Config, matches: &ArgMatches) -> Config {
         if let Ok(port) = port.parse::<u16>() {
             config.web.port = port;
         } else {
-            exit_with_msg(1, &format!("Error: Invalid port number {}", port));
+            shell.error(format!("Invalid port number: {}", port))?;
+            shell.exit(1);
         }
     }
 
-    config
+    Ok(config)
 }
 
-pub fn overload_default(matches: &ArgMatches) -> Config {
-    overload(Config::default(), matches)
+pub fn overload_default(shell: &mut Shell, matches: &ArgMatches) -> Result<Config, failure::Error> {
+    overload(Config::default(), shell, matches)
 }

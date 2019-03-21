@@ -1,5 +1,7 @@
-use crate::exit_with_msg;
-use clap::{crate_authors, crate_description, crate_name, crate_version, App, ArgMatches};
+use crate::util::shell::*;
+use clap::{
+    crate_authors, crate_description, crate_name, crate_version, App, AppSettings, ArgMatches,
+};
 
 pub mod init;
 pub mod web;
@@ -11,16 +13,33 @@ pub fn cli() -> App<'static, 'static> {
         .author(crate_authors!())
         .subcommand(init::cli())
         .subcommand(web::cli())
+        .setting(AppSettings::AllowExternalSubcommands)
 }
 
-pub fn exec(matches: &ArgMatches) {
+pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> Result<(), failure::Error> {
     match matches.subcommand() {
-        ("init", Some(matches)) => init::exec(matches),
-        ("web", Some(matches)) => web::exec(matches),
-        (command, _) => exit_with_msg(1, &format!("Error: Invalid command: {}", command)),
+        ("init", Some(matches)) => init::exec(shell, matches),
+        ("web", Some(matches)) => web::exec(shell, matches),
+        ("", _) => {
+            shell.error("Expected a valid subcommand")?;
+            shell.print("")?;
+            shell.print(matches.usage())?;
+            shell.exit(1);
+        }
+        (command, _) => {
+            shell.error(format!("Invalid subcommand: {}", command))?;
+            shell.print("")?;
+            shell.print(matches.usage())?;
+            shell.exit(1);
+        }
     }
 }
 
 pub fn run() {
-    exec(&cli().get_matches());
+    let mut shell = Shell::new();
+
+    if let Err(err) = exec(&mut shell, &cli().get_matches()) {
+        shell.error(err).unwrap();
+        shell.exit(1);
+    }
 }

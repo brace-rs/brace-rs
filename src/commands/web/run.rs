@@ -1,4 +1,5 @@
-use crate::{config, exit_with_msg, web};
+use crate::util::shell::Shell;
+use crate::{config, web};
 use clap::{App, Arg, ArgMatches};
 
 pub fn cli() -> App<'static, 'static> {
@@ -27,12 +28,29 @@ pub fn cli() -> App<'static, 'static> {
         )
 }
 
-pub fn exec(matches: &ArgMatches) {
+pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> Result<(), failure::Error> {
     match matches.value_of("config") {
         Some(file) => match config::load(file) {
-            Ok(config) => web::run(config::overload(config, matches)),
-            Err(err) => exit_with_msg(1, &format!("Error: Invalid configuration: {}", err)),
+            Ok(config) => {
+                let config = config::overload(config, shell, matches)?;
+
+                shell.info(format!("Using configuration file: {}", file))?;
+                web::run(config);
+
+                Ok(())
+            }
+            Err(err) => {
+                shell.error(format!("Invalid configuration: {}", err))?;
+                shell.exit(1);
+            }
         },
-        None => web::run(config::overload_default(matches)),
+        None => {
+            let config = config::overload_default(shell, matches)?;
+
+            shell.warn("No configuration file specified")?;
+            web::run(config);
+
+            Ok(())
+        }
     }
 }
