@@ -1,7 +1,9 @@
 use std::fmt::Display;
 use std::io::Write;
 use termcolor::Color::{Cyan, Red, Yellow};
-use termcolor::{self, Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termcolor::{
+    self, Color, ColorChoice as TermColorChoice, ColorSpec, StandardStream, WriteColor,
+};
 
 pub struct Shell {
     stderr: ShellWriter,
@@ -57,7 +59,7 @@ impl Shell {
             }
         };
 
-        self.stderr.stream = StandardStream::stderr(choice);
+        self.stderr.stream = StandardStream::stderr(choice.into());
 
         Ok(())
     }
@@ -70,7 +72,7 @@ pub struct ShellWriter {
 impl ShellWriter {
     fn new() -> Self {
         Self {
-            stream: StandardStream::stderr(ColorChoice::Auto),
+            stream: StandardStream::stderr(ColorChoice::Auto.into()),
         }
     }
 
@@ -102,5 +104,24 @@ impl ShellWriter {
         writeln!(self.stream, "{}", message)?;
 
         Ok(())
+    }
+}
+
+pub enum ColorChoice {
+    Never,
+    Always,
+    Auto,
+}
+
+impl Into<TermColorChoice> for ColorChoice {
+    fn into(self) -> TermColorChoice {
+        match self {
+            ColorChoice::Never => TermColorChoice::Never,
+            ColorChoice::Always => TermColorChoice::Always,
+            ColorChoice::Auto => match atty::is(atty::Stream::Stderr) {
+                true => TermColorChoice::Auto,
+                false => TermColorChoice::Never,
+            },
+        }
     }
 }
