@@ -7,12 +7,14 @@ use termcolor::{
 
 pub struct Shell {
     stderr: ShellWriter,
+    verbosity: Verbosity,
 }
 
 impl Shell {
     pub fn new() -> Self {
         Self {
             stderr: ShellWriter::new(),
+            verbosity: Verbosity::Normal,
         }
     }
 
@@ -20,32 +22,48 @@ impl Shell {
     where
         T: Display,
     {
-        self.stderr.println(&"info:", &message, Cyan)
+        match self.verbosity {
+            Verbosity::Verbose => self.stderr.println(&"info:", &message, Cyan),
+            _ => Ok(()),
+        }
     }
 
     pub fn warn<T>(&mut self, message: T) -> Result<(), failure::Error>
     where
         T: Display,
     {
-        self.stderr.println(&"warning:", &message, Yellow)
+        match self.verbosity {
+            Verbosity::Verbose => self.stderr.println(&"warning:", &message, Yellow),
+            _ => Ok(()),
+        }
     }
 
     pub fn error<T>(&mut self, message: T) -> Result<(), failure::Error>
     where
         T: Display,
     {
-        self.stderr.println(&"error:", &message, Red)
+        match self.verbosity {
+            Verbosity::Quiet => Ok(()),
+            _ => self.stderr.println(&"error:", &message, Red),
+        }
     }
 
     pub fn print<T>(&mut self, message: T) -> Result<(), failure::Error>
     where
         T: Display,
     {
-        self.stderr.writeln(&message)
+        match self.verbosity {
+            Verbosity::Quiet => Ok(()),
+            _ => self.stderr.writeln(&message),
+        }
     }
 
     pub fn exit(&mut self, code: i32) -> ! {
         std::process::exit(code)
+    }
+
+    pub fn set_verbosity(&mut self, verbosity: Verbosity) {
+        self.verbosity = verbosity;
     }
 
     pub fn set_color_choice(&mut self, color: &str) -> Result<(), failure::Error> {
@@ -105,6 +123,12 @@ impl ShellWriter {
 
         Ok(())
     }
+}
+
+pub enum Verbosity {
+    Verbose,
+    Normal,
+    Quiet,
 }
 
 pub enum ColorChoice {
