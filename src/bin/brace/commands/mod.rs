@@ -51,18 +51,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.subcommand() {
         ("init", Some(matches)) => init::exec(shell, matches),
         ("web", Some(matches)) => web::exec(shell, matches),
-        ("", _) => {
-            shell.error("Expected a valid subcommand")?;
-            shell.print("")?;
-            shell.print(matches.usage())?;
-            shell.exit(1);
-        }
-        (command, _) => {
-            shell.error(format!("Invalid subcommand: {}", command))?;
-            shell.print("")?;
-            shell.print(matches.usage())?;
-            shell.exit(1);
-        }
+        (command, _) => exit_command_invalid(command, shell, matches),
     }
 }
 
