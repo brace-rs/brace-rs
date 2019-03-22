@@ -14,7 +14,7 @@ pub fn cmd() -> Command {
 
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     let directory = matches.value_of("directory").unwrap();
-    match brace::init::init(directory) {
+    match brace::commands::init::init(directory) {
         Ok(()) => {
             shell.info(format!("Created new site at {}", directory))?;
             shell.exit(0);
