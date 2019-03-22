@@ -28,9 +28,9 @@ pub fn cmd() -> Command {
 
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.value_of("config") {
-        Some(file) => match brace::config::load(file) {
+        Some(file) => match brace::util::config::load(file) {
             Ok(config) => {
-                let config = brace::config::overload(config, shell, matches)?;
+                let config = brace::util::config::overload(config, shell, matches)?;
 
                 shell.info(format!("Using configuration file: {}", file))?;
                 brace::web::run(config);
@@ -43,7 +43,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
             }
         },
         None => {
-            let config = brace::config::overload_default(shell, matches)?;
+            let config = brace::util::config::overload_default(shell, matches)?;
 
             shell.warn("No configuration file specified")?;
             brace::web::run(config);
