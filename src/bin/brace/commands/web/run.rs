@@ -1,4 +1,4 @@
-use crate::util::command::*;
+use brace::util::command::*;
 
 pub fn cmd() -> Command {
     Command::new("run")
@@ -28,12 +28,12 @@ pub fn cmd() -> Command {
 
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.value_of("config") {
-        Some(file) => match crate::config::load(file) {
+        Some(file) => match brace::config::load(file) {
             Ok(config) => {
-                let config = crate::config::overload(config, shell, matches)?;
+                let config = brace::config::overload(config, shell, matches)?;
 
                 shell.info(format!("Using configuration file: {}", file))?;
-                crate::web::run(config);
+                brace::web::run(config);
 
                 Ok(())
             }
@@ -43,10 +43,10 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
             }
         },
         None => {
-            let config = crate::config::overload_default(shell, matches)?;
+            let config = brace::config::overload_default(shell, matches)?;
 
             shell.warn("No configuration file specified")?;
-            crate::web::run(config);
+            brace::web::run(config);
 
             Ok(())
         }
