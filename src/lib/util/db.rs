@@ -4,6 +4,7 @@ use r2d2::Pool;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 use std::ops::Deref;
 
+#[derive(Clone)]
 pub struct Database(pub Addr<DatabaseInner>);
 
 impl Database {
