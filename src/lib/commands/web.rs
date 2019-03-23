@@ -5,8 +5,6 @@ use actix_web::server::HttpServer;
 use actix_web::{App, HttpRequest};
 use log::info;
 
-pub mod config;
-
 fn index(_req: &HttpRequest) -> &'static str {
     "Hello world!"
 }

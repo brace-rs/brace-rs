@@ -1,4 +1,6 @@
-use crate::util::command::*;
+use brace::config::Config;
+use brace::util::command::*;
+use std::net::Ipv4Addr;
 
 pub fn cmd() -> Command {
     Command::new("run")
@@ -28,12 +30,12 @@ pub fn cmd() -> Command {
 
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.value_of("config") {
-        Some(file) => match crate::config::load(file) {
+        Some(file) => match brace::util::config::load(file) {
             Ok(config) => {
-                let config = crate::config::overload(config, shell, matches)?;
+                let config = overload(config, shell, matches)?;
 
                 shell.info(format!("Using configuration file: {}", file))?;
-                crate::web::run(config);
+                brace::commands::web::run(config);
 
                 Ok(())
             }
@@ -43,12 +45,42 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
             }
         },
         None => {
-            let config = crate::config::overload_default(shell, matches)?;
+            let config = overload_default(shell, matches)?;
 
             shell.warn("No configuration file specified")?;
-            crate::web::run(config);
+            brace::commands::web::run(config);
 
             Ok(())
         }
     }
+}
+
+pub fn overload(
+    mut config: Config,
+    shell: &mut Shell,
+    matches: &ArgMatches,
+) -> Result<Config, failure::Error> {
+    if let Some(host) = matches.value_of("host") {
+        if let Ok(host) = host.parse::<Ipv4Addr>() {
+            config.web.host = host;
+        } else {
+            shell.error(format!("Invalid host address: {}", host))?;
+            shell.exit(1);
+        }
+    }
+
+    if let Some(port) = matches.value_of("port") {
+        if let Ok(port) = port.parse::<u16>() {
+            config.web.port = port;
+        } else {
+            shell.error(format!("Invalid port number: {}", port))?;
+            shell.exit(1);
+        }
+    }
+
+    Ok(config)
+}
+
+pub fn overload_default(shell: &mut Shell, matches: &ArgMatches) -> Result<Config, failure::Error> {
+    overload(Config::default(), shell, matches)
 }

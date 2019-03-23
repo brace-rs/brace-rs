@@ -9,6 +9,10 @@ repository = "https://github.com/brace-rs/brace"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 
+[lib]
+name = "brace"
+path = "src/lib/lib.rs"
+
 [dependencies]
 actix = "0.7"
 actix-web = "0.7"
@@ -25,3 +29,8 @@ toml = "0.5"
 assert_cmd = "0.11"
 reqwest = "0.9"
 tempfile = "3.0"
+
+[[bin]]
+name = "brace"
+test = false
+doc = false
