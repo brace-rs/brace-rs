@@ -51,7 +51,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.subcommand() {
         ("init", Some(matches)) => init::exec(shell, matches),
         ("web", Some(matches)) => web::exec(shell, matches),
-        (command, _) => exit_command_invalid(command, shell, matches),
+        (command, _) => exit_command_invalid(command, shell, &matches.usage()),
     }
 }
 

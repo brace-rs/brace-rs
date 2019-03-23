@@ -12,6 +12,6 @@ pub fn cmd() -> Command {
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.subcommand() {
         ("run", Some(matches)) => run::exec(shell, matches),
-        (command, _) => exit_command_invalid(command, shell, matches),
+        (command, _) => exit_command_invalid(command, shell, &matches.usage()),
     }
 }
