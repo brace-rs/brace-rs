@@ -3,6 +3,8 @@ jobs:
   displayName: Rust test ${{ parameters.rust_version }}
   pool:
     vmImage: ubuntu-16.04
+  services:
+    postgres: postgres
   steps:
   - template: step-rust-install.yml
     parameters:

@@ -16,12 +16,6 @@ jobs:
   - template: step-cross-install.yml
 
   - ${{ each target in parameters.rust_targets }}:
-    - script: cross build --all --target ${{ target }} --verbose
-      displayName: Build ${{ target }}
-
-    - script: cross test --all --target ${{ target }} --verbose
-      displayName: Test ${{ target }}
-
     - script: cross build --release --target ${{ target }} --verbose
       displayName: Release ${{ target }}
 
