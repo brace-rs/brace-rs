@@ -1,6 +1,17 @@
 trigger: ["master"]
 pr: ["master"]
 
+resources:
+  containers:
+  - container: postgres
+    image: postgres:10
+    ports:
+    - 5432
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+
 jobs:
 - template: ci/azure-pipelines/job-rust-lint.yml
   parameters:
