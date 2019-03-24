@@ -54,7 +54,11 @@ fn test_web_server_with_config() {
     brace::commands::init::init(temp_path.to_str().unwrap()).unwrap();
 
     let conf_path = temp_path.join("Config.toml");
-    let mut conf_file = OpenOptions::new().write(true).truncate(true).open(&conf_path).unwrap();
+    let mut conf_file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(&conf_path)
+        .unwrap();
 
     write!(conf_file, "{}", CONFIG_FILE).unwrap();
 
