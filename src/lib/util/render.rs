@@ -2,6 +2,7 @@ use crate::config::render::RendererConfig;
 use actix::{Actor, Addr, Handler, Message, SyncArbiter, SyncContext};
 use serde_json::Value;
 use std::ops::Deref;
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 use tera::Tera;
 
@@ -10,7 +11,8 @@ pub struct Renderer(pub Addr<RendererInner>);
 
 impl Renderer {
     pub fn new(conf: RendererConfig) -> Self {
-        let tera = Arc::new(Mutex::new(Tera::new(&conf.templates).unwrap()));
+        let path = Path::new(&conf.templates).join("**/*");
+        let tera = Arc::new(Mutex::new(Tera::new(path.to_str().unwrap()).unwrap()));
 
         Self(SyncArbiter::start(3, move || RendererInner(tera.clone())))
     }
