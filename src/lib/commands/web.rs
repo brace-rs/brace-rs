@@ -1,11 +1,14 @@
 use crate::config::Config;
 use crate::util::db::Database;
-use crate::util::render::Renderer;
+use crate::util::render::{Renderer, Template};
 use actix::System;
+use actix_web::error::ErrorInternalServerError;
 use actix_web::middleware::Logger;
 use actix_web::server::HttpServer;
-use actix_web::{App, HttpRequest};
+use actix_web::{App, AsyncResponder, FutureResponse, HttpRequest, HttpResponse};
+use futures::future::Future;
 use log::info;
+use serde_json::json;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -13,8 +16,24 @@ pub struct AppState {
     pub renderer: Renderer,
 }
 
-fn index(_req: &HttpRequest<AppState>) -> &'static str {
-    "Hello world!"
+fn index(req: &HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
+    let template = Template::new(
+        "index.html",
+        json!({
+            "title": "Under Construction",
+            "message": "This site is currently under construction, please come back later.",
+        }),
+    );
+
+    req.state()
+        .renderer
+        .send(template)
+        .map_err(ErrorInternalServerError)
+        .and_then(|res| match res {
+            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+            Err(err) => Err(ErrorInternalServerError(err)),
+        })
+        .responder()
 }
 
 pub fn run(config: Config) {
