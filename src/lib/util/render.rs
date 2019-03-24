@@ -4,6 +4,7 @@ use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 use tera::Tera;
 
+#[derive(Clone)]
 pub struct Renderer(pub Addr<RendererInner>);
 
 impl Renderer {

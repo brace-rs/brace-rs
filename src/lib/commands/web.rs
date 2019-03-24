@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::util::db::Database;
+use crate::util::render::Renderer;
 use actix::System;
 use actix_web::middleware::Logger;
 use actix_web::server::HttpServer;
@@ -9,6 +10,7 @@ use log::info;
 #[derive(Clone)]
 pub struct AppState {
     pub database: Database,
+    pub renderer: Renderer,
 }
 
 fn index(_req: &HttpRequest<AppState>) -> &'static str {
@@ -29,6 +31,7 @@ pub fn run(config: Config) {
     let format = config.web.log.format;
     let state = AppState {
         database: Database::new(config.database),
+        renderer: Renderer::new(config.renderer),
     };
 
     HttpServer::new(move || {
