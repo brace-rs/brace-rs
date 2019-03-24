@@ -9,6 +9,12 @@ pub struct Shell {
     verbosity: Verbosity,
 }
 
+impl Default for Shell {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Shell {
     pub fn new() -> Self {
         Self {
@@ -141,10 +147,13 @@ impl Into<TermColorChoice> for ColorChoice {
         match self {
             ColorChoice::Never => TermColorChoice::Never,
             ColorChoice::Always => TermColorChoice::Always,
-            ColorChoice::Auto => match atty::is(atty::Stream::Stderr) {
-                true => TermColorChoice::Auto,
-                false => TermColorChoice::Never,
-            },
+            ColorChoice::Auto => {
+                if atty::is(atty::Stream::Stderr) {
+                    TermColorChoice::Auto
+                } else {
+                    TermColorChoice::Never
+                }
+            }
         }
     }
 }
