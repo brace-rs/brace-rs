@@ -1,6 +1,8 @@
 use brace::config::Config;
 use brace::util::command::*;
+use path_absolutize::Absolutize;
 use std::net::Ipv4Addr;
+use std::path::Path;
 
 pub fn cmd() -> Command {
     Command::new("run")
@@ -32,7 +34,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.value_of("config") {
         Some(file) => match brace::util::config::load(file) {
             Ok(config) => {
-                let config = overload(config, shell, matches)?;
+                let config = overload_file(file, config, shell, matches)?;
 
                 shell.info(format!("Using configuration file: {}", file))?;
                 brace::commands::web::run(config);
@@ -81,6 +83,34 @@ pub fn overload(
     Ok(config)
 }
 
+pub fn overload_file(
+    path: &str,
+    config: Config,
+    shell: &mut Shell,
+    matches: &ArgMatches,
+) -> Result<Config, failure::Error> {
+    let mut config = overload(config, shell, matches)?;
+
+    config.renderer.templates = Path::new(path)
+        .parent()
+        .unwrap()
+        .join(&config.renderer.templates)
+        .absolutize()?
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    Ok(config)
+}
+
 pub fn overload_default(shell: &mut Shell, matches: &ArgMatches) -> Result<Config, failure::Error> {
-    overload(Config::default(), shell, matches)
+    let mut config = overload(Config::default(), shell, matches)?;
+
+    config.renderer.templates = Path::new(&config.renderer.templates)
+        .absolutize()?
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    Ok(config)
 }
