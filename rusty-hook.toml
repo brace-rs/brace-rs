@@ -1,0 +1,6 @@
+[hooks]
+pre-commit = "cargo make git-pre-commit"
+pre-push = "cargo make git-pre-push"
+
+[logging]
+verbose = false
