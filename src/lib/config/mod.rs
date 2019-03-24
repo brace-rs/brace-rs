@@ -1,9 +1,11 @@
 use db::DatabaseConfig;
+use render::RendererConfig;
 use serde::{Deserialize, Serialize};
 use web::WebConfig;
 
 pub mod db;
 pub mod log;
+pub mod render;
 pub mod web;
 
 #[derive(Serialize, Deserialize)]
@@ -11,6 +13,7 @@ pub mod web;
 pub struct Config {
     pub web: WebConfig,
     pub database: DatabaseConfig,
+    pub renderer: RendererConfig,
 }
 
 impl Default for Config {
@@ -18,6 +21,7 @@ impl Default for Config {
         Self {
             web: WebConfig::default(),
             database: DatabaseConfig::default(),
+            renderer: RendererConfig::default(),
         }
     }
 }
