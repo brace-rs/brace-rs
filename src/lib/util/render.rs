@@ -38,8 +38,11 @@ pub struct Template {
 }
 
 impl Template {
-    pub fn new(name: String, data: Value) -> Self {
-        Self { name, data }
+    pub fn new<S: Into<String>>(name: S, data: Value) -> Self {
+        Self {
+            name: name.into(),
+            data,
+        }
     }
 }
 

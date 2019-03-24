@@ -26,7 +26,7 @@ fn test_renderer_tera_template() {
     let res = system
         .block_on(lazy(|| {
             Renderer::new(config).send(Template::new(
-                "template.html".into(),
+                "template.html",
                 json!({
                     "message": "world"
                 }),
