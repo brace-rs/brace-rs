@@ -92,6 +92,8 @@ pub fn overload_file(
     let mut config = overload(config, shell, matches)?;
 
     config.renderer.templates = Path::new(path)
+        .parent()
+        .unwrap()
         .join(&config.renderer.templates)
         .absolutize()?
         .to_str()
