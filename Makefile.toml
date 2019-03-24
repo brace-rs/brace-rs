@@ -1,0 +1,62 @@
+[env]
+RUST_BACKTRACE = "1"
+
+[tasks.check]
+command = "cargo"
+args = ["check"]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+
+[tasks.release]
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks.format]
+command = "cargo"
+args = ["fmt"]
+dependencies = [
+  "install-rustfmt",
+]
+
+[tasks.format-check]
+command = "cargo"
+args = ["fmt", "--", "--check"]
+dependencies = [
+  "install-rustfmt",
+]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy", "--", "-D", "warnings"]
+dependencies = [
+  "install-clippy",
+]
+
+[tasks.lint]
+dependencies = [
+  "format-check",
+  "clippy",
+]
+
+[tasks.git-pre-commit]
+dependencies = [
+  "check",
+  "lint",
+]
+
+[tasks.git-pre-push]
+dependencies = [
+  "test",
+]
+
+[tasks.install-rustfmt]
+install_crate = { crate_name = "rustfmt", rustup_component_name = "rustfmt", binary = "cargo-fmt", test_arg = "--help" }
+
+[tasks.install-clippy]
+install_crate = { crate_name = "clippy", rustup_component_name = "clippy", binary = "cargo-clippy", test_arg = "--help" }
