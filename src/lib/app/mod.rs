@@ -1,8 +1,9 @@
 use self::config::Config;
-use crate::util::db::Database;
+use self::database::Database;
 use crate::util::render::Renderer;
 
 pub mod config;
+pub mod database;
 pub mod init;
 pub mod web;
 

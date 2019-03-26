@@ -1,8 +1,10 @@
-use crate::app::config::db::DatabaseConfig;
+pub use self::config::DatabaseConfig;
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
 use r2d2::Pool;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 use std::ops::Deref;
+
+pub mod config;
 
 #[derive(Clone)]
 pub struct Database(pub Addr<DatabaseInner>);

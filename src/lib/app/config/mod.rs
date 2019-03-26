@@ -1,9 +1,8 @@
-use db::DatabaseConfig;
+use crate::app::database::DatabaseConfig;
 use render::RendererConfig;
 use serde::{Deserialize, Serialize};
 use web::WebConfig;
 
-pub mod db;
 pub mod log;
 pub mod render;
 pub mod web;
