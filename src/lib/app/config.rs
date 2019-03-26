@@ -1,10 +1,7 @@
-use crate::app::database::DatabaseConfig;
-use crate::app::renderer::RendererConfig;
+use super::database::DatabaseConfig;
+use super::renderer::RendererConfig;
+use super::web::WebConfig;
 use serde::{Deserialize, Serialize};
-use web::WebConfig;
-
-pub mod log;
-pub mod web;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]

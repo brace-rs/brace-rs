@@ -1,3 +1,4 @@
+pub use self::config::{WebConfig, WebLogConfig};
 use crate::app::config::Config;
 use crate::app::AppState;
 use actix::System;
@@ -6,6 +7,7 @@ use actix_web::server::HttpServer;
 use actix_web::App;
 use log::info;
 
+pub mod config;
 pub mod route;
 
 pub fn run(config: Config) {
