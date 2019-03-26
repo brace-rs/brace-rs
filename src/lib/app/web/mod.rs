@@ -1,7 +1,5 @@
 use crate::app::config::Config;
 use crate::app::AppState;
-use crate::util::db::Database;
-use crate::util::render::Renderer;
 use actix::System;
 use actix_web::middleware::Logger;
 use actix_web::server::HttpServer;
@@ -21,11 +19,8 @@ pub fn run(config: Config) {
     env_logger::init();
 
     let system = System::new("brace");
+    let state = AppState::from_config(config.clone());
     let format = config.web.log.format;
-    let state = AppState {
-        database: Database::new(config.database),
-        renderer: Renderer::new(config.renderer),
-    };
 
     HttpServer::new(move || {
         App::with_state(state.clone())
