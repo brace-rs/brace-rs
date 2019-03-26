@@ -13,7 +13,7 @@ static TEMPLATE_FILE: &'static str = "Hello {{ message }}!";
 #[test]
 fn test_renderer_tera_template() {
     let temp_dir = TempDir::new().unwrap();
-    let temp_path = temp_dir.path().as_os_str().to_str().unwrap();
+    let temp_path = temp_dir.path().to_str().unwrap();
     let file_path = temp_dir.path().join("template.html");
     let mut temp_file = File::create(file_path).unwrap();
 
