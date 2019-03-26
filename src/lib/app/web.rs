@@ -1,4 +1,5 @@
 use crate::app::config::Config;
+use crate::app::AppState;
 use crate::util::db::Database;
 use crate::util::render::{Renderer, Template};
 use actix::System;
@@ -9,12 +10,6 @@ use actix_web::{App, AsyncResponder, FutureResponse, HttpRequest, HttpResponse};
 use futures::future::Future;
 use log::info;
 use serde_json::json;
-
-#[derive(Clone)]
-pub struct AppState {
-    pub database: Database,
-    pub renderer: Renderer,
-}
 
 fn index(req: &HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     let template = Template::new(
