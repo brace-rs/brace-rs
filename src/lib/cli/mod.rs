@@ -1,5 +1,6 @@
 use crate::util::command::*;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
+use std::ffi::OsString;
 
 pub mod init;
 pub mod web;
@@ -55,10 +56,14 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     }
 }
 
-pub fn run() {
+pub fn run<I, T>(args: I)
+where
+    I: IntoIterator<Item = T>,
+    T: Into<OsString> + Clone,
+{
     let mut shell = Shell::new();
 
-    if let Err(err) = exec(&mut shell, &cmd().get_matches()) {
+    if let Err(err) = exec(&mut shell, &cmd().get_matches_from(args)) {
         shell.error(err).unwrap();
         shell.exit(1);
     }

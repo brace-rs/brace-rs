@@ -1,3 +1,3 @@
 fn main() {
-    brace::cli::run();
+    brace::cli::run(&mut std::env::args_os());
 }
