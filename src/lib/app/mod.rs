@@ -1,4 +1,4 @@
-use self::config::Config;
+pub use self::config::AppConfig;
 use self::database::Database;
 use self::renderer::Renderer;
 
@@ -10,13 +10,13 @@ pub mod web;
 
 #[derive(Clone)]
 pub struct AppState {
-    config: Config,
+    config: AppConfig,
     database: Database,
     renderer: Renderer,
 }
 
 impl AppState {
-    pub fn from_config(config: Config) -> Self {
+    pub fn from_config(config: AppConfig) -> Self {
         Self {
             database: Database::new(config.database.clone()),
             renderer: Renderer::new(config.renderer.clone()),
@@ -24,7 +24,7 @@ impl AppState {
         }
     }
 
-    pub fn config(&self) -> &Config {
+    pub fn config(&self) -> &AppConfig {
         &self.config
     }
 

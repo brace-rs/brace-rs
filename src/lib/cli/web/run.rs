@@ -1,4 +1,4 @@
-use crate::app::config::Config;
+use crate::app::AppConfig;
 use crate::util::command::*;
 use path_absolutize::Absolutize;
 use std::net::Ipv4Addr;
@@ -32,7 +32,7 @@ pub fn cmd() -> Command {
 
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.value_of("config") {
-        Some(file) => match crate::util::config::load(file) {
+        Some(file) => match AppConfig::from_file(file) {
             Ok(config) => {
                 let config = overload_file(file, config, shell, matches)?;
 
@@ -58,10 +58,10 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
 }
 
 pub fn overload(
-    mut config: Config,
+    mut config: AppConfig,
     shell: &mut Shell,
     matches: &ArgMatches,
-) -> Result<Config, failure::Error> {
+) -> Result<AppConfig, failure::Error> {
     if let Some(host) = matches.value_of("host") {
         if let Ok(host) = host.parse::<Ipv4Addr>() {
             config.web.host = host;
@@ -85,10 +85,10 @@ pub fn overload(
 
 pub fn overload_file(
     path: &str,
-    config: Config,
+    config: AppConfig,
     shell: &mut Shell,
     matches: &ArgMatches,
-) -> Result<Config, failure::Error> {
+) -> Result<AppConfig, failure::Error> {
     let mut config = overload(config, shell, matches)?;
 
     config.renderer.templates = Path::new(path)
@@ -103,8 +103,11 @@ pub fn overload_file(
     Ok(config)
 }
 
-pub fn overload_default(shell: &mut Shell, matches: &ArgMatches) -> Result<Config, failure::Error> {
-    let mut config = overload(Config::default(), shell, matches)?;
+pub fn overload_default(
+    shell: &mut Shell,
+    matches: &ArgMatches,
+) -> Result<AppConfig, failure::Error> {
+    let mut config = overload(AppConfig::default(), shell, matches)?;
 
     config.renderer.templates = Path::new(&config.renderer.templates)
         .absolutize()?

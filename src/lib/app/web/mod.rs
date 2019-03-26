@@ -1,6 +1,5 @@
 pub use self::config::{WebConfig, WebLogConfig};
-use crate::app::config::Config;
-use crate::app::AppState;
+use crate::app::{AppConfig, AppState};
 use actix::System;
 use actix_web::middleware::Logger;
 use actix_web::server::HttpServer;
@@ -10,7 +9,7 @@ use log::info;
 pub mod config;
 pub mod route;
 
-pub fn run(config: Config) {
+pub fn run(config: AppConfig) {
     std::env::set_var(
         "RUST_LOG",
         format!(

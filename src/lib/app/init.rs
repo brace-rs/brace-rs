@@ -1,4 +1,4 @@
-use crate::app::config::Config;
+use crate::app::AppConfig;
 use path_absolutize::Absolutize;
 use std::path::Path;
 
@@ -16,7 +16,7 @@ pub fn init(path: &str) -> Result<(), failure::Error> {
             )
             .into());
         } else {
-            let config = Config::default();
+            let config = AppConfig::default();
             let string = toml::to_string_pretty(&config)?;
 
             std::fs::write(target_file, string)?;
