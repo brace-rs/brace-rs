@@ -15,11 +15,20 @@ pub mod template;
 pub struct Renderer(pub Addr<RendererInner>);
 
 impl Renderer {
-    pub fn from_config(conf: RendererConfig) -> Self {
-        let path = Path::new(&conf.templates).join("**/*");
-        let tera = Arc::new(Mutex::new(Tera::new(path.to_str().unwrap()).unwrap()));
+    pub fn from_config(conf: RendererConfig) -> Result<Self, failure::Error> {
+        match Path::new(&conf.templates).join("**/*").to_str() {
+            Some(path) => match Tera::new(path) {
+                Ok(tera) => {
+                    let ptr = Arc::new(Mutex::new(tera));
 
-        Self(SyncArbiter::start(3, move || RendererInner(tera.clone())))
+                    Ok(Self(SyncArbiter::start(3, move || {
+                        RendererInner(ptr.clone())
+                    })))
+                }
+                Err(err) => Err(failure::format_err!("{}", err)),
+            },
+            None => Err(failure::err_msg("Invalid template path")),
+        }
     }
 }
 

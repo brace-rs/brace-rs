@@ -17,12 +17,15 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn from_config(config: AppConfig) -> Self {
-        Self {
-            database: Database::from_config(config.database.clone()),
-            renderer: Renderer::from_config(config.renderer.clone()),
+    pub fn from_config(config: AppConfig) -> Result<Self, failure::Error> {
+        let database = Database::from_config(config.database.clone())?;
+        let renderer = Renderer::from_config(config.renderer.clone())?;
+
+        Ok(Self {
+            database,
+            renderer,
             config,
-        }
+        })
     }
 
     pub fn config(&self) -> &AppConfig {

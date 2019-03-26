@@ -22,7 +22,7 @@ pub fn run(config: AppConfig) {
     env_logger::init();
 
     let system = System::new("brace");
-    let state = AppState::from_config(config.clone());
+    let state = AppState::from_config(config.clone()).unwrap();
     let format = config.web.log.format;
 
     HttpServer::new(move || {

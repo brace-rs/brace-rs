@@ -1,5 +1,7 @@
+use std::error::Error;
 use std::net::Ipv4Addr;
 
+use postgres::params::{ConnectParams, Host, IntoConnectParams};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -21,5 +23,16 @@ impl Default for DatabaseConfig {
             password: "postgres".into(),
             database: "postgres".into(),
         }
+    }
+}
+
+impl IntoConnectParams for DatabaseConfig {
+    fn into_connect_params(self) -> Result<ConnectParams, Box<Error + Sync + Send>> {
+        let mut builder = ConnectParams::builder();
+
+        builder.user(&self.username, Some(&self.password));
+        builder.database(&self.database);
+
+        Ok(builder.build(Host::Tcp(self.host.to_string())))
     }
 }

@@ -12,18 +12,13 @@ pub mod config;
 pub struct Database(pub Addr<DatabaseInner>);
 
 impl Database {
-    pub fn from_config(conf: DatabaseConfig) -> Self {
-        let manager = PostgresConnectionManager::new(
-            format!(
-                "postgres://{}:{}@{}:{}/{}",
-                conf.username, conf.password, conf.host, conf.port, conf.database
-            ),
-            TlsMode::None,
-        )
-        .unwrap();
-        let pool = Pool::new(manager).unwrap();
+    pub fn from_config(conf: DatabaseConfig) -> Result<Self, failure::Error> {
+        let manager = PostgresConnectionManager::new(conf, TlsMode::None)?;
+        let pool = Pool::new(manager)?;
 
-        Self(SyncArbiter::start(3, move || DatabaseInner(pool.clone())))
+        Ok(Self(SyncArbiter::start(3, move || {
+            DatabaseInner(pool.clone())
+        })))
     }
 }
 
