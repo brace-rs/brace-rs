@@ -4,7 +4,7 @@ use std::path::Path;
 use path_absolutize::Absolutize;
 
 use crate::app::AppConfig;
-use crate::util::command::*;
+use crate::util::shell::prelude::*;
 
 pub fn cmd() -> Command {
     Command::new("run")

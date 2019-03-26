@@ -2,7 +2,7 @@ use std::ffi::OsString;
 
 use clap::{crate_authors, crate_description, crate_name, crate_version};
 
-use crate::util::command::*;
+use crate::util::shell::prelude::*;
 
 pub mod init;
 pub mod web;
