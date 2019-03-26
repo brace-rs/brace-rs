@@ -1,3 +1,3 @@
-pub mod commands;
+pub mod app;
 pub mod config;
 pub mod util;
