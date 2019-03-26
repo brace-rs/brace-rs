@@ -39,7 +39,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
                 let config = overload_file(file, config, shell, matches)?;
 
                 shell.info(format!("Using configuration file: {}", file))?;
-                crate::app::web::run(config);
+                crate::app::web::run(config)?;
 
                 Ok(())
             }
@@ -52,7 +52,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
             let config = overload_default(shell, matches)?;
 
             shell.warn("No configuration file specified")?;
-            crate::app::web::run(config);
+            crate::app::web::run(config)?;
 
             Ok(())
         }

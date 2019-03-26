@@ -11,7 +11,7 @@ pub use self::config::{WebConfig, WebLogConfig};
 pub mod config;
 pub mod route;
 
-pub fn run(config: AppConfig) {
+pub fn run(config: AppConfig) -> Result<(), failure::Error> {
     std::env::set_var(
         "RUST_LOG",
         format!(
@@ -22,7 +22,7 @@ pub fn run(config: AppConfig) {
     env_logger::init();
 
     let system = System::new("brace");
-    let state = AppState::from_config(config.clone()).unwrap();
+    let state = AppState::from_config(config.clone())?;
     let format = config.web.log.format;
 
     HttpServer::new(move || {
@@ -30,8 +30,7 @@ pub fn run(config: AppConfig) {
             .middleware(Logger::new(&format))
             .resource("/", |r| r.get().with(route::index::get))
     })
-    .bind(format!("{}:{}", config.web.host, config.web.port))
-    .unwrap()
+    .bind(format!("{}:{}", config.web.host, config.web.port))?
     .start();
 
     info!(
@@ -40,4 +39,6 @@ pub fn run(config: AppConfig) {
     );
 
     system.run();
+
+    Ok(())
 }
