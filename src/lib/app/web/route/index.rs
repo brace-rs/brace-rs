@@ -1,9 +1,10 @@
-use crate::app::renderer::Template;
-use crate::app::AppState;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{AsyncResponder, FutureResponse, HttpRequest, HttpResponse};
 use futures::future::Future;
 use serde_json::json;
+
+use crate::app::renderer::Template;
+use crate::app::AppState;
 
 pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     let template = Template::new(

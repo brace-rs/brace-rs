@@ -1,9 +1,11 @@
+use std::path::Path;
+
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
 use super::database::DatabaseConfig;
 use super::renderer::RendererConfig;
 use super::web::WebConfig;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::path::Path;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]

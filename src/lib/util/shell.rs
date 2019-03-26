@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use std::io::Write;
+
 use termcolor::{
     self, Color, ColorChoice as TermColorChoice, ColorSpec, StandardStream, WriteColor,
 };

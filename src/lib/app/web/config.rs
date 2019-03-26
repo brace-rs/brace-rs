@@ -1,6 +1,8 @@
-use crate::util::log::LogLevel;
-use serde::{Deserialize, Serialize};
 use std::net::Ipv4Addr;
+
+use serde::{Deserialize, Serialize};
+
+use crate::util::log::LogLevel;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]

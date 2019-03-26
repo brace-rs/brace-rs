@@ -1,6 +1,8 @@
-use crate::app::AppConfig;
-use path_absolutize::Absolutize;
 use std::path::Path;
+
+use path_absolutize::Absolutize;
+
+use crate::app::AppConfig;
 
 pub fn init(path: &str) -> Result<(), failure::Error> {
     let target_dir = Path::new(path).absolutize()?;

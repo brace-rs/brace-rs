@@ -1,6 +1,7 @@
-use super::RendererInner;
 use actix::{Handler, Message};
 use serde_json::Value;
+
+use super::RendererInner;
 
 pub struct Template {
     pub name: String,

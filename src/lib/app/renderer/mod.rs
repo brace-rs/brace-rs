@@ -1,11 +1,12 @@
-pub use self::config::RendererConfig;
-pub use self::template::Template;
-use actix::{Actor, Addr, SyncArbiter, SyncContext};
-
 use std::ops::Deref;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
+
+use actix::{Actor, Addr, SyncArbiter, SyncContext};
 use tera::Tera;
+
+pub use self::config::RendererConfig;
+pub use self::template::Template;
 
 pub mod config;
 pub mod template;

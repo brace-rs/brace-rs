@@ -1,10 +1,12 @@
-use actix::System;
-use brace::app::renderer::{Renderer, RendererConfig, Template};
-use futures::future::lazy;
-use serde_json::json;
 use std::fs::File;
 use std::io::Write;
+
+use actix::System;
+use futures::future::lazy;
+use serde_json::json;
 use tempfile::TempDir;
+
+use brace::app::renderer::{Renderer, RendererConfig, Template};
 
 static TEMPLATE_FILE: &'static str = "Hello {{ message }}!";
 

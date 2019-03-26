@@ -1,8 +1,10 @@
-pub use self::config::DatabaseConfig;
+use std::ops::Deref;
+
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
 use r2d2::Pool;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
-use std::ops::Deref;
+
+pub use self::config::DatabaseConfig;
 
 pub mod config;
 

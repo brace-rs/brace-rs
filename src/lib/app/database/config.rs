@@ -1,5 +1,6 @@
-use serde::{Deserialize, Serialize};
 use std::net::Ipv4Addr;
+
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]

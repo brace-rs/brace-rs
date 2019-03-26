@@ -1,8 +1,10 @@
-use crate::app::AppConfig;
-use crate::util::command::*;
-use path_absolutize::Absolutize;
 use std::net::Ipv4Addr;
 use std::path::Path;
+
+use path_absolutize::Absolutize;
+
+use crate::app::AppConfig;
+use crate::util::command::*;
 
 pub fn cmd() -> Command {
     Command::new("run")

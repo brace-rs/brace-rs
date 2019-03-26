@@ -1,9 +1,10 @@
-use assert_cmd::prelude::*;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
+
+use assert_cmd::prelude::*;
 use tempfile::TempDir;
 
 static CONFIG_FILE: &'static str = r#"

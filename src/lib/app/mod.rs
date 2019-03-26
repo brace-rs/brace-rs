@@ -1,6 +1,7 @@
-pub use self::config::AppConfig;
 use self::database::Database;
 use self::renderer::Renderer;
+
+pub use self::config::AppConfig;
 
 pub mod config;
 pub mod database;

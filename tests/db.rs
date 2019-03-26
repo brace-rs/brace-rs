@@ -1,7 +1,8 @@
 use actix::System;
 use actix::{Handler, Message};
-use brace::app::database::{Database, DatabaseConfig, DatabaseInner};
 use futures::future::lazy;
+
+use brace::app::database::{Database, DatabaseConfig, DatabaseInner};
 
 struct Msg(i32);
 

@@ -1,10 +1,12 @@
-pub use self::config::{WebConfig, WebLogConfig};
-use crate::app::{AppConfig, AppState};
 use actix::System;
 use actix_web::middleware::Logger;
 use actix_web::server::HttpServer;
 use actix_web::App;
 use log::info;
+
+use crate::app::{AppConfig, AppState};
+
+pub use self::config::{WebConfig, WebLogConfig};
 
 pub mod config;
 pub mod route;
