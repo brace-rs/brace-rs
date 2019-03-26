@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::app::config::Config;
 use crate::util::command::*;
 use path_absolutize::Absolutize;
 use std::net::Ipv4Addr;

@@ -1,4 +1,4 @@
-use crate::config::render::RendererConfig;
+use crate::app::config::render::RendererConfig;
 use actix::{Actor, Addr, Handler, Message, SyncArbiter, SyncContext};
 use serde_json::Value;
 use std::ops::Deref;

@@ -1,6 +1,6 @@
 use actix::System;
 use actix::{Handler, Message};
-use brace::config::db::DatabaseConfig;
+use brace::app::config::db::DatabaseConfig;
 use brace::util::db::Database;
 use brace::util::db::DatabaseInner;
 use futures::future::lazy;

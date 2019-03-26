@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::app::config::Config;
 use std::error::Error;
 
 pub fn load(path: &str) -> Result<Config, Box<dyn Error + 'static>> {

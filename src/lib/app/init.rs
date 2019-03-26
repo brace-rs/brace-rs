@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::app::config::Config;
 use path_absolutize::Absolutize;
 use std::path::Path;
 

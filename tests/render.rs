@@ -1,5 +1,5 @@
 use actix::System;
-use brace::config::render::RendererConfig;
+use brace::app::config::render::RendererConfig;
 use brace::util::render::{Renderer, Template};
 use futures::future::lazy;
 use serde_json::json;

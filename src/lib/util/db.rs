@@ -1,4 +1,4 @@
-use crate::config::db::DatabaseConfig;
+use crate::app::config::db::DatabaseConfig;
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
 use r2d2::Pool;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};

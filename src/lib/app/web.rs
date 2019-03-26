@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::app::config::Config;
 use crate::util::db::Database;
 use crate::util::render::{Renderer, Template};
 use actix::System;
