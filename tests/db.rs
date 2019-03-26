@@ -29,7 +29,7 @@ fn test_database_postgres() {
 
     let res = system
         .block_on(lazy(|| {
-            Database::new(DatabaseConfig::default()).send(Msg(5))
+            Database::from_config(DatabaseConfig::default()).send(Msg(5))
         }))
         .unwrap()
         .unwrap();

@@ -15,7 +15,7 @@ pub mod template;
 pub struct Renderer(pub Addr<RendererInner>);
 
 impl Renderer {
-    pub fn new(conf: RendererConfig) -> Self {
+    pub fn from_config(conf: RendererConfig) -> Self {
         let path = Path::new(&conf.templates).join("**/*");
         let tera = Arc::new(Mutex::new(Tera::new(path.to_str().unwrap()).unwrap()));
 

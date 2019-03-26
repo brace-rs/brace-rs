@@ -19,8 +19,8 @@ pub struct AppState {
 impl AppState {
     pub fn from_config(config: AppConfig) -> Self {
         Self {
-            database: Database::new(config.database.clone()),
-            renderer: Renderer::new(config.renderer.clone()),
+            database: Database::from_config(config.database.clone()),
+            renderer: Renderer::from_config(config.renderer.clone()),
             config,
         }
     }

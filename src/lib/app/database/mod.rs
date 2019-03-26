@@ -12,7 +12,7 @@ pub mod config;
 pub struct Database(pub Addr<DatabaseInner>);
 
 impl Database {
-    pub fn new(conf: DatabaseConfig) -> Self {
+    pub fn from_config(conf: DatabaseConfig) -> Self {
         let manager = PostgresConnectionManager::new(
             format!(
                 "postgres://{}:{}@{}:{}/{}",
