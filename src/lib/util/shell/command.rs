@@ -1,6 +1,8 @@
-pub use super::shell::{Shell, Verbosity};
-pub use clap::{App, AppSettings, Arg, ArgMatches};
 use std::fmt::Display;
+
+use clap::App;
+
+use super::Shell;
 
 pub type Command = App<'static, 'static>;
 

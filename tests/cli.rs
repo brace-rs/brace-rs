@@ -1,5 +1,6 @@
-use assert_cmd::prelude::*;
 use std::process::Command;
+
+use assert_cmd::prelude::*;
 use tempfile::TempDir;
 
 static CMD_INVALID_ERR: &'static str = "\

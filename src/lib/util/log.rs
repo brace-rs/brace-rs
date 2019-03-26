@@ -1,23 +1,8 @@
-use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-#[derive(Serialize, Deserialize)]
-#[serde(default)]
-pub struct LogConfig {
-    pub level: LogLevel,
-    pub format: String,
-}
+use serde::{Deserialize, Serialize};
 
-impl Default for LogConfig {
-    fn default() -> Self {
-        Self {
-            level: LogLevel::Warn,
-            format: r#"%a "%r" %s %b "%{Referer}i" "%{User-Agent}i" %T"#.to_string(),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
     Off,

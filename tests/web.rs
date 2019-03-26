@@ -1,9 +1,10 @@
-use assert_cmd::prelude::*;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
+
+use assert_cmd::prelude::*;
 use tempfile::TempDir;
 
 static CONFIG_FILE: &'static str = r#"
@@ -51,7 +52,7 @@ fn test_web_server_with_config() {
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
 
-    brace::commands::init::init(temp_path.to_str().unwrap()).unwrap();
+    brace::app::init::init(temp_path.to_str().unwrap()).unwrap();
 
     let conf_path = temp_path.join("Config.toml");
     let mut conf_file = OpenOptions::new()

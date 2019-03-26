@@ -1,4 +1,4 @@
-use brace::util::command::*;
+use crate::util::shell::prelude::*;
 
 pub fn cmd() -> Command {
     Command::new("init")
@@ -14,7 +14,7 @@ pub fn cmd() -> Command {
 
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     let directory = matches.value_of("directory").unwrap();
-    match brace::commands::init::init(directory) {
+    match crate::app::init::init(directory) {
         Ok(()) => {
             shell.info(format!("Created new site at {}", directory))?;
             shell.exit(0);

@@ -1,9 +1,8 @@
 use actix::System;
 use actix::{Handler, Message};
-use brace::config::db::DatabaseConfig;
-use brace::util::db::Database;
-use brace::util::db::DatabaseInner;
 use futures::future::lazy;
+
+use brace::app::database::{Database, DatabaseConfig, DatabaseInner};
 
 struct Msg(i32);
 
@@ -30,7 +29,9 @@ fn test_database_postgres() {
 
     let res = system
         .block_on(lazy(|| {
-            Database::new(DatabaseConfig::default()).send(Msg(5))
+            Database::from_config(DatabaseConfig::default())
+                .unwrap()
+                .send(Msg(5))
         }))
         .unwrap()
         .unwrap();

@@ -1,8 +1,18 @@
 use std::fmt::Display;
 use std::io::Write;
+
 use termcolor::{
     self, Color, ColorChoice as TermColorChoice, ColorSpec, StandardStream, WriteColor,
 };
+
+pub mod command;
+
+pub mod prelude {
+    pub use clap::{App, AppSettings, Arg, ArgMatches};
+
+    pub use super::command::{exit_command_invalid, Command, ExecResult};
+    pub use super::{Shell, Verbosity};
+}
 
 pub struct Shell {
     stderr: ShellWriter,
