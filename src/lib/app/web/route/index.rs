@@ -1,5 +1,5 @@
+use crate::app::renderer::Template;
 use crate::app::AppState;
-use crate::util::render::Template;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{AsyncResponder, FutureResponse, HttpRequest, HttpResponse};
 use futures::future::Future;

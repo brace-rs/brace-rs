@@ -1,10 +1,11 @@
 use self::config::Config;
 use self::database::Database;
-use crate::util::render::Renderer;
+use self::renderer::Renderer;
 
 pub mod config;
 pub mod database;
 pub mod init;
+pub mod renderer;
 pub mod web;
 
 #[derive(Clone)]
