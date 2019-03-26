@@ -1,5 +1,5 @@
-use brace::config::Config;
-use brace::util::command::*;
+use crate::config::Config;
+use crate::util::command::*;
 use path_absolutize::Absolutize;
 use std::net::Ipv4Addr;
 use std::path::Path;
@@ -32,12 +32,12 @@ pub fn cmd() -> Command {
 
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.value_of("config") {
-        Some(file) => match brace::util::config::load(file) {
+        Some(file) => match crate::util::config::load(file) {
             Ok(config) => {
                 let config = overload_file(file, config, shell, matches)?;
 
                 shell.info(format!("Using configuration file: {}", file))?;
-                brace::app::web::run(config);
+                crate::app::web::run(config);
 
                 Ok(())
             }
@@ -50,7 +50,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
             let config = overload_default(shell, matches)?;
 
             shell.warn("No configuration file specified")?;
-            brace::app::web::run(config);
+            crate::app::web::run(config);
 
             Ok(())
         }

@@ -1,5 +1,3 @@
-mod commands;
-
 fn main() {
-    commands::run();
+    brace::cli::run();
 }
