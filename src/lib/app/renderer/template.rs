@@ -1,4 +1,5 @@
 use actix::{Handler, Message};
+use failure::format_err;
 use serde_json::Value;
 
 use super::RendererInner;
@@ -28,15 +29,9 @@ impl Handler<Template> for RendererInner {
         match self.0.lock() {
             Ok(res) => match res.render_value(&msg.name, &msg.data) {
                 Ok(res) => Ok(res),
-                Err(_) => Err(failure::format_err!(
-                    "Failed to render template {}",
-                    msg.name
-                )),
+                Err(err) => Err(format_err!("{}", err)),
             },
-            Err(_) => Err(failure::format_err!(
-                "Failed to render template {}",
-                msg.name
-            )),
+            Err(err) => Err(format_err!("{}", err)),
         }
     }
 }

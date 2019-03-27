@@ -3,6 +3,7 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
+use failure::{err_msg, format_err};
 use tera::Tera;
 
 pub use self::config::RendererConfig;
@@ -25,9 +26,9 @@ impl Renderer {
                         RendererInner(ptr.clone())
                     })))
                 }
-                Err(err) => Err(failure::format_err!("{}", err)),
+                Err(err) => Err(format_err!("{}", err)),
             },
-            None => Err(failure::err_msg("Invalid template path")),
+            None => Err(err_msg("Invalid template path")),
         }
     }
 }
