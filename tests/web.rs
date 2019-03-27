@@ -6,10 +6,18 @@ use assert_cmd::prelude::*;
 use tempfile::TempDir;
 use walkdir::WalkDir;
 
-static CONFIG_FILE: &'static str = r#"
+static APP_CONF_FILE: &'static str = r#"
 [web]
 host = "127.0.0.1"
 port = 8002
+
+[renderer]
+theme = "theme/Theme.toml"
+"#;
+
+static THEME_CONF_FILE: &'static str = r#"
+[templates]
+index = { path = "templates/index.html" }
 "#;
 
 #[test]
@@ -50,22 +58,28 @@ fn test_web_server_with_arguments() {
 fn test_web_server_with_config() {
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
-    let conf_path = temp_path.join("Config.toml");
+    let app_conf_path = temp_path.join("Config.toml");
+    let theme_conf_path = temp_path.join("theme/Theme.toml");
+    let template_path = temp_path.join("theme/templates");
 
-    std::fs::write(&conf_path, CONFIG_FILE).unwrap();
-    std::fs::create_dir(temp_path.join("templates")).unwrap();
+    std::fs::create_dir_all(&template_path).unwrap();
+    std::fs::write(&app_conf_path, APP_CONF_FILE).unwrap();
+    std::fs::write(&theme_conf_path, THEME_CONF_FILE).unwrap();
 
-    for entry in WalkDir::new("templates").into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new("theme/templates")
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
         let path = entry.path();
         if path.is_file() {
             let name = path.file_name().unwrap();
-            std::fs::copy(path, temp_path.join("templates").join(name)).unwrap();
+            std::fs::copy(path, template_path.join(name)).unwrap();
         }
     }
 
     let mut process = Command::cargo_bin("brace")
         .unwrap()
-        .args(&["web", "run", "--config", conf_path.to_str().unwrap()])
+        .args(&["web", "run", "--config", app_conf_path.to_str().unwrap()])
         .spawn()
         .unwrap();
 

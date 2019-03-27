@@ -8,7 +8,7 @@ use crate::app::AppState;
 
 pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     let template = Template::new(
-        "index.html",
+        "index",
         json!({
             "title": "Under Construction",
             "message": "This site is currently under construction, please come back later.",

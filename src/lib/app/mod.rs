@@ -7,6 +7,7 @@ pub mod config;
 pub mod database;
 pub mod init;
 pub mod renderer;
+pub mod theme;
 pub mod web;
 
 #[derive(Clone)]

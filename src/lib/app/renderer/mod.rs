@@ -1,10 +1,12 @@
 use std::ops::Deref;
-use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
-use failure::{err_msg, format_err};
+use failure::format_err;
+use path_absolutize::Absolutize;
 use tera::Tera;
+
+use super::theme::ThemeConfig;
 
 pub use self::config::RendererConfig;
 pub use self::template::Template;
@@ -17,18 +19,34 @@ pub struct Renderer(pub Addr<RendererInner>);
 
 impl Renderer {
     pub fn from_config(conf: RendererConfig) -> Result<Self, failure::Error> {
-        match Path::new(&conf.templates).join("**/*").to_str() {
-            Some(path) => match Tera::new(path) {
-                Ok(tera) => {
-                    let ptr = Arc::new(Mutex::new(tera));
+        let theme_path = conf.theme;
+        let theme_conf = ThemeConfig::from_file(&theme_path)?;
 
-                    Ok(Self(SyncArbiter::start(3, move || {
-                        RendererInner(ptr.clone())
-                    })))
+        match theme_path.parent() {
+            Some(parent) => {
+                let mut tera = Tera::default();
+                let files = (&theme_conf.templates)
+                    .iter()
+                    .map(|(key, template)| {
+                        (
+                            parent.join(template.path.clone()).absolutize().unwrap(),
+                            Some(key.as_ref()),
+                        )
+                    })
+                    .collect();
+
+                match tera.add_template_files(files) {
+                    Ok(_) => {
+                        let ptr = Arc::new(Mutex::new(tera));
+
+                        Ok(Self(SyncArbiter::start(3, move || {
+                            RendererInner(ptr.clone())
+                        })))
+                    }
+                    Err(err) => Err(format_err!("{}", err)),
                 }
-                Err(err) => Err(format_err!("{}", err)),
-            },
-            None => Err(err_msg("Invalid template path")),
+            }
+            None => Err(format_err!("Invalid theme path {:?}", theme_path)),
         }
     }
 }
