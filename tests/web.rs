@@ -17,11 +17,15 @@ fn test_web_server_without_config() {
 
     sleep(Duration::from_millis(200));
 
-    let res = reqwest::get("http://127.0.0.1:8080");
+    let res1 = reqwest::get("http://127.0.0.1:8080");
+    let res2 = reqwest::get("http://127.0.0.1:8080/themes");
+    let res3 = reqwest::get("http://127.0.0.1:8080/404");
 
     process.kill().unwrap();
 
-    assert_eq!(res.unwrap().status(), 200);
+    assert_eq!(res1.unwrap().status(), 200);
+    assert_eq!(res2.unwrap().status(), 200);
+    assert_eq!(res3.unwrap().status(), 404);
 }
 
 #[test]
@@ -34,11 +38,15 @@ fn test_web_server_with_arguments() {
 
     sleep(Duration::from_millis(200));
 
-    let res = reqwest::get("http://127.0.0.1:8001");
+    let res1 = reqwest::get("http://127.0.0.1:8001");
+    let res2 = reqwest::get("http://127.0.0.1:8001/themes");
+    let res3 = reqwest::get("http://127.0.0.1:8001/404");
 
     process.kill().unwrap();
 
-    assert_eq!(res.unwrap().status(), 200);
+    assert_eq!(res1.unwrap().status(), 200);
+    assert_eq!(res2.unwrap().status(), 200);
+    assert_eq!(res3.unwrap().status(), 404);
 }
 
 #[test]
@@ -64,26 +72,13 @@ fn test_web_server_with_config() {
 
     sleep(Duration::from_millis(200));
 
-    let res = reqwest::get("http://127.0.0.1:8002");
+    let res1 = reqwest::get("http://127.0.0.1:8002");
+    let res2 = reqwest::get("http://127.0.0.1:8002/themes");
+    let res3 = reqwest::get("http://127.0.0.1:8002/404");
 
     process.kill().unwrap();
 
-    assert_eq!(res.unwrap().status(), 200);
-}
-
-#[test]
-fn test_web_server_404() {
-    let mut process = Command::cargo_bin("brace")
-        .unwrap()
-        .args(&["web", "run", "--host", "127.0.0.1", "--port", "8003"])
-        .spawn()
-        .unwrap();
-
-    sleep(Duration::from_millis(200));
-
-    let res = reqwest::get("http://127.0.0.1:8003/404");
-
-    process.kill().unwrap();
-
-    assert_eq!(res.unwrap().status(), 404);
+    assert_eq!(res1.unwrap().status(), 200);
+    assert_eq!(res2.unwrap().status(), 500);
+    assert_eq!(res3.unwrap().status(), 404);
 }
