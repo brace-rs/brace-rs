@@ -1,10 +1,10 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use super::database::DatabaseConfig;
-use super::renderer::RendererConfig;
+use super::theme::config::ThemeReferenceInfo;
 use super::web::WebConfig;
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -12,7 +12,8 @@ use super::web::WebConfig;
 pub struct AppConfig {
     pub web: WebConfig,
     pub database: DatabaseConfig,
-    pub renderer: RendererConfig,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub theme: Vec<ThemeReferenceInfo>,
 }
 
 impl AppConfig {
@@ -35,7 +36,10 @@ impl Default for AppConfig {
         Self {
             web: WebConfig::default(),
             database: DatabaseConfig::default(),
-            renderer: RendererConfig::default(),
+            theme: vec![ThemeReferenceInfo {
+                name: Some("default".to_string()),
+                path: PathBuf::from("themes/default/Theme.toml"),
+            }],
         }
     }
 }

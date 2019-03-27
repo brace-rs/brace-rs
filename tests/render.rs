@@ -4,6 +4,7 @@ use serde_json::json;
 use tempfile::TempDir;
 
 use brace::app::renderer::{Renderer, RendererConfig, Template};
+use brace::app::theme::config::ThemeReferenceInfo;
 
 static TEMPLATE_FILE: &'static str = "Hello {{ message }}!";
 
@@ -23,7 +24,10 @@ fn test_renderer_tera_template() {
 
     let mut system = System::new("brace_test");
     let config = RendererConfig {
-        theme: temp_path.join("Theme.toml").to_path_buf(),
+        themes: vec![ThemeReferenceInfo {
+            name: Some("custom".to_string()),
+            path: temp_path.join("Theme.toml").to_path_buf(),
+        }],
     };
 
     let res = system

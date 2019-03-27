@@ -1,8 +1,9 @@
 use std::ops::Deref;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
-use failure::format_err;
+use failure::{format_err, Error};
 use path_absolutize::Absolutize;
 use tera::Tera;
 
@@ -18,36 +19,54 @@ pub mod template;
 pub struct Renderer(pub Addr<RendererInner>);
 
 impl Renderer {
-    pub fn from_config(conf: RendererConfig) -> Result<Self, failure::Error> {
-        let theme_path = conf.theme;
-        let theme_conf = ThemeConfig::from_file(&theme_path)?;
+    pub fn from_config(conf: RendererConfig) -> Result<Self, Error> {
+        let mut tera = Tera::default();
 
-        match theme_path.parent() {
-            Some(parent) => {
-                let mut tera = Tera::default();
-                let files = (&theme_conf.templates)
-                    .iter()
-                    .map(|(key, template)| {
-                        (
-                            parent.join(template.path.clone()).absolutize().unwrap(),
-                            Some(key.as_ref()),
-                        )
-                    })
-                    .collect();
+        for theme in conf.themes {
+            let path = theme.path;
+            let conf = ThemeConfig::from_file(&path)?;
 
-                match tera.add_template_files(files) {
-                    Ok(_) => {
-                        let ptr = Arc::new(Mutex::new(tera));
-
-                        Ok(Self(SyncArbiter::start(3, move || {
-                            RendererInner(ptr.clone())
-                        })))
+            match path.parent() {
+                Some(path) => {
+                    if let Err(err) = Self::add_template_files(&mut tera, path, &conf) {
+                        return Err(err);
                     }
-                    Err(err) => Err(format_err!("{}", err)),
                 }
+                None => return Err(format_err!("Invalid theme path {:?}", path)),
             }
-            None => Err(format_err!("Invalid theme path {:?}", theme_path)),
         }
+
+        let ptr = Arc::new(Mutex::new(tera));
+
+        Ok(Self(SyncArbiter::start(3, move || {
+            RendererInner(ptr.clone())
+        })))
+    }
+
+    fn add_template_files<'a>(
+        tera: &mut Tera,
+        path: &Path,
+        conf: &'a ThemeConfig,
+    ) -> Result<(), Error> {
+        match tera.add_template_files(Self::get_template_files(path, &conf)) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(format_err!("{}", err)),
+        }
+    }
+
+    fn get_template_files<'a>(
+        path: &Path,
+        conf: &'a ThemeConfig,
+    ) -> Vec<(PathBuf, Option<&'a str>)> {
+        conf.templates
+            .iter()
+            .map(|(key, template)| {
+                (
+                    path.join(template.path.clone()).absolutize().unwrap(),
+                    Some(key.as_ref()),
+                )
+            })
+            .collect()
     }
 }
 

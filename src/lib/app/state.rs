@@ -1,7 +1,7 @@
 use failure::Error;
 
 use super::database::Database;
-use super::renderer::Renderer;
+use super::renderer::{Renderer, RendererConfig};
 use super::AppConfig;
 
 #[derive(Clone)]
@@ -14,7 +14,9 @@ pub struct AppState {
 impl AppState {
     pub fn from_config(config: AppConfig) -> Result<Self, Error> {
         let database = Database::from_config(config.database.clone())?;
-        let renderer = Renderer::from_config(config.renderer.clone())?;
+        let renderer = Renderer::from_config(RendererConfig {
+            themes: config.theme.clone(),
+        })?;
 
         Ok(Self {
             database,

@@ -1,17 +1,15 @@
-use std::path::PathBuf;
-
 use serde::{Deserialize, Serialize};
+
+use crate::app::theme::config::ThemeReferenceInfo;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct RendererConfig {
-    pub theme: PathBuf,
+    pub themes: Vec<ThemeReferenceInfo>,
 }
 
 impl Default for RendererConfig {
     fn default() -> Self {
-        Self {
-            theme: PathBuf::from("theme/Theme.toml"),
-        }
+        Self { themes: Vec::new() }
     }
 }

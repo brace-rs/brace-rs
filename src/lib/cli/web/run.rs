@@ -96,7 +96,9 @@ pub fn overload_file(
 
     match Path::new(path).parent() {
         Some(parent) => {
-            config.renderer.theme = parent.join(&config.renderer.theme).absolutize()?;
+            for theme in config.theme.iter_mut() {
+                theme.path = parent.join(&theme.path).absolutize()?;
+            }
 
             Ok(config)
         }
@@ -110,7 +112,9 @@ pub fn overload_default(
 ) -> Result<AppConfig, failure::Error> {
     let mut config = overload(AppConfig::default(), shell, matches)?;
 
-    config.renderer.theme = config.renderer.theme.absolutize()?;
+    for theme in config.theme.iter_mut() {
+        theme.path = theme.path.absolutize()?;
+    }
 
     Ok(config)
 }

@@ -18,9 +18,9 @@ pub mod web;
 pub fn init(config: AppConfig, path: &Path) -> Result<(), Error> {
     let path = get_dir(path)?;
 
-    std::fs::create_dir(path.join("theme")).unwrap();
+    std::fs::create_dir_all(path.join("themes/default")).unwrap();
     std::fs::write(path.join("Config.toml"), toml::to_string_pretty(&config)?)?;
-    crate::app::theme::init(ThemeConfig::default(), &path.join("theme")).unwrap();
+    crate::app::theme::init(ThemeConfig::default(), &path.join("themes/default")).unwrap();
 
     Ok(())
 }

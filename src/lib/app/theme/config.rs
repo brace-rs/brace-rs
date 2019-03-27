@@ -55,6 +55,12 @@ impl Default for ThemeInfo {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+pub struct ThemeReferenceInfo {
+    pub name: Option<String>,
+    pub path: PathBuf,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct TemplateInfo {
     pub name: Option<String>,
     pub path: PathBuf,
