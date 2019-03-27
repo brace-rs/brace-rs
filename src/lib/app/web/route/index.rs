@@ -16,7 +16,7 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     );
 
     req.state()
-        .renderer
+        .renderer()
         .send(template)
         .map_err(ErrorInternalServerError)
         .and_then(|res| match res {
