@@ -5,6 +5,7 @@ use clap::{crate_authors, crate_description, crate_name, crate_version};
 use crate::util::shell::prelude::*;
 
 pub mod init;
+pub mod theme;
 pub mod web;
 
 pub fn cmd() -> Command {
@@ -34,6 +35,7 @@ pub fn cmd() -> Command {
                 .possible_values(&["auto", "always", "never"]),
         )
         .subcommand(init::cmd())
+        .subcommand(theme::cmd())
         .subcommand(web::cmd())
         .setting(AppSettings::AllowExternalSubcommands)
 }
@@ -53,6 +55,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
 
     match matches.subcommand() {
         ("init", Some(matches)) => init::exec(shell, matches),
+        ("theme", Some(matches)) => theme::exec(shell, matches),
         ("web", Some(matches)) => web::exec(shell, matches),
         (command, _) => exit_command_invalid(command, shell, &matches.usage()),
     }

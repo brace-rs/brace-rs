@@ -1,11 +1,11 @@
 use std::path::Path;
 
-use crate::app::AppConfig;
+use crate::app::theme::ThemeConfig;
 use crate::util::shell::prelude::*;
 
 pub fn cmd() -> Command {
     Command::new("init")
-        .about("Creates a new site in an existing directory")
+        .about("Creates a new theme in an existing directory")
         .arg(
             Arg::with_name("directory")
                 .value_name("DIR")
@@ -18,9 +18,9 @@ pub fn cmd() -> Command {
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     let directory = matches.value_of("directory").unwrap();
 
-    match crate::app::init(AppConfig::default(), Path::new(directory)) {
+    match crate::app::theme::init(ThemeConfig::default(), Path::new(directory)) {
         Ok(()) => {
-            shell.info(format!("Created new site at {}", directory))?;
+            shell.info(format!("Created new theme at {}", directory))?;
             shell.exit(0);
         }
         Err(err) => {
