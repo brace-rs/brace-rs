@@ -1,11 +1,10 @@
-use std::fs::OpenOptions;
-use std::io::Write;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
 
 use assert_cmd::prelude::*;
 use tempfile::TempDir;
+use walkdir::WalkDir;
 
 static CONFIG_FILE: &'static str = r#"
 [web]
@@ -51,17 +50,18 @@ fn test_web_server_with_arguments() {
 fn test_web_server_with_config() {
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
-
-    brace::app::init::init(temp_path.to_str().unwrap()).unwrap();
-
     let conf_path = temp_path.join("Config.toml");
-    let mut conf_file = OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .open(&conf_path)
-        .unwrap();
 
-    write!(conf_file, "{}", CONFIG_FILE).unwrap();
+    std::fs::write(&conf_path, CONFIG_FILE).unwrap();
+    std::fs::create_dir(temp_path.join("templates")).unwrap();
+
+    for entry in WalkDir::new("templates").into_iter().filter_map(|e| e.ok()) {
+        let path = entry.path();
+        if path.is_file() {
+            let name = path.file_name().unwrap();
+            std::fs::copy(path, temp_path.join("templates").join(name)).unwrap();
+        }
+    }
 
     let mut process = Command::cargo_bin("brace")
         .unwrap()
