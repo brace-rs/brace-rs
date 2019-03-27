@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <style type="text/css">
+      table {
+        width: 100%;
+      }
+      th {
+        font-size: 1.125rem;
+        text-align: left;
+        border-bottom: 0.125rem solid #D5D5D5;
+      }
+      .label {
+        font-weight: bold;
+      }
+      .description {
+        color: #454545;
+        font-size: 0.875rem;
+      }
+    </style>
+  </head>
+  <body>
+    {% if themes %}
+      <table class="themes">
+        <thead>
+          <tr>
+            <th>Theme</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for theme in themes %}
+            <tr class="theme">
+              <td>
+                <div class="label">
+                  {{ theme.label }}
+                </div>
+                <div class="description">
+                  {{ theme.description }}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </body>
+</html>

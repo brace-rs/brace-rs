@@ -5,3 +5,4 @@ description = "The default theme for all new sites."
 
 [templates]
 index = { name = "index", path = "templates/index.html" }
+themes = { name = "themes", path = "templates/themes.html" }
