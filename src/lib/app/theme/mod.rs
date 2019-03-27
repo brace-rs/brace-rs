@@ -14,6 +14,7 @@ pub fn init(mut config: ThemeConfig, path: &Path) -> Result<(), Error> {
     config.templates.insert(
         "index".to_string(),
         TemplateInfo {
+            name: None,
             path: PathBuf::from("templates/index.html"),
         },
     );
