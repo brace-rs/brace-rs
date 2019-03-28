@@ -27,18 +27,18 @@ pub fn get(
     let asset = find_theme(&path_info.theme, &req).and_then(|(theme, theme_path)| {
         find_library(&path_info.library, theme).and_then(|library| {
             find_asset(&path_info.asset, library).and_then(|mut asset| match asset {
-                AssetInfo::StyleSheet { ref mut path, .. } => {
+                AssetInfo::StyleSheet(ref mut info) => {
                     if &path_info.kind == "css" {
-                        *path = theme_path.join(&path);
+                        info.path = theme_path.join(&info.path);
 
                         Some(asset)
                     } else {
                         None
                     }
                 }
-                AssetInfo::JavaScript { ref mut path, .. } => {
+                AssetInfo::JavaScript(ref mut info) => {
                     if &path_info.kind == "js" {
-                        *path = theme_path.join(&path);
+                        info.path = theme_path.join(&info.path);
 
                         Some(asset)
                     } else {
