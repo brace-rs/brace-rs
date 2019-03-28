@@ -7,7 +7,7 @@ description = "The default theme for all new sites."
 name = "theme"
 
 [[library.asset]]
-name = "theme"
+name = "theme.css"
 path = "css/theme.css"
 type = "css"
 

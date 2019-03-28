@@ -41,19 +41,27 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                             let mut asset = asset.clone();
 
                             match asset {
-                                AssetInfo::StyleSheet { ref mut path, .. } => {
+                                AssetInfo::StyleSheet {
+                                    ref mut path,
+                                    ref name,
+                                } => {
                                     *path = PathBuf::new()
-                                        .join("/static/themes")
+                                        .join("/static/assets")
                                         .join(theme.theme.name.clone())
                                         .join(library.name.clone())
-                                        .join(path.clone());
+                                        .join("css")
+                                        .join(name);
                                 }
-                                AssetInfo::JavaScript { ref mut path, .. } => {
+                                AssetInfo::JavaScript {
+                                    ref mut path,
+                                    ref name,
+                                } => {
                                     *path = PathBuf::new()
-                                        .join("/static/themes")
+                                        .join("/static/assets")
                                         .join(theme.theme.name.clone())
                                         .join(library.name.clone())
-                                        .join(path.clone());
+                                        .join("js")
+                                        .join(name);
                                 }
                             }
 

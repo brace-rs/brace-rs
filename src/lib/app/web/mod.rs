@@ -5,7 +5,6 @@ use actix_web::App;
 use failure::Error;
 use log::info;
 
-use crate::app::theme::library::asset::AssetLibraryRouter;
 use crate::app::{AppConfig, AppState};
 
 pub use self::config::{WebConfig, WebLogConfig};
@@ -32,7 +31,9 @@ pub fn run(config: AppConfig) -> Result<(), Error> {
             .middleware(Logger::new(&format))
             .resource("/", |r| r.get().with(route::index::get))
             .resource("/themes", |r| r.get().with(route::themes::get))
-            .handler("/static/themes/{theme}/{library}", AssetLibraryRouter)
+            .resource("/static/assets/{theme}/{library}/{kind}/{asset}", |r| {
+                r.get().with(route::assets::get)
+            })
     })
     .bind(format!("{}:{}", config.web.host, config.web.port))?
     .start();
