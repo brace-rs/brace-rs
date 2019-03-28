@@ -30,37 +30,43 @@ pub struct TemplateFunction {
     pub templates: HashMap<String, TemplateInfo>,
 }
 
+impl TemplateFunction {
+    pub fn render_template(&self, name: &str, value: &Value) -> TeraResult<Value> {
+        match self.templates.get(name) {
+            Some(info) => match value {
+                Value::Object(_) => match info {
+                    TemplateInfo::Static { path, .. } => match read_to_string(path) {
+                        Ok(str) => Ok(Value::String(str)),
+                        Err(err) => Err(TeraError::msg(format!("{}", err))),
+                    },
+                    TemplateInfo::Text { text, .. } => Ok(Value::String(text.to_string())),
+                    TemplateInfo::Tera { name, .. } => match self.tera.read() {
+                        Ok(tera) => match tera.render_value(&name, &value) {
+                            Ok(res) => Ok(Value::String(res)),
+                            Err(err) => Err(err),
+                        },
+                        Err(err) => Err(TeraError::msg(format!("{}", err))),
+                    },
+                },
+                _ => Err(TeraError::msg(format!(
+                    "Global function `template` received value={} but `value` can only be an object",
+                    value
+                ))),
+            },
+            None => Err(TeraError::msg(format!(
+                "Global function `template` received name={} but `name` is not a valid template",
+                name
+            ))),
+        }
+    }
+}
+
 impl Function for TemplateFunction {
     fn call(&self, args: &HashMap<String, Value>) -> TeraResult<Value> {
         match args.get("name") {
             Some(name) => match args.get("value") {
                 Some(value) => match name {
-                    Value::String(name) => match self.templates.get(name) {
-                        Some(info) => match value {
-                            Value::Object(_) => match info {
-                                TemplateInfo::Static { path, .. } => match read_to_string(path) {
-                                    Ok(str) => Ok(Value::String(str)),
-                                    Err(err) => Err(TeraError::msg(format!("{}", err))),
-                                },
-                                TemplateInfo::Text { text, .. } => Ok(Value::String(text.to_string())),
-                                TemplateInfo::Tera { name, .. } => match self.tera.read() {
-                                    Ok(tera) => match tera.render_value(&name, &value) {
-                                        Ok(res) => Ok(Value::String(res)),
-                                        Err(err) => Err(err),
-                                    },
-                                    Err(err) => Err(TeraError::msg(format!("{}", err))),
-                                },
-                            },
-                            _ => Err(TeraError::msg(format!(
-                                "Global function `template` received value={} but `value` can only be an object",
-                                value
-                            ))),
-                        },
-                        None => Err(TeraError::msg(format!(
-                            "Global function `template` received name={} but `name` is not a valid template",
-                            name
-                        ))),
-                    },
+                    Value::String(name) => self.render_template(name, value),
                     _ => Err(TeraError::msg(format!(
                         "Global function `template` received name={} but `name` can only be a string",
                         name
