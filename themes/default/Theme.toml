@@ -5,8 +5,10 @@ description = "The default theme for all new sites."
 
 [[template]]
 name = "index"
+type = "tera"
 path = "templates/index.html"
 
 [[template]]
 name = "themes"
+type = "tera"
 path = "templates/themes.html"

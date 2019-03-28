@@ -12,7 +12,7 @@ pub fn init(mut config: ThemeConfig, path: &Path) -> Result<(), Error> {
     let (name, path) = get_dir_with_name(path)?;
 
     config.theme.name = name;
-    config.templates.push(TemplateInfo {
+    config.templates.push(TemplateInfo::Tera {
         name: "index".to_string(),
         path: PathBuf::from("templates/index.html"),
     });

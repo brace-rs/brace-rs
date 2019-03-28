@@ -61,7 +61,19 @@ pub struct ThemeReferenceInfo {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct TemplateInfo {
-    pub name: String,
-    pub path: PathBuf,
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum TemplateInfo {
+    Static { name: String, path: PathBuf },
+    Tera { name: String, path: PathBuf },
+    Text { name: String, text: String },
+}
+
+impl TemplateInfo {
+    pub fn name(&self) -> &String {
+        match self {
+            TemplateInfo::Static { name, .. } => name,
+            TemplateInfo::Tera { name, .. } => name,
+            TemplateInfo::Text { name, .. } => name,
+        }
+    }
 }
