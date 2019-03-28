@@ -4,6 +4,8 @@ use failure::Error;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use super::template::TemplateInfo;
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct ThemeConfig {
@@ -58,22 +60,4 @@ impl Default for ThemeInfo {
 pub struct ThemeReferenceInfo {
     pub name: Option<String>,
     pub path: PathBuf,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-#[serde(tag = "type", rename_all = "lowercase")]
-pub enum TemplateInfo {
-    Static { name: String, path: PathBuf },
-    Tera { name: String, path: PathBuf },
-    Text { name: String, text: String },
-}
-
-impl TemplateInfo {
-    pub fn name(&self) -> &String {
-        match self {
-            TemplateInfo::Static { name, .. } => name,
-            TemplateInfo::Tera { name, .. } => name,
-            TemplateInfo::Text { name, .. } => name,
-        }
-    }
 }

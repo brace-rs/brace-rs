@@ -2,11 +2,13 @@ use std::path::{Path, PathBuf};
 
 use failure::Error;
 
+use self::template::TemplateInfo;
 use crate::util::path::get_dir_with_name;
 
-pub use self::config::{TemplateInfo, ThemeConfig};
+pub use self::config::ThemeConfig;
 
 pub mod config;
+pub mod template;
 
 pub fn init(mut config: ThemeConfig, path: &Path) -> Result<(), Error> {
     let (name, path) = get_dir_with_name(path)?;

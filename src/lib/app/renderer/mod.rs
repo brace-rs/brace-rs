@@ -9,7 +9,8 @@ use path_absolutize::Absolutize;
 use serde_json::Value;
 use tera::Tera;
 
-use super::theme::config::{TemplateInfo, ThemeConfig};
+use super::theme::template::TemplateInfo;
+use super::theme::ThemeConfig;
 
 pub use self::config::RendererConfig;
 pub use self::template::Template;
