@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
 use failure::{format_err, Error};
@@ -9,7 +9,7 @@ use path_absolutize::Absolutize;
 use serde_json::Value;
 use tera::Tera;
 
-use super::theme::template::TemplateInfo;
+use super::theme::template::{MapFunction, TemplateFunction, TemplateInfo};
 use super::theme::ThemeConfig;
 
 pub use self::config::RendererConfig;
@@ -54,7 +54,23 @@ impl Renderer {
             }
         }
 
-        let ptr = Arc::new(Mutex::new(tera));
+        let ptr = Arc::new(RwLock::new(tera));
+
+        match ptr.write() {
+            Ok(mut tera) => {
+                tera.register_function("map", MapFunction);
+                tera.register_function(
+                    "template",
+                    TemplateFunction {
+                        tera: ptr.clone(),
+                        templates: templates.clone(),
+                    },
+                );
+
+                Ok(())
+            }
+            Err(err) => Err(format_err!("{}", err)),
+        }?;
 
         Ok(Self(SyncArbiter::start(3, move || RendererInner {
             tera: ptr.clone(),
@@ -89,8 +105,8 @@ impl Deref for Renderer {
 }
 
 pub struct RendererInner {
-    tera: Arc<Mutex<Tera>>,
-    templates: HashMap<String, TemplateInfo>,
+    pub tera: Arc<RwLock<Tera>>,
+    pub templates: HashMap<String, TemplateInfo>,
 }
 
 impl RendererInner {
@@ -105,8 +121,8 @@ impl RendererInner {
             Some(info) => match info {
                 TemplateInfo::Static { path, .. } => Ok(std::fs::read_to_string(path)?),
                 TemplateInfo::Text { text, .. } => Ok(text.to_string()),
-                TemplateInfo::Tera { name, .. } => match self.tera.lock() {
-                    Ok(res) => match res.render_value(&name, &data.into()) {
+                TemplateInfo::Tera { name, .. } => match self.tera.read() {
+                    Ok(tera) => match tera.render_value(&name, &data.into()) {
                         Ok(res) => Ok(res),
                         Err(err) => Err(format_err!("{}", err)),
                     },

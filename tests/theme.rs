@@ -10,6 +10,11 @@ use brace::app::renderer::{Renderer, RendererConfig, Template};
 use brace::app::theme::config::ThemeReferenceInfo;
 
 static TEMPLATE_FILE: &'static str = "Hello {{ message }}!";
+
+static TEMPLATE_FILE_FN: &'static str = r#"
+I said {{ template(name="custom-tera", value=map(key="message", value=message)) }}
+"#;
+
 static THEME_CONF_FILE: &'static str = r#"
 [[template]]
 name = "custom-static"
@@ -20,6 +25,11 @@ path = "templates/custom-static.html"
 name = "custom-tera"
 type = "tera"
 path = "templates/custom-tera.html"
+
+[[template]]
+name = "custom-tera-fn"
+type = "tera"
+path = "templates/custom-tera-fn.html"
 
 [[template]]
 name = "custom-text"
@@ -54,6 +64,7 @@ fn test_theme_template_render_static() {
     std::fs::write(path.join("Theme.toml"), THEME_CONF_FILE).unwrap();
     std::fs::write(path.join("templates/custom-static.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera.html"), TEMPLATE_FILE).unwrap();
+    std::fs::write(path.join("templates/custom-tera-fn.html"), TEMPLATE_FILE_FN).unwrap();
 
     let mut system = System::new("brace_test");
     let config = RendererConfig {
@@ -84,6 +95,7 @@ fn test_theme_template_render_tera() {
     std::fs::write(path.join("Theme.toml"), THEME_CONF_FILE).unwrap();
     std::fs::write(path.join("templates/custom-static.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera.html"), TEMPLATE_FILE).unwrap();
+    std::fs::write(path.join("templates/custom-tera-fn.html"), TEMPLATE_FILE_FN).unwrap();
 
     let mut system = System::new("brace_test");
     let config = RendererConfig {
@@ -117,6 +129,7 @@ fn test_theme_template_render_text() {
     std::fs::write(path.join("Theme.toml"), THEME_CONF_FILE).unwrap();
     std::fs::write(path.join("templates/custom-static.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera.html"), TEMPLATE_FILE).unwrap();
+    std::fs::write(path.join("templates/custom-tera-fn.html"), TEMPLATE_FILE_FN).unwrap();
 
     let mut system = System::new("brace_test");
     let config = RendererConfig {
@@ -136,4 +149,38 @@ fn test_theme_template_render_text() {
         .unwrap();
 
     assert_eq!(res, "Hello {{ message }}!");
+}
+
+#[test]
+fn test_theme_template_render_fn() {
+    let dir = TempDir::new().unwrap();
+    let path = dir.path();
+
+    std::fs::create_dir(path.join("templates")).unwrap();
+    std::fs::write(path.join("Theme.toml"), THEME_CONF_FILE).unwrap();
+    std::fs::write(path.join("templates/custom-static.html"), TEMPLATE_FILE).unwrap();
+    std::fs::write(path.join("templates/custom-tera.html"), TEMPLATE_FILE).unwrap();
+    std::fs::write(path.join("templates/custom-tera-fn.html"), TEMPLATE_FILE_FN).unwrap();
+
+    let mut system = System::new("brace_test");
+    let config = RendererConfig {
+        themes: vec![ThemeReferenceInfo {
+            name: Some("custom".to_string()),
+            path: path.join("Theme.toml").to_path_buf(),
+        }],
+    };
+
+    let res = system
+        .block_on(lazy(|| {
+            Renderer::from_config(config).unwrap().send(Template::new(
+                "custom-tera-fn",
+                json!({
+                    "message": "universe"
+                }),
+            ))
+        }))
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(res, "\nI said Hello universe!\n");
 }
