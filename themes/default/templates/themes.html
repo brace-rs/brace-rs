@@ -2,23 +2,12 @@
 <html>
   <head>
     <title>{{ title }}</title>
-    <style type="text/css">
-      table {
-        width: 100%;
-      }
-      th {
-        font-size: 1.125rem;
-        text-align: left;
-        border-bottom: 0.125rem solid #D5D5D5;
-      }
-      .label {
-        font-weight: bold;
-      }
-      .description {
-        color: #454545;
-        font-size: 0.875rem;
-      }
-    </style>
+    {% for asset in library.assets | filter(attribute="type", value="css") %}
+      {{ template(name="asset", value=asset) | safe }}
+    {% endfor %}
+    {% for asset in library.assets | filter(attribute="type", value="js") %}
+      {{ template(name="asset", value=asset) | safe }}
+    {% endfor %}
   </head>
   <body>
     {% if themes %}

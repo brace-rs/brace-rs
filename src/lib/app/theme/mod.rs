@@ -8,6 +8,7 @@ use crate::util::path::get_dir_with_name;
 pub use self::config::ThemeConfig;
 
 pub mod config;
+pub mod library;
 pub mod template;
 
 pub fn init(mut config: ThemeConfig, path: &Path) -> Result<(), Error> {

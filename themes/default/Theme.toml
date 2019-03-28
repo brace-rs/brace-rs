@@ -3,6 +3,19 @@ name = "default"
 label = "Default"
 description = "The default theme for all new sites."
 
+[[library]]
+name = "theme"
+
+[[library.asset]]
+name = "theme"
+path = "css/theme.css"
+type = "css"
+
+[[template]]
+name = "asset"
+type = "tera"
+path = "templates/asset.html"
+
 [[template]]
 name = "index"
 type = "tera"

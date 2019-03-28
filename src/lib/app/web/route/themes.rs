@@ -1,29 +1,80 @@
+use std::path::PathBuf;
+
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{AsyncResponder, FutureResponse, HttpRequest, HttpResponse};
 use futures::future::Future;
-use serde_json::json;
+use serde_json::{json, to_value};
 
 use crate::app::renderer::Template;
 use crate::app::theme::config::{ThemeConfig, ThemeInfo};
+use crate::app::theme::library::asset::AssetInfo;
 use crate::app::AppState;
 
 pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
-    let themes: Vec<ThemeInfo> = req
+    let themes = req
         .state()
         .config()
         .theme
         .iter()
         .filter_map(|theme| match ThemeConfig::from_file(&theme.path) {
-            Ok(conf) => Some(conf.theme),
+            Ok(conf) => Some(conf),
             Err(_) => None,
         })
-        .collect();
+        .collect::<Vec<ThemeConfig>>();
+
+    let theme_info = themes
+        .iter()
+        .map(|theme| theme.theme.clone())
+        .collect::<Vec<ThemeInfo>>();
+
+    let asset_info = themes
+        .iter()
+        .map(|theme| {
+            theme
+                .libraries
+                .iter()
+                .map(|library| {
+                    library
+                        .assets
+                        .iter()
+                        .map(|asset| {
+                            let mut asset = asset.clone();
+
+                            match asset {
+                                AssetInfo::StyleSheet { ref mut path, .. } => {
+                                    *path = PathBuf::new()
+                                        .join("/static/themes")
+                                        .join(theme.theme.name.clone())
+                                        .join(library.name.clone())
+                                        .join(path.clone());
+                                }
+                                AssetInfo::JavaScript { ref mut path, .. } => {
+                                    *path = PathBuf::new()
+                                        .join("/static/themes")
+                                        .join(theme.theme.name.clone())
+                                        .join(library.name.clone())
+                                        .join(path.clone());
+                                }
+                            }
+
+                            asset
+                        })
+                        .collect::<Vec<AssetInfo>>()
+                })
+                .flatten()
+                .collect::<Vec<AssetInfo>>()
+        })
+        .flatten()
+        .collect::<Vec<AssetInfo>>();
 
     let template = Template::new(
         "themes",
         json!({
             "title": "Themes",
-            "themes": serde_json::to_value(themes).unwrap(),
+            "themes": to_value(theme_info).unwrap(),
+            "library": {
+                "assets": to_value(asset_info).unwrap(),
+            }
         }),
     );
 
