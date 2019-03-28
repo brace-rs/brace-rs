@@ -3,6 +3,10 @@ name = "default"
 label = "Default"
 description = "The default theme for all new sites."
 
-[templates]
-index = { name = "index", path = "templates/index.html" }
-themes = { name = "themes", path = "templates/themes.html" }
+[[template]]
+name = "index"
+path = "templates/index.html"
+
+[[template]]
+name = "themes"
+path = "templates/themes.html"

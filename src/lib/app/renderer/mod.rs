@@ -60,10 +60,10 @@ impl Renderer {
     ) -> Vec<(PathBuf, Option<&'a str>)> {
         conf.templates
             .iter()
-            .map(|(key, template)| {
+            .map(|template| {
                 (
                     path.join(template.path.clone()).absolutize().unwrap(),
-                    Some(key.as_ref()),
+                    Some(template.name.as_ref()),
                 )
             })
             .collect()

@@ -9,8 +9,9 @@ use brace::app::theme::config::ThemeReferenceInfo;
 static TEMPLATE_FILE: &'static str = "Hello {{ message }}!";
 
 static THEME_CONF_FILE: &'static str = r#"
-[templates]
-custom = { path = "templates/custom.html" }
+[[template]]
+name = "custom"
+path = "templates/custom.html"
 "#;
 
 #[test]

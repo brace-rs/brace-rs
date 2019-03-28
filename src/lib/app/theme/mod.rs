@@ -12,13 +12,10 @@ pub fn init(mut config: ThemeConfig, path: &Path) -> Result<(), Error> {
     let (name, path) = get_dir_with_name(path)?;
 
     config.theme.name = name;
-    config.templates.insert(
-        "index".to_string(),
-        TemplateInfo {
-            name: None,
-            path: PathBuf::from("templates/index.html"),
-        },
-    );
+    config.templates.push(TemplateInfo {
+        name: "index".to_string(),
+        path: PathBuf::from("templates/index.html"),
+    });
 
     std::fs::create_dir(path.join("templates")).unwrap();
     std::fs::write(path.join("Theme.toml"), toml::to_string_pretty(&config)?)?;

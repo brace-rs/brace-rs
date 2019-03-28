@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use failure::Error;
@@ -9,7 +8,8 @@ use serde_json::Value;
 #[serde(default)]
 pub struct ThemeConfig {
     pub theme: ThemeInfo,
-    pub templates: HashMap<String, TemplateInfo>,
+    #[serde(rename = "template", skip_serializing_if = "Vec::is_empty")]
+    pub templates: Vec<TemplateInfo>,
 }
 
 impl ThemeConfig {
@@ -31,7 +31,7 @@ impl Default for ThemeConfig {
     fn default() -> Self {
         Self {
             theme: ThemeInfo::default(),
-            templates: HashMap::new(),
+            templates: Vec::new(),
         }
     }
 }
@@ -62,6 +62,6 @@ pub struct ThemeReferenceInfo {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct TemplateInfo {
-    pub name: Option<String>,
+    pub name: String,
     pub path: PathBuf,
 }
