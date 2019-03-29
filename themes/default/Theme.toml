@@ -8,8 +8,13 @@ name = "theme"
 
 [[library.asset]]
 name = "theme.css"
-path = "css/theme.css"
 type = "css"
+location = "css/theme.css"
+
+[[library.asset]]
+name = "font"
+type = "css"
+location = "https://fonts.googleapis.com/css?family=Roboto:400,500"
 
 [[template]]
 name = "asset"

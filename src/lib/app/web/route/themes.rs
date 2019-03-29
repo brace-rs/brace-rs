@@ -42,20 +42,26 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
 
                             match asset {
                                 AssetInfo::StyleSheet(ref mut info) => {
-                                    info.path = PathBuf::new()
-                                        .join("/static/assets")
-                                        .join(theme.theme.name.clone())
-                                        .join(library.name.clone())
-                                        .join("css")
-                                        .join(&info.name);
+                                    if info.location.is_internal() {
+                                        info.location = PathBuf::new()
+                                            .join("/static/assets")
+                                            .join(theme.theme.name.clone())
+                                            .join(library.name.clone())
+                                            .join("css")
+                                            .join(&info.name)
+                                            .into();
+                                    }
                                 }
                                 AssetInfo::JavaScript(ref mut info) => {
-                                    info.path = PathBuf::new()
-                                        .join("/static/assets")
-                                        .join(theme.theme.name.clone())
-                                        .join(library.name.clone())
-                                        .join("js")
-                                        .join(&info.name);
+                                    if info.location.is_internal() {
+                                        info.location = PathBuf::new()
+                                            .join("/static/assets")
+                                            .join(theme.theme.name.clone())
+                                            .join(library.name.clone())
+                                            .join("css")
+                                            .join(&info.name)
+                                            .into();
+                                    }
                                 }
                             }
 

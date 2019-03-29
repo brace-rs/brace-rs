@@ -29,18 +29,28 @@ pub fn get(
             find_asset(&path_info.asset, library).and_then(|mut asset| match asset {
                 AssetInfo::StyleSheet(ref mut info) => {
                     if &path_info.kind == "css" {
-                        info.path = theme_path.join(&info.path);
+                        if info.location.is_internal() {
+                            info.location =
+                                theme_path.join(info.location.clone().into_inner()).into();
 
-                        Some(asset)
+                            Some(asset)
+                        } else {
+                            None
+                        }
                     } else {
                         None
                     }
                 }
                 AssetInfo::JavaScript(ref mut info) => {
                     if &path_info.kind == "js" {
-                        info.path = theme_path.join(&info.path);
+                        if info.location.is_internal() {
+                            info.location =
+                                theme_path.join(info.location.clone().into_inner()).into();
 
-                        Some(asset)
+                            Some(asset)
+                        } else {
+                            None
+                        }
                     } else {
                         None
                     }
@@ -50,7 +60,7 @@ pub fn get(
     });
 
     match asset {
-        Some(asset) => NamedFile::open(asset.path())?
+        Some(asset) => NamedFile::open(asset.location().clone().into_inner())?
             .respond_to(&req)?
             .respond_to(&req),
         None => Err(ErrorNotFound(format_err!("Asset could not be found"))),

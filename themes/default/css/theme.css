@@ -1,15 +1,22 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.5;
+  letter-spacing: 0.05rem;
+}
+
 table {
   width: 100%;
 }
 
 th {
   font-size: 1.125rem;
+  font-weight: 500;
   text-align: left;
   border-bottom: 0.125rem solid #D5D5D5;
 }
 
 .label {
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .description {
