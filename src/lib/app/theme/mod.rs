@@ -21,7 +21,7 @@ pub fn init(mut config: ThemeConfig, path: &Path) -> Result<(), Error> {
     });
 
     std::fs::create_dir(path.join("templates")).unwrap();
-    std::fs::write(path.join("Theme.toml"), toml::to_string_pretty(&config)?)?;
+    std::fs::write(path.join("theme.toml"), toml::to_string_pretty(&config)?)?;
     std::fs::write(
         path.join("templates/index.html"),
         include_str!("../../../../themes/default/templates/index.html"),

@@ -48,7 +48,7 @@ fn test_theme_command_init() {
         .assert()
         .success();
 
-    let cfg = std::fs::metadata(path.join("Theme.toml")).unwrap();
+    let cfg = std::fs::metadata(path.join("theme.toml")).unwrap();
     let tpl = std::fs::metadata(path.join("templates/index.html")).unwrap();
 
     assert!(cfg.is_file());
@@ -61,7 +61,7 @@ fn test_theme_template_render_static() {
     let path = dir.path();
 
     std::fs::create_dir(path.join("templates")).unwrap();
-    std::fs::write(path.join("Theme.toml"), THEME_CONF_FILE).unwrap();
+    std::fs::write(path.join("theme.toml"), THEME_CONF_FILE).unwrap();
     std::fs::write(path.join("templates/custom-static.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera-fn.html"), TEMPLATE_FILE_FN).unwrap();
@@ -70,7 +70,7 @@ fn test_theme_template_render_static() {
     let config = RendererConfig {
         themes: vec![ThemeReferenceInfo {
             name: Some("custom".to_string()),
-            path: path.join("Theme.toml").to_path_buf(),
+            path: path.join("theme.toml").to_path_buf(),
         }],
     };
 
@@ -92,7 +92,7 @@ fn test_theme_template_render_tera() {
     let path = dir.path();
 
     std::fs::create_dir(path.join("templates")).unwrap();
-    std::fs::write(path.join("Theme.toml"), THEME_CONF_FILE).unwrap();
+    std::fs::write(path.join("theme.toml"), THEME_CONF_FILE).unwrap();
     std::fs::write(path.join("templates/custom-static.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera-fn.html"), TEMPLATE_FILE_FN).unwrap();
@@ -101,7 +101,7 @@ fn test_theme_template_render_tera() {
     let config = RendererConfig {
         themes: vec![ThemeReferenceInfo {
             name: Some("custom".to_string()),
-            path: path.join("Theme.toml").to_path_buf(),
+            path: path.join("theme.toml").to_path_buf(),
         }],
     };
 
@@ -126,7 +126,7 @@ fn test_theme_template_render_text() {
     let path = dir.path();
 
     std::fs::create_dir(path.join("templates")).unwrap();
-    std::fs::write(path.join("Theme.toml"), THEME_CONF_FILE).unwrap();
+    std::fs::write(path.join("theme.toml"), THEME_CONF_FILE).unwrap();
     std::fs::write(path.join("templates/custom-static.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera-fn.html"), TEMPLATE_FILE_FN).unwrap();
@@ -135,7 +135,7 @@ fn test_theme_template_render_text() {
     let config = RendererConfig {
         themes: vec![ThemeReferenceInfo {
             name: Some("custom".to_string()),
-            path: path.join("Theme.toml").to_path_buf(),
+            path: path.join("theme.toml").to_path_buf(),
         }],
     };
 
@@ -157,7 +157,7 @@ fn test_theme_template_render_fn() {
     let path = dir.path();
 
     std::fs::create_dir(path.join("templates")).unwrap();
-    std::fs::write(path.join("Theme.toml"), THEME_CONF_FILE).unwrap();
+    std::fs::write(path.join("theme.toml"), THEME_CONF_FILE).unwrap();
     std::fs::write(path.join("templates/custom-static.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera.html"), TEMPLATE_FILE).unwrap();
     std::fs::write(path.join("templates/custom-tera-fn.html"), TEMPLATE_FILE_FN).unwrap();
@@ -166,7 +166,7 @@ fn test_theme_template_render_fn() {
     let config = RendererConfig {
         themes: vec![ThemeReferenceInfo {
             name: Some("custom".to_string()),
-            path: path.join("Theme.toml").to_path_buf(),
+            path: path.join("theme.toml").to_path_buf(),
         }],
     };
 

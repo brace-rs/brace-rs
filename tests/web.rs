@@ -65,7 +65,7 @@ fn test_web_server_with_config() {
             "web",
             "run",
             "--config",
-            path.join("Config.toml").to_str().unwrap(),
+            path.join("config.toml").to_str().unwrap(),
         ])
         .spawn()
         .unwrap();

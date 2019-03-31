@@ -38,7 +38,7 @@ impl Default for AppConfig {
             database: DatabaseConfig::default(),
             theme: vec![ThemeReferenceInfo {
                 name: Some("default".to_string()),
-                path: PathBuf::from("themes/default/Theme.toml"),
+                path: PathBuf::from("themes/default/theme.toml"),
             }],
         }
     }
