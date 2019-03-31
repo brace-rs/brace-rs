@@ -6,20 +6,20 @@ description = "The default theme for all new sites."
 [[library]]
 name = "theme"
 
-[[library.asset]]
+[[library.resource]]
 name = "theme.css"
 type = "css"
 location = "css/theme.css"
 
-[[library.asset]]
+[[library.resource]]
 name = "font"
 type = "css"
 location = "https://fonts.googleapis.com/css?family=Roboto:400,500"
 
 [[template]]
-name = "asset"
+name = "resource"
 type = "tera"
-path = "templates/asset.html"
+path = "templates/resource.html"
 
 [[template]]
 name = "index"

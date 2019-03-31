@@ -7,7 +7,7 @@ use serde_json::{json, to_value};
 
 use crate::app::renderer::Template;
 use crate::app::theme::config::{ThemeConfig, ThemeInfo};
-use crate::app::theme::library::asset::AssetInfo;
+use crate::app::theme::library::resource::ResourceInfo;
 use crate::app::AppState;
 
 pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
@@ -27,7 +27,7 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         .map(|theme| theme.theme.clone())
         .collect::<Vec<ThemeInfo>>();
 
-    let asset_info = themes
+    let resource_info = themes
         .iter()
         .map(|theme| {
             theme
@@ -35,16 +35,16 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                 .iter()
                 .map(|library| {
                     library
-                        .assets
+                        .resources
                         .iter()
-                        .map(|asset| {
-                            let mut asset = asset.clone();
+                        .map(|resource| {
+                            let mut resource = resource.clone();
 
-                            match asset {
-                                AssetInfo::StyleSheet(ref mut info) => {
+                            match resource {
+                                ResourceInfo::StyleSheet(ref mut info) => {
                                     if info.location.is_internal() {
                                         info.location = PathBuf::new()
-                                            .join("/static/assets")
+                                            .join("/static/resources")
                                             .join(theme.theme.name.clone())
                                             .join(library.name.clone())
                                             .join("css")
@@ -52,10 +52,10 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                                             .into();
                                     }
                                 }
-                                AssetInfo::JavaScript(ref mut info) => {
+                                ResourceInfo::JavaScript(ref mut info) => {
                                     if info.location.is_internal() {
                                         info.location = PathBuf::new()
-                                            .join("/static/assets")
+                                            .join("/static/resources")
                                             .join(theme.theme.name.clone())
                                             .join(library.name.clone())
                                             .join("css")
@@ -65,15 +65,15 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                                 }
                             }
 
-                            asset
+                            resource
                         })
-                        .collect::<Vec<AssetInfo>>()
+                        .collect::<Vec<ResourceInfo>>()
                 })
                 .flatten()
-                .collect::<Vec<AssetInfo>>()
+                .collect::<Vec<ResourceInfo>>()
         })
         .flatten()
-        .collect::<Vec<AssetInfo>>();
+        .collect::<Vec<ResourceInfo>>();
 
     let template = Template::new(
         "themes",
@@ -81,7 +81,7 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
             "title": "Themes",
             "themes": to_value(theme_info).unwrap(),
             "library": {
-                "assets": to_value(asset_info).unwrap(),
+                "resources": to_value(resource_info).unwrap(),
             }
         }),
     );

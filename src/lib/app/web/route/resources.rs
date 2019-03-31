@@ -8,7 +8,7 @@ use failure::format_err;
 use serde::Deserialize;
 
 use crate::app::theme::config::ThemeConfig;
-use crate::app::theme::library::asset::AssetInfo;
+use crate::app::theme::library::resource::ResourceInfo;
 use crate::app::theme::library::LibraryInfo;
 use crate::app::AppState;
 
@@ -17,23 +17,23 @@ pub struct PathInfo {
     pub theme: String,
     pub library: String,
     pub kind: String,
-    pub asset: String,
+    pub resource: String,
 }
 
 pub fn get(
     path_info: Path<PathInfo>,
     req: HttpRequest<AppState>,
 ) -> Result<AsyncResult<HttpResponse>, ActixError> {
-    let asset = find_theme(&path_info.theme, &req).and_then(|(theme, theme_path)| {
+    let resource = find_theme(&path_info.theme, &req).and_then(|(theme, theme_path)| {
         find_library(&path_info.library, theme).and_then(|library| {
-            find_asset(&path_info.asset, library).and_then(|mut asset| match asset {
-                AssetInfo::StyleSheet(ref mut info) => {
+            find_resource(&path_info.resource, library).and_then(|mut resource| match resource {
+                ResourceInfo::StyleSheet(ref mut info) => {
                     if &path_info.kind == "css" {
                         if info.location.is_internal() {
                             info.location =
                                 theme_path.join(info.location.clone().into_inner()).into();
 
-                            Some(asset)
+                            Some(resource)
                         } else {
                             None
                         }
@@ -41,13 +41,13 @@ pub fn get(
                         None
                     }
                 }
-                AssetInfo::JavaScript(ref mut info) => {
+                ResourceInfo::JavaScript(ref mut info) => {
                     if &path_info.kind == "js" {
                         if info.location.is_internal() {
                             info.location =
                                 theme_path.join(info.location.clone().into_inner()).into();
 
-                            Some(asset)
+                            Some(resource)
                         } else {
                             None
                         }
@@ -59,11 +59,11 @@ pub fn get(
         })
     });
 
-    match asset {
-        Some(asset) => NamedFile::open(asset.location().clone().into_inner())?
+    match resource {
+        Some(resource) => NamedFile::open(resource.location().clone().into_inner())?
             .respond_to(&req)?
             .respond_to(&req),
-        None => Err(ErrorNotFound(format_err!("Asset could not be found"))),
+        None => Err(ErrorNotFound(format_err!("Resource could not be found"))),
     }
 }
 
@@ -103,10 +103,10 @@ fn find_library(name: &str, theme: ThemeConfig) -> Option<LibraryInfo> {
     })
 }
 
-fn find_asset(name: &str, library: LibraryInfo) -> Option<AssetInfo> {
-    library.assets.iter().find_map(|asset| {
-        if asset.name() == name {
-            Some(asset.clone())
+fn find_resource(name: &str, library: LibraryInfo) -> Option<ResourceInfo> {
+    library.resources.iter().find_map(|resource| {
+        if resource.name() == name {
+            Some(resource.clone())
         } else {
             None
         }

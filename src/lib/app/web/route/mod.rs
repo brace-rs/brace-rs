@@ -1,3 +1,3 @@
-pub mod assets;
 pub mod index;
+pub mod resources;
 pub mod themes;

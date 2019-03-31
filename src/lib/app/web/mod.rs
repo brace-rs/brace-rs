@@ -31,9 +31,10 @@ pub fn run(config: AppConfig) -> Result<(), Error> {
             .middleware(Logger::new(&format))
             .resource("/", |r| r.get().with(route::index::get))
             .resource("/themes", |r| r.get().with(route::themes::get))
-            .resource("/static/assets/{theme}/{library}/{kind}/{asset}", |r| {
-                r.get().with(route::assets::get)
-            })
+            .resource(
+                "/static/resources/{theme}/{library}/{kind}/{resource}",
+                |r| r.get().with(route::resources::get),
+            )
     })
     .bind(format!("{}:{}", config.web.host, config.web.port))?
     .start();

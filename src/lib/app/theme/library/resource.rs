@@ -6,53 +6,53 @@ use url::Url;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(tag = "type")]
-pub enum AssetInfo {
+pub enum ResourceInfo {
     #[serde(rename = "css")]
     StyleSheet(StyleSheetInfo),
     #[serde(rename = "js")]
     JavaScript(JavaScriptInfo),
 }
 
-impl AssetInfo {
+impl ResourceInfo {
     pub fn name(&self) -> &str {
         match self {
-            AssetInfo::StyleSheet(ref info) => &info.name,
-            AssetInfo::JavaScript(ref info) => &info.name,
+            ResourceInfo::StyleSheet(ref info) => &info.name,
+            ResourceInfo::JavaScript(ref info) => &info.name,
         }
     }
 
     pub fn location(&self) -> &Location {
         match self {
-            AssetInfo::StyleSheet(ref info) => &info.location,
-            AssetInfo::JavaScript(ref info) => &info.location,
+            ResourceInfo::StyleSheet(ref info) => &info.location,
+            ResourceInfo::JavaScript(ref info) => &info.location,
         }
     }
 
     pub fn as_stylesheet(&self) -> Option<&StyleSheetInfo> {
         match self {
-            AssetInfo::StyleSheet(ref info) => Some(info),
+            ResourceInfo::StyleSheet(ref info) => Some(info),
             _ => None,
         }
     }
 
     pub fn is_stylesheet(&self) -> bool {
         match self {
-            AssetInfo::StyleSheet(_) => true,
-            AssetInfo::JavaScript(_) => false,
+            ResourceInfo::StyleSheet(_) => true,
+            ResourceInfo::JavaScript(_) => false,
         }
     }
 
     pub fn as_javascript(&self) -> Option<&JavaScriptInfo> {
         match self {
-            AssetInfo::JavaScript(ref info) => Some(info),
+            ResourceInfo::JavaScript(ref info) => Some(info),
             _ => None,
         }
     }
 
     pub fn is_javascript(&self) -> bool {
         match self {
-            AssetInfo::StyleSheet(_) => false,
-            AssetInfo::JavaScript(_) => true,
+            ResourceInfo::StyleSheet(_) => false,
+            ResourceInfo::JavaScript(_) => true,
         }
     }
 }

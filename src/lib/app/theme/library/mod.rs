@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-use self::asset::AssetInfo;
+use self::resource::ResourceInfo;
 
-pub mod asset;
+pub mod resource;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct LibraryInfo {
     pub name: String,
-    #[serde(rename = "asset", skip_serializing_if = "Vec::is_empty")]
-    pub assets: Vec<AssetInfo>,
+    #[serde(rename = "resource", skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<ResourceInfo>,
 }
 
 impl LibraryInfo {
@@ -16,7 +16,7 @@ impl LibraryInfo {
         &self.name
     }
 
-    pub fn assets(&self) -> &Vec<AssetInfo> {
-        &self.assets
+    pub fn resources(&self) -> &Vec<ResourceInfo> {
+        &self.resources
     }
 }
