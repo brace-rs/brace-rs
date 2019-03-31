@@ -5,13 +5,17 @@ description = "The default theme for all new sites."
 
 [[library]]
 name = "theme"
+resources = [
+  "theme.css",
+  "font",
+]
 
-[[library.resource]]
+[[resource]]
 name = "theme.css"
 type = "css"
 location = "css/theme.css"
 
-[[library.resource]]
+[[resource]]
 name = "font"
 type = "css"
 location = "https://fonts.googleapis.com/css?family=Roboto:400,500"

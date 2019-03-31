@@ -7,7 +7,7 @@ use serde_json::{json, to_value};
 
 use crate::app::renderer::Template;
 use crate::app::theme::config::{ThemeConfig, ThemeInfo};
-use crate::app::theme::library::resource::ResourceInfo;
+use crate::app::theme::resource::ResourceInfo;
 use crate::app::AppState;
 
 pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
@@ -31,45 +31,36 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         .iter()
         .map(|theme| {
             theme
-                .libraries
+                .resources
                 .iter()
-                .map(|library| {
-                    library
-                        .resources
-                        .iter()
-                        .map(|resource| {
-                            let mut resource = resource.clone();
+                .map(|resource| {
+                    let mut resource = resource.clone();
 
-                            match resource {
-                                ResourceInfo::StyleSheet(ref mut info) => {
-                                    if info.location.is_internal() {
-                                        info.location = PathBuf::new()
-                                            .join("/static/resources")
-                                            .join(theme.theme.name.clone())
-                                            .join(library.name.clone())
-                                            .join("css")
-                                            .join(&info.name)
-                                            .into();
-                                    }
-                                }
-                                ResourceInfo::JavaScript(ref mut info) => {
-                                    if info.location.is_internal() {
-                                        info.location = PathBuf::new()
-                                            .join("/static/resources")
-                                            .join(theme.theme.name.clone())
-                                            .join(library.name.clone())
-                                            .join("css")
-                                            .join(&info.name)
-                                            .into();
-                                    }
-                                }
+                    match resource {
+                        ResourceInfo::StyleSheet(ref mut info) => {
+                            if info.location.is_internal() {
+                                info.location = PathBuf::new()
+                                    .join("/static/resources")
+                                    .join(theme.theme.name.clone())
+                                    .join("css")
+                                    .join(&info.name)
+                                    .into();
                             }
+                        }
+                        ResourceInfo::JavaScript(ref mut info) => {
+                            if info.location.is_internal() {
+                                info.location = PathBuf::new()
+                                    .join("/static/resources")
+                                    .join(theme.theme.name.clone())
+                                    .join("css")
+                                    .join(&info.name)
+                                    .into();
+                            }
+                        }
+                    }
 
-                            resource
-                        })
-                        .collect::<Vec<ResourceInfo>>()
+                    resource
                 })
-                .flatten()
                 .collect::<Vec<ResourceInfo>>()
         })
         .flatten()
@@ -80,9 +71,7 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         json!({
             "title": "Themes",
             "themes": to_value(theme_info).unwrap(),
-            "library": {
-                "resources": to_value(resource_info).unwrap(),
-            }
+            "resources": to_value(resource_info).unwrap(),
         }),
     );
 

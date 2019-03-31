@@ -9,6 +9,7 @@ pub use self::config::ThemeConfig;
 
 pub mod config;
 pub mod library;
+pub mod resource;
 pub mod template;
 
 pub fn init(mut config: ThemeConfig, path: &Path) -> Result<(), Error> {

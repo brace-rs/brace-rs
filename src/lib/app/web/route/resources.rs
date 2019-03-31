@@ -8,14 +8,12 @@ use failure::format_err;
 use serde::Deserialize;
 
 use crate::app::theme::config::ThemeConfig;
-use crate::app::theme::library::resource::ResourceInfo;
-use crate::app::theme::library::LibraryInfo;
+use crate::app::theme::resource::ResourceInfo;
 use crate::app::AppState;
 
 #[derive(Deserialize)]
 pub struct PathInfo {
     pub theme: String,
-    pub library: String,
     pub kind: String,
     pub resource: String,
 }
@@ -25,37 +23,33 @@ pub fn get(
     req: HttpRequest<AppState>,
 ) -> Result<AsyncResult<HttpResponse>, ActixError> {
     let resource = find_theme(&path_info.theme, &req).and_then(|(theme, theme_path)| {
-        find_library(&path_info.library, theme).and_then(|library| {
-            find_resource(&path_info.resource, library).and_then(|mut resource| match resource {
-                ResourceInfo::StyleSheet(ref mut info) => {
-                    if &path_info.kind == "css" {
-                        if info.location.is_internal() {
-                            info.location =
-                                theme_path.join(info.location.clone().into_inner()).into();
+        find_resource(&path_info.resource, theme).and_then(|mut resource| match resource {
+            ResourceInfo::StyleSheet(ref mut info) => {
+                if &path_info.kind == "css" {
+                    if info.location.is_internal() {
+                        info.location = theme_path.join(info.location.clone().into_inner()).into();
 
-                            Some(resource)
-                        } else {
-                            None
-                        }
+                        Some(resource)
                     } else {
                         None
                     }
+                } else {
+                    None
                 }
-                ResourceInfo::JavaScript(ref mut info) => {
-                    if &path_info.kind == "js" {
-                        if info.location.is_internal() {
-                            info.location =
-                                theme_path.join(info.location.clone().into_inner()).into();
+            }
+            ResourceInfo::JavaScript(ref mut info) => {
+                if &path_info.kind == "js" {
+                    if info.location.is_internal() {
+                        info.location = theme_path.join(info.location.clone().into_inner()).into();
 
-                            Some(resource)
-                        } else {
-                            None
-                        }
+                        Some(resource)
                     } else {
                         None
                     }
+                } else {
+                    None
                 }
-            })
+            }
         })
     });
 
@@ -93,18 +87,8 @@ fn find_theme(name: &str, req: &HttpRequest<AppState>) -> Option<(ThemeConfig, P
     })
 }
 
-fn find_library(name: &str, theme: ThemeConfig) -> Option<LibraryInfo> {
-    theme.libraries.iter().find_map(|library| {
-        if library.name == name {
-            Some(library.clone())
-        } else {
-            None
-        }
-    })
-}
-
-fn find_resource(name: &str, library: LibraryInfo) -> Option<ResourceInfo> {
-    library.resources.iter().find_map(|resource| {
+fn find_resource(name: &str, theme: ThemeConfig) -> Option<ResourceInfo> {
+    theme.resources.iter().find_map(|resource| {
         if resource.name() == name {
             Some(resource.clone())
         } else {

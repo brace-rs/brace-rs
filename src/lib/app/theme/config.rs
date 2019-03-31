@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use super::library::LibraryInfo;
+use super::resource::ResourceInfo;
 use super::template::TemplateInfo;
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -13,6 +14,8 @@ pub struct ThemeConfig {
     pub theme: ThemeInfo,
     #[serde(rename = "library", skip_serializing_if = "Vec::is_empty")]
     pub libraries: Vec<LibraryInfo>,
+    #[serde(rename = "resource", skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<ResourceInfo>,
     #[serde(rename = "template", skip_serializing_if = "Vec::is_empty")]
     pub templates: Vec<TemplateInfo>,
 }
@@ -37,6 +40,7 @@ impl Default for ThemeConfig {
         Self {
             theme: ThemeInfo::default(),
             libraries: Vec::new(),
+            resources: Vec::new(),
             templates: Vec::new(),
         }
     }

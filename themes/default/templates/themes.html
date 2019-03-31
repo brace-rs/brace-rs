@@ -2,10 +2,10 @@
 <html>
   <head>
     <title>{{ title }}</title>
-    {% for resource in library.resources | filter(attribute="type", value="css") %}
+    {% for resource in resources | filter(attribute="type", value="css") %}
       {{ template(name="resource", value=resource) | safe }}
     {% endfor %}
-    {% for resource in library.resources | filter(attribute="type", value="js") %}
+    {% for resource in resources | filter(attribute="type", value="js") %}
       {{ template(name="resource", value=resource) | safe }}
     {% endfor %}
   </head>
