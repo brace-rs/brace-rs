@@ -3,34 +3,5 @@ name = "default"
 label = "Default"
 description = "The default theme for all new sites."
 
-[[libraries]]
-name = "theme"
-resources = [
-  "theme.css",
-  "font",
-]
-
-[[resources]]
-name = "theme.css"
-type = "css"
-location = "css/theme.css"
-
-[[resources]]
-name = "font"
-type = "css"
-location = "https://fonts.googleapis.com/css?family=Roboto:400,500"
-
-[[templates]]
-name = "resource"
-type = "tera"
-path = "templates/resource.html"
-
-[[templates]]
-name = "index"
-type = "tera"
-path = "templates/index.html"
-
-[[templates]]
-name = "themes"
-type = "tera"
-path = "templates/themes.html"
+[[manifests]]
+path = "manifest.toml"

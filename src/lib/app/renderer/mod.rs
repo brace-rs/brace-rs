@@ -9,6 +9,7 @@ use path_absolutize::Absolutize;
 use serde_json::Value;
 use tera::Tera;
 
+use super::theme::manifest::ManifestConfig;
 use super::theme::template::{MapFunction, TemplateFunction, TemplateInfo};
 use super::theme::ThemeConfig;
 
@@ -28,28 +29,32 @@ impl Renderer {
 
         for theme in conf.themes {
             let path = theme.path;
-            let mut conf = ThemeConfig::from_file(&path)?;
+            let conf = ThemeConfig::from_file(&path)?;
 
             match path.parent() {
                 Some(dir) => {
-                    for template in conf.templates.iter_mut() {
-                        match template {
-                            TemplateInfo::Static { ref mut path, .. } => {
-                                *path = dir.join(&path).absolutize()?;
-                            }
-                            TemplateInfo::Tera { ref mut path, .. } => {
-                                *path = dir.join(&path).absolutize()?;
-                            }
-                            TemplateInfo::Text { .. } => (),
-                        }
+                    for manifest in conf.manifests {
+                        let mut mcfg = ManifestConfig::from_file(&dir.join(manifest.path))?;
 
-                        templates.insert(template.name().to_owned(), template.clone());
+                        for template in mcfg.templates.iter_mut() {
+                            match template {
+                                TemplateInfo::Static { ref mut path, .. } => {
+                                    *path = dir.join(&path).absolutize()?;
+                                }
+                                TemplateInfo::Tera { ref mut path, .. } => {
+                                    *path = dir.join(&path).absolutize()?;
+                                }
+                                TemplateInfo::Text { .. } => (),
+                            }
+
+                            templates.insert(template.name().to_owned(), template.clone());
+                        }
                     }
                 }
                 None => return Err(format_err!("Invalid theme path {:?}", path)),
             }
 
-            if let Err(err) = Self::add_template_files(&mut tera, &conf) {
+            if let Err(err) = Self::add_template_files(&mut tera, &templates) {
                 return Err(err);
             }
         }
@@ -78,17 +83,22 @@ impl Renderer {
         })))
     }
 
-    fn add_template_files<'a>(tera: &mut Tera, conf: &'a ThemeConfig) -> Result<(), Error> {
-        match tera.add_template_files(Self::get_template_files(&conf)) {
+    fn add_template_files(
+        tera: &mut Tera,
+        templates: &HashMap<String, TemplateInfo>,
+    ) -> Result<(), Error> {
+        match tera.add_template_files(Self::get_template_files(templates)) {
             Ok(_) => Ok(()),
             Err(err) => Err(format_err!("{}", err)),
         }
     }
 
-    fn get_template_files<'a>(conf: &'a ThemeConfig) -> Vec<(PathBuf, Option<&'a str>)> {
-        conf.templates
+    fn get_template_files<'a>(
+        templates: &'a HashMap<String, TemplateInfo>,
+    ) -> Vec<(PathBuf, Option<&'a str>)> {
+        templates
             .iter()
-            .filter_map(|template| match template {
+            .filter_map(|(_, template)| match template {
                 TemplateInfo::Tera { name, path } => Some((path.clone(), Some(name.as_ref()))),
                 _ => None,
             })

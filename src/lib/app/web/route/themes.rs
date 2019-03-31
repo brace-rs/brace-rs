@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{AsyncResponder, FutureResponse, HttpRequest, HttpResponse};
@@ -7,6 +7,7 @@ use serde_json::{json, to_value};
 
 use crate::app::renderer::Template;
 use crate::app::theme::config::{ThemeConfig, ThemeInfo};
+use crate::app::theme::manifest::ManifestConfig;
 use crate::app::theme::resource::ResourceInfo;
 use crate::app::AppState;
 
@@ -17,50 +18,63 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         .themes
         .iter()
         .filter_map(|theme| match ThemeConfig::from_file(&theme.path) {
-            Ok(conf) => Some(conf),
+            Ok(conf) => Some((conf, theme.path.as_path())),
             Err(_) => None,
         })
-        .collect::<Vec<ThemeConfig>>();
+        .collect::<Vec<(ThemeConfig, &Path)>>();
 
     let theme_info = themes
         .iter()
-        .map(|theme| theme.theme.clone())
+        .map(|(theme, _)| theme.theme.clone())
         .collect::<Vec<ThemeInfo>>();
 
     let resource_info = themes
         .iter()
-        .map(|theme| {
+        .map(|(theme, theme_path)| {
             theme
-                .resources
+                .manifests
                 .iter()
-                .map(|resource| {
-                    let mut resource = resource.clone();
+                .filter_map(|manifest| match theme_path.parent() {
+                    Some(parent) => match ManifestConfig::from_file(parent.join(&manifest.path)) {
+                        Ok(manifest) => Some(
+                            manifest
+                                .resources
+                                .iter()
+                                .map(|resource| {
+                                    let mut resource = resource.clone();
 
-                    match resource {
-                        ResourceInfo::StyleSheet(ref mut info) => {
-                            if info.location.is_internal() {
-                                info.location = PathBuf::new()
-                                    .join("/static/resources")
-                                    .join(theme.theme.name.clone())
-                                    .join("css")
-                                    .join(&info.name)
-                                    .into();
-                            }
-                        }
-                        ResourceInfo::JavaScript(ref mut info) => {
-                            if info.location.is_internal() {
-                                info.location = PathBuf::new()
-                                    .join("/static/resources")
-                                    .join(theme.theme.name.clone())
-                                    .join("css")
-                                    .join(&info.name)
-                                    .into();
-                            }
-                        }
-                    }
+                                    match resource {
+                                        ResourceInfo::StyleSheet(ref mut info) => {
+                                            if info.location.is_internal() {
+                                                info.location = PathBuf::new()
+                                                    .join("/static/resources")
+                                                    .join(theme.theme.name.clone())
+                                                    .join("css")
+                                                    .join(&info.name)
+                                                    .into();
+                                            }
+                                        }
+                                        ResourceInfo::JavaScript(ref mut info) => {
+                                            if info.location.is_internal() {
+                                                info.location = PathBuf::new()
+                                                    .join("/static/resources")
+                                                    .join(theme.theme.name.clone())
+                                                    .join("css")
+                                                    .join(&info.name)
+                                                    .into();
+                                            }
+                                        }
+                                    }
 
-                    resource
+                                    resource
+                                })
+                                .collect::<Vec<ResourceInfo>>(),
+                        ),
+                        Err(_) => None,
+                    },
+                    None => None,
                 })
+                .flatten()
                 .collect::<Vec<ResourceInfo>>()
         })
         .flatten()
