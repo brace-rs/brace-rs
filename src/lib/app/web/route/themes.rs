@@ -14,7 +14,7 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     let themes = req
         .state()
         .config()
-        .theme
+        .themes
         .iter()
         .filter_map(|theme| match ThemeConfig::from_file(&theme.path) {
             Ok(conf) => Some(conf),

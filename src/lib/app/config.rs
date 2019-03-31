@@ -13,7 +13,7 @@ pub struct AppConfig {
     pub web: WebConfig,
     pub database: DatabaseConfig,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub theme: Vec<ThemeReferenceInfo>,
+    pub themes: Vec<ThemeReferenceInfo>,
 }
 
 impl AppConfig {
@@ -36,7 +36,7 @@ impl Default for AppConfig {
         Self {
             web: WebConfig::default(),
             database: DatabaseConfig::default(),
-            theme: vec![ThemeReferenceInfo {
+            themes: vec![ThemeReferenceInfo {
                 name: Some("default".to_string()),
                 path: PathBuf::from("themes/default/theme.toml"),
             }],

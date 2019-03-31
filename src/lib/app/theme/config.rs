@@ -12,11 +12,11 @@ use super::template::TemplateInfo;
 #[serde(default)]
 pub struct ThemeConfig {
     pub theme: ThemeInfo,
-    #[serde(rename = "library", skip_serializing_if = "Vec::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub libraries: Vec<LibraryInfo>,
-    #[serde(rename = "resource", skip_serializing_if = "Vec::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub resources: Vec<ResourceInfo>,
-    #[serde(rename = "template", skip_serializing_if = "Vec::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub templates: Vec<TemplateInfo>,
 }
 

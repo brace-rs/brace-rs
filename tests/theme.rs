@@ -16,22 +16,22 @@ I said {{ template(name="custom-tera", value=map(key="message", value=message)) 
 "#;
 
 static THEME_CONF_FILE: &'static str = r#"
-[[template]]
+[[templates]]
 name = "custom-static"
 type = "static"
 path = "templates/custom-static.html"
 
-[[template]]
+[[templates]]
 name = "custom-tera"
 type = "tera"
 path = "templates/custom-tera.html"
 
-[[template]]
+[[templates]]
 name = "custom-tera-fn"
 type = "tera"
 path = "templates/custom-tera-fn.html"
 
-[[template]]
+[[templates]]
 name = "custom-text"
 type = "text"
 text = "Hello {{ message }}!"

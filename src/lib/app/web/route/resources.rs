@@ -64,7 +64,7 @@ pub fn get(
 fn load_themes(req: &HttpRequest<AppState>) -> Vec<(ThemeConfig, PathBuf)> {
     req.state()
         .config()
-        .theme
+        .themes
         .iter()
         .filter_map(|theme| match ThemeConfig::from_file(&theme.path) {
             Ok(conf) => Some((conf, theme.path.clone())),

@@ -15,7 +15,7 @@ impl AppState {
     pub fn from_config(config: AppConfig) -> Result<Self, Error> {
         let database = Database::from_config(config.database.clone())?;
         let renderer = Renderer::from_config(RendererConfig {
-            themes: config.theme.clone(),
+            themes: config.themes.clone(),
         })?;
 
         Ok(Self {
