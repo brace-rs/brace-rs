@@ -1,42 +1,26 @@
-use self::database::Database;
-use self::renderer::Renderer;
+use std::path::Path;
+
+use failure::Error;
+
+use crate::app::theme::ThemeConfig;
+use crate::util::path::get_dir;
 
 pub use self::config::AppConfig;
+pub use self::state::AppState;
 
 pub mod config;
 pub mod database;
-pub mod init;
 pub mod renderer;
+pub mod state;
+pub mod theme;
 pub mod web;
 
-#[derive(Clone)]
-pub struct AppState {
-    config: AppConfig,
-    database: Database,
-    renderer: Renderer,
-}
+pub fn init(config: AppConfig, path: &Path) -> Result<(), Error> {
+    let path = get_dir(path)?;
 
-impl AppState {
-    pub fn from_config(config: AppConfig) -> Result<Self, failure::Error> {
-        let database = Database::from_config(config.database.clone())?;
-        let renderer = Renderer::from_config(config.renderer.clone())?;
+    std::fs::create_dir_all(path.join("themes/default")).unwrap();
+    std::fs::write(path.join("config.toml"), toml::to_string_pretty(&config)?)?;
+    crate::app::theme::init(ThemeConfig::default(), &path.join("themes/default")).unwrap();
 
-        Ok(Self {
-            database,
-            renderer,
-            config,
-        })
-    }
-
-    pub fn config(&self) -> &AppConfig {
-        &self.config
-    }
-
-    pub fn database(&self) -> &Database {
-        &self.database
-    }
-
-    pub fn renderer(&self) -> &Renderer {
-        &self.renderer
-    }
+    Ok(())
 }

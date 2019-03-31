@@ -1,0 +1,7 @@
+[theme]
+name = "default"
+label = "Default"
+description = "The default theme for all new sites."
+
+[[manifests]]
+path = "manifest.toml"

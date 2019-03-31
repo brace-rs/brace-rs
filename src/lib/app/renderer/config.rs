@@ -1,15 +1,15 @@
 use serde::{Deserialize, Serialize};
 
+use crate::app::theme::config::ThemeReferenceInfo;
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct RendererConfig {
-    pub templates: String,
+    pub themes: Vec<ThemeReferenceInfo>,
 }
 
 impl Default for RendererConfig {
     fn default() -> Self {
-        Self {
-            templates: "./templates".to_string(),
-        }
+        Self { themes: Vec::new() }
     }
 }

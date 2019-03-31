@@ -1,0 +1,5 @@
+{% if type == "css" %}
+<link rel="stylesheet" href="{{ location | safe }}" />
+{% elif type == "js" %}
+<script type="text/javascript" src="{{ location | safe }}"></script>
+{% endif %}

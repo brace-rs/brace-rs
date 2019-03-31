@@ -1,6 +1,7 @@
 use std::net::Ipv4Addr;
 use std::path::Path;
 
+use failure::format_err;
 use path_absolutize::Absolutize;
 
 use crate::app::AppConfig;
@@ -93,16 +94,16 @@ pub fn overload_file(
 ) -> Result<AppConfig, failure::Error> {
     let mut config = overload(config, shell, matches)?;
 
-    config.renderer.templates = Path::new(path)
-        .parent()
-        .unwrap()
-        .join(&config.renderer.templates)
-        .absolutize()?
-        .to_str()
-        .unwrap()
-        .to_string();
+    match Path::new(path).parent() {
+        Some(parent) => {
+            for theme in config.themes.iter_mut() {
+                theme.path = parent.join(&theme.path).absolutize()?;
+            }
 
-    Ok(config)
+            Ok(config)
+        }
+        None => Err(format_err!("Invalid path {}", path)),
+    }
 }
 
 pub fn overload_default(
@@ -111,11 +112,9 @@ pub fn overload_default(
 ) -> Result<AppConfig, failure::Error> {
     let mut config = overload(AppConfig::default(), shell, matches)?;
 
-    config.renderer.templates = Path::new(&config.renderer.templates)
-        .absolutize()?
-        .to_str()
-        .unwrap()
-        .to_string();
+    for theme in config.themes.iter_mut() {
+        theme.path = theme.path.absolutize()?;
+    }
 
     Ok(config)
 }

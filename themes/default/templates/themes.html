@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    {% for resource in resources | filter(attribute="type", value="css") %}
+      {{ template(name="resource", value=resource) | safe }}
+    {% endfor %}
+    {% for resource in resources | filter(attribute="type", value="js") %}
+      {{ template(name="resource", value=resource) | safe }}
+    {% endfor %}
+  </head>
+  <body>
+    {% if themes %}
+      <table class="themes">
+        <thead>
+          <tr>
+            <th>Theme</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for theme in themes %}
+            <tr class="theme">
+              <td>
+                <div class="label">
+                  {{ theme.label }}
+                </div>
+                <div class="description">
+                  {{ theme.description }}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </body>
+</html>

@@ -1,5 +1,3 @@
-use std::fs::OpenOptions;
-use std::io::Write;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
@@ -7,11 +5,7 @@ use std::time::Duration;
 use assert_cmd::prelude::*;
 use tempfile::TempDir;
 
-static CONFIG_FILE: &'static str = r#"
-[web]
-host = "127.0.0.1"
-port = 8002
-"#;
+use brace::app::AppConfig;
 
 #[test]
 fn test_web_server_without_config() {
@@ -23,11 +17,15 @@ fn test_web_server_without_config() {
 
     sleep(Duration::from_millis(200));
 
-    let res = reqwest::get("http://127.0.0.1:8080");
+    let res1 = reqwest::get("http://127.0.0.1:8080");
+    let res2 = reqwest::get("http://127.0.0.1:8080/themes");
+    let res3 = reqwest::get("http://127.0.0.1:8080/404");
 
     process.kill().unwrap();
 
-    assert_eq!(res.unwrap().status(), 200);
+    assert_eq!(res1.unwrap().status(), 200);
+    assert_eq!(res2.unwrap().status(), 200);
+    assert_eq!(res3.unwrap().status(), 404);
 }
 
 #[test]
@@ -40,57 +38,47 @@ fn test_web_server_with_arguments() {
 
     sleep(Duration::from_millis(200));
 
-    let res = reqwest::get("http://127.0.0.1:8001");
+    let res1 = reqwest::get("http://127.0.0.1:8001");
+    let res2 = reqwest::get("http://127.0.0.1:8001/themes");
+    let res3 = reqwest::get("http://127.0.0.1:8001/404");
 
     process.kill().unwrap();
 
-    assert_eq!(res.unwrap().status(), 200);
+    assert_eq!(res1.unwrap().status(), 200);
+    assert_eq!(res2.unwrap().status(), 200);
+    assert_eq!(res3.unwrap().status(), 404);
 }
 
 #[test]
 fn test_web_server_with_config() {
-    let temp_dir = TempDir::new().unwrap();
-    let temp_path = temp_dir.path();
+    let dir = TempDir::new().unwrap();
+    let path = dir.path();
+    let mut config = AppConfig::default();
 
-    brace::app::init::init(temp_path.to_str().unwrap()).unwrap();
+    config.web.port = 8002;
 
-    let conf_path = temp_path.join("Config.toml");
-    let mut conf_file = OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .open(&conf_path)
-        .unwrap();
-
-    write!(conf_file, "{}", CONFIG_FILE).unwrap();
+    brace::app::init(config, path).unwrap();
 
     let mut process = Command::cargo_bin("brace")
         .unwrap()
-        .args(&["web", "run", "--config", conf_path.to_str().unwrap()])
+        .args(&[
+            "web",
+            "run",
+            "--config",
+            path.join("config.toml").to_str().unwrap(),
+        ])
         .spawn()
         .unwrap();
 
     sleep(Duration::from_millis(200));
 
-    let res = reqwest::get("http://127.0.0.1:8002");
+    let res1 = reqwest::get("http://127.0.0.1:8002");
+    let res2 = reqwest::get("http://127.0.0.1:8002/themes");
+    let res3 = reqwest::get("http://127.0.0.1:8002/404");
 
     process.kill().unwrap();
 
-    assert_eq!(res.unwrap().status(), 200);
-}
-
-#[test]
-fn test_web_server_404() {
-    let mut process = Command::cargo_bin("brace")
-        .unwrap()
-        .args(&["web", "run", "--host", "127.0.0.1", "--port", "8003"])
-        .spawn()
-        .unwrap();
-
-    sleep(Duration::from_millis(200));
-
-    let res = reqwest::get("http://127.0.0.1:8003/404");
-
-    process.kill().unwrap();
-
-    assert_eq!(res.unwrap().status(), 404);
+    assert_eq!(res1.unwrap().status(), 200);
+    assert_eq!(res2.unwrap().status(), 500);
+    assert_eq!(res3.unwrap().status(), 404);
 }
