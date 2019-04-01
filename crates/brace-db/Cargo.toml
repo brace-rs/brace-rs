@@ -1,0 +1,24 @@
+[package]
+name = "brace-db"
+version = "0.1.0"
+authors = ["Daniel Balcomb <daniel.balcomb@gmail.com>"]
+description = "The database component of the brace project."
+edition = "2018"
+homepage = "https://github.com/brace-rs/brace"
+repository = "https://github.com/brace-rs/brace"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "brace_db"
+path = "src/lib/lib.rs"
+
+[dependencies]
+actix = "0.7"
+failure = "0.1"
+postgres = "0.15"
+r2d2 = "0.8"
+r2d2_postgres = "0.14"
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+futures = "0.1"

@@ -1,0 +1,19 @@
+[package]
+name = "brace-cli"
+version = "0.1.0"
+authors = ["Daniel Balcomb <daniel.balcomb@gmail.com>"]
+description = "The cli component of the brace project."
+edition = "2018"
+homepage = "https://github.com/brace-rs/brace"
+repository = "https://github.com/brace-rs/brace"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "brace_cli"
+path = "src/lib/lib.rs"
+
+[dependencies]
+atty = "0.2"
+clap = "2.32"
+failure = "0.1"
+termcolor = "1.0"
