@@ -1,0 +1,29 @@
+[package]
+name = "brace-theme"
+version = "0.1.0"
+authors = ["Daniel Balcomb <daniel.balcomb@gmail.com>"]
+description = "The theme component of the brace project."
+edition = "2018"
+homepage = "https://github.com/brace-rs/brace"
+repository = "https://github.com/brace-rs/brace"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "brace_theme"
+path = "src/lib/lib.rs"
+
+[dependencies]
+actix = "0.7"
+brace-cli = { path = "../brace-cli" }
+failure = "0.1"
+path-absolutize = "1.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tera = "1.0.0-beta.3"
+toml = "0.5"
+url = "1.7"
+
+[dev-dependencies]
+assert_cmd = "0.11"
+tempfile = "3.0"
+futures = "0.1"

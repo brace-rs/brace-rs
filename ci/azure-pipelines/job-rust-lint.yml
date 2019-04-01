@@ -17,5 +17,5 @@ jobs:
   - script: cargo fmt --all -- --check
     displayName: Run rustfmt
 
-  - script: cargo clippy -- -D warnings
+  - script: cargo clippy --all -- -D warnings
     displayName: Run clippy

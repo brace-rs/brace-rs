@@ -1,0 +1,33 @@
+[package]
+name = "brace-web"
+version = "0.1.0"
+authors = ["Daniel Balcomb <daniel.balcomb@gmail.com>"]
+description = "The web component of the brace project."
+edition = "2018"
+homepage = "https://github.com/brace-rs/brace"
+repository = "https://github.com/brace-rs/brace"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "brace_web"
+path = "src/lib/lib.rs"
+
+[dependencies]
+actix = "0.7"
+actix-web = "0.7"
+brace-cli = { path = "../brace-cli" }
+brace-db = { path = "../brace-db" }
+brace-theme = { path = "../brace-theme" }
+env_logger = "0.6"
+failure = "0.1"
+futures = "0.1"
+log = "0.4"
+path-absolutize = "1.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.5"
+
+[dev-dependencies]
+assert_cmd = "0.11"
+reqwest = "0.9"
+tempfile = "3.0"
