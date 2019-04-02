@@ -5,4 +5,5 @@ members = [
   "crates/brace-db",
   "crates/brace-theme",
   "crates/brace-web",
+  "crates/brace-web-page",
 ]
