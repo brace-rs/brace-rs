@@ -20,8 +20,9 @@ actix-web = "1.0.0-alpha.2"
 brace-cli = { path = "../brace-cli" }
 brace-db = { path = "../brace-db" }
 brace-theme = { path = "../brace-theme" }
-env_logger = "0.6"
+chrono = "0.4"
 failure = "0.1"
+fern = "0.5"
 futures = "0.1"
 log = "0.4"
 path-absolutize = "1.1"
