@@ -1,12 +1,12 @@
 use std::fmt::{Display, Formatter, Result as FormatResult};
 use std::net::Ipv4Addr;
+use std::path::{Path, PathBuf};
 
 use brace_db::DatabaseConfig;
 use brace_theme::config::ThemeReferenceInfo;
+use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
-use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
@@ -68,6 +68,8 @@ impl Default for WebConfig {
 pub struct WebLogConfig {
     pub level: LogLevel,
     pub format: String,
+    pub output: LogOutput,
+    pub file: Option<PathBuf>,
 }
 
 impl Default for WebLogConfig {
@@ -75,6 +77,8 @@ impl Default for WebLogConfig {
         Self {
             level: LogLevel::Warn,
             format: r#"%a "%r" %s %b "%{Referer}i" "%{User-Agent}i" %T"#.to_string(),
+            output: LogOutput::Stderr,
+            file: None,
         }
     }
 }
@@ -99,6 +103,37 @@ impl Display for LogLevel {
             LogLevel::Info => write!(f, "info"),
             LogLevel::Debug => write!(f, "debug"),
             LogLevel::Trace => write!(f, "trace"),
+        }
+    }
+}
+
+impl Into<LevelFilter> for LogLevel {
+    fn into(self) -> LevelFilter {
+        match self {
+            LogLevel::Off => LevelFilter::Off,
+            LogLevel::Error => LevelFilter::Error,
+            LogLevel::Warn => LevelFilter::Warn,
+            LogLevel::Info => LevelFilter::Info,
+            LogLevel::Debug => LevelFilter::Debug,
+            LogLevel::Trace => LevelFilter::Trace,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum LogOutput {
+    Stdout,
+    Stderr,
+    File,
+}
+
+impl Display for LogOutput {
+    fn fmt(&self, f: &mut Formatter) -> FormatResult {
+        match self {
+            LogOutput::Stdout => write!(f, "stdout"),
+            LogOutput::Stderr => write!(f, "stderr"),
+            LogOutput::File => write!(f, "file"),
         }
     }
 }

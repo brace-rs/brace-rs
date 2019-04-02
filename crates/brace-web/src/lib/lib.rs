@@ -16,6 +16,7 @@ use crate::util::path::get_dir;
 
 pub mod cli;
 pub mod config;
+pub mod logger;
 pub mod route;
 pub mod state;
 pub mod util;
@@ -30,15 +31,8 @@ pub fn init(config: AppConfig, path: &Path) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn run(config: AppConfig) -> Result<(), Error> {
-    std::env::set_var(
-        "RUST_LOG",
-        format!(
-            "actix_web={},brace={}",
-            config.web.log.level, config.web.log.level
-        ),
-    );
-    env_logger::init();
+pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
+    logger::init(&config, path)?;
 
     let system = System::new("brace");
     let state = AppState::from_config(config.clone())?;

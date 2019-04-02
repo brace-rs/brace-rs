@@ -1,3 +1,4 @@
+use std::env::current_dir;
 use std::net::Ipv4Addr;
 use std::path::Path;
 
@@ -40,7 +41,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
                 let config = overload_file(file, config, shell, matches)?;
 
                 shell.info(format!("Using configuration file: {}", file))?;
-                crate::run(config)?;
+                crate::run(config, Path::new(file))?;
 
                 Ok(())
             }
@@ -53,7 +54,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
             let config = overload_default(shell, matches)?;
 
             shell.warn("No configuration file specified")?;
-            crate::run(config)?;
+            crate::run(config, &current_dir()?)?;
 
             Ok(())
         }
