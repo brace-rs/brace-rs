@@ -1,7 +1,8 @@
 use std::path::{Path, PathBuf};
 
-use actix_web::error::ErrorInternalServerError;
-use actix_web::{AsyncResponder, FutureResponse, HttpRequest, HttpResponse};
+use actix_web::error::{Error, ErrorInternalServerError};
+use actix_web::web::Data;
+use actix_web::HttpResponse;
 use brace_theme::config::{ThemeConfig, ThemeInfo};
 use brace_theme::manifest::ManifestConfig;
 use brace_theme::renderer::Template;
@@ -11,9 +12,8 @@ use serde_json::{json, to_value};
 
 use crate::AppState;
 
-pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
-    let themes = req
-        .state()
+pub fn get(data: Data<AppState>) -> impl Future<Item = HttpResponse, Error = Error> {
+    let themes = data
         .config()
         .themes
         .iter()
@@ -59,7 +59,7 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                                                 info.location = PathBuf::new()
                                                     .join("/static/resources")
                                                     .join(theme.theme.name.clone())
-                                                    .join("css")
+                                                    .join("js")
                                                     .join(&info.name)
                                                     .into();
                                             }
@@ -89,13 +89,11 @@ pub fn get(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         }),
     );
 
-    req.state()
-        .renderer()
+    data.renderer()
         .send(template)
         .map_err(ErrorInternalServerError)
         .and_then(|res| match res {
             Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
             Err(err) => Err(ErrorInternalServerError(err)),
         })
-        .responder()
 }

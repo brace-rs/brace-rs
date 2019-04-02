@@ -13,8 +13,10 @@ name = "brace_web"
 path = "src/lib/lib.rs"
 
 [dependencies]
-actix = "0.7"
-actix-web = "0.7"
+actix = "0.8.0-alpha.2"
+actix-files = "0.1.0-alpha.1"
+actix-service = "0.3"
+actix-web = "1.0.0-alpha.2"
 brace-cli = { path = "../brace-cli" }
 brace-db = { path = "../brace-db" }
 brace-theme = { path = "../brace-theme" }

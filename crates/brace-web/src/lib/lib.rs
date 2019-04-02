@@ -1,14 +1,16 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use actix::System;
 use actix_web::middleware::Logger;
-use actix_web::server::HttpServer;
+use actix_web::web::{get, resource};
 use actix_web::App;
+use actix_web::HttpServer;
 use brace_theme::config::ThemeConfig;
 use failure::Error;
 use log::info;
 
 use self::config::AppConfig;
+use self::route::resources::ThemeResources;
 use self::state::AppState;
 use crate::util::path::get_dir;
 
@@ -41,15 +43,22 @@ pub fn run(config: AppConfig) -> Result<(), Error> {
     let system = System::new("brace");
     let state = AppState::from_config(config.clone())?;
     let format = config.web.log.format;
+    let themes = config
+        .themes
+        .iter()
+        .filter_map(|theme| match ThemeConfig::from_file(&theme.path) {
+            Ok(conf) => Some((conf, theme.path.clone())),
+            Err(_) => None,
+        })
+        .collect::<Vec<(ThemeConfig, PathBuf)>>();
 
     HttpServer::new(move || {
-        App::with_state(state.clone())
-            .middleware(Logger::new(&format))
-            .resource("/", |r| r.get().with(route::index::get))
-            .resource("/themes", |r| r.get().with(route::themes::get))
-            .resource("/static/resources/{theme}/{kind}/{resource}", |r| {
-                r.get().with(route::resources::get)
-            })
+        App::new()
+            .data(state.clone())
+            .wrap(Logger::new(&format))
+            .service(resource("/").route(get().to_async(route::index::get)))
+            .service(resource("/themes").route(get().to_async(route::themes::get)))
+            .service(ThemeResources::new("/static/resources", themes.clone()))
     })
     .bind(format!("{}:{}", config.web.host, config.web.port))?
     .start();
@@ -59,7 +68,7 @@ pub fn run(config: AppConfig) -> Result<(), Error> {
         config.web.host, config.web.port
     );
 
-    system.run();
+    system.run()?;
 
     Ok(())
 }
