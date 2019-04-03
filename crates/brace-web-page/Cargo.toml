@@ -13,4 +13,11 @@ name = "brace_web_page"
 path = "src/lib/lib.rs"
 
 [dependencies]
+actix = "0.8.0-alpha.2"
+brace-db = { path = "../brace-db" }
 brace-web = { path = "../brace-web" }
+chrono = { version = "0.4", features = ["serde"] }
+failure = "0.1"
+futures = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+uuid = { version = "0.5", features = ["serde", "v4"] }
