@@ -22,6 +22,7 @@ brace-cli = { path = "../brace-cli" }
 brace-db = { path = "../brace-db" }
 brace-theme = { path = "../brace-theme" }
 brace-web = { path = "../brace-web" }
+brace-web-page = { path = "../brace-web-page" }
 chrono = "0.4"
 failure = "0.1"
 fern = "0.5"

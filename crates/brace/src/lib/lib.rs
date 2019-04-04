@@ -49,9 +49,11 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
     HttpServer::new(move || {
         App::new()
             .data(state.clone())
+            .data(state.database().clone())
             .wrap(Logger::new(&format))
             .service(resource("/").route(get().to_async(route::index::get)))
             .service(resource("/themes").route(get().to_async(route::themes::get)))
+            .service(brace_web_page::route::routes())
             .service(ThemeResources::new("/static/resources", themes.clone()))
     })
     .bind(format!("{}:{}", config.web.host, config.web.port))?

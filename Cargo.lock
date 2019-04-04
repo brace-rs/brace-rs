@@ -456,6 +456,7 @@ dependencies = [
  "brace-db 0.1.0",
  "brace-theme 0.1.0",
  "brace-web 0.1.0",
+ "brace-web-page 0.1.0",
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "fern 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
