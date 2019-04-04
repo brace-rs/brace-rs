@@ -5,20 +5,20 @@ use actix_web::middleware::Logger;
 use actix_web::web::{get, resource};
 use actix_web::App;
 use actix_web::HttpServer;
+use brace_db::Database;
 use brace_theme::config::ThemeConfig;
+use brace_theme::renderer::{Renderer, RendererConfig};
 use failure::Error;
 use log::info;
 
 use self::config::AppConfig;
 use self::route::resources::ThemeResources;
-use self::state::AppState;
 use crate::util::path::get_dir;
 
 pub mod cli;
 pub mod config;
 pub mod logger;
 pub mod route;
-pub mod state;
 pub mod util;
 
 pub fn init(config: AppConfig, path: &Path) -> Result<(), Error> {
@@ -35,8 +35,11 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
     logger::init(&config, path)?;
 
     let system = System::new("brace");
-    let state = AppState::from_config(config.clone())?;
-    let format = config.web.log.format;
+    let database = Database::from_config(config.database.clone())?;
+    let renderer = Renderer::from_config(RendererConfig {
+        themes: config.themes.clone(),
+    })?;
+    let format = config.web.log.format.clone();
     let themes = config
         .themes
         .iter()
@@ -46,23 +49,24 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
         })
         .collect::<Vec<(ThemeConfig, PathBuf)>>();
 
+    let host = config.web.host;
+    let port = config.web.port;
+
     HttpServer::new(move || {
         App::new()
-            .data(state.clone())
-            .data(state.database().clone())
+            .data(config.clone())
+            .data(database.clone())
+            .data(renderer.clone())
             .wrap(Logger::new(&format))
             .service(resource("/").route(get().to_async(route::index::get)))
             .service(resource("/themes").route(get().to_async(route::themes::get)))
             .service(brace_web_page::route::routes())
             .service(ThemeResources::new("/static/resources", themes.clone()))
     })
-    .bind(format!("{}:{}", config.web.host, config.web.port))?
+    .bind(format!("{}:{}", host, port))?
     .start();
 
-    info!(
-        "Started http server on {}:{}",
-        config.web.host, config.web.port
-    );
+    info!("Started http server on {}:{}", host, port);
 
     system.run()?;
 
