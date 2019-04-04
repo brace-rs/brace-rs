@@ -2,6 +2,8 @@ use std::ffi::OsString;
 
 use brace_cli::prelude::*;
 
+pub mod web;
+
 pub fn cmd() -> Command {
     Command::new(crate_name!())
         .version(crate_version!())
@@ -29,7 +31,7 @@ pub fn cmd() -> Command {
                 .possible_values(&["auto", "always", "never"]),
         )
         .subcommand(brace_theme::cli::cmd())
-        .subcommand(brace_web::cli::cmd())
+        .subcommand(web::cmd())
         .setting(AppSettings::AllowExternalSubcommands)
 }
 
@@ -48,7 +50,7 @@ pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
 
     match matches.subcommand() {
         ("theme", Some(matches)) => brace_theme::cli::exec(shell, matches),
-        ("web", Some(matches)) => brace_web::cli::exec(shell, matches),
+        ("web", Some(matches)) => web::exec(shell, matches),
         (command, _) => exit_command_invalid(command, shell, &matches.usage()),
     }
 }

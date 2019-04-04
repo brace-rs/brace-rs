@@ -1,12 +1,13 @@
 use std::path::Path;
 
+use brace_web::config::LogOutput;
 use chrono::Local;
 use failure::Error;
 use fern::{log_file, Dispatch};
 use log::{warn, LevelFilter};
 use path_absolutize::Absolutize;
 
-use crate::config::{AppConfig, LogOutput};
+use crate::config::AppConfig;
 
 pub fn init(conf: &AppConfig, path: &Path) -> Result<(), Error> {
     let logger = Dispatch::new()

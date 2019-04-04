@@ -13,24 +13,5 @@ name = "brace_web"
 path = "src/lib/lib.rs"
 
 [dependencies]
-actix = "0.8.0-alpha.2"
-actix-files = "0.1.0-alpha.1"
-actix-service = "0.3"
-actix-web = "1.0.0-alpha.2"
-brace-cli = { path = "../brace-cli" }
-brace-db = { path = "../brace-db" }
-brace-theme = { path = "../brace-theme" }
-chrono = "0.4"
-failure = "0.1"
-fern = "0.5"
-futures = "0.1"
 log = "0.4"
-path-absolutize = "1.1"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-toml = "0.5"
-
-[dev-dependencies]
-assert_cmd = "0.11"
-reqwest = "0.9"
-tempfile = "3.0"
