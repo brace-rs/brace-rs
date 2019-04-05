@@ -4,10 +4,10 @@
   {{ super() }}
   <form method="post">
     <input type="hidden" name="id" value="{{ page.id }}" />
-    <input type="hidden" name="created" value="{{ page.created }}" />
-    <input type="hidden" name="updated" value="{{ page.updated }}" />
     <input type="text" name="title" value="{{ page.title }}" required="true" />
     <textarea name="content">{{ page.content }}</textarea>
+    <input type="datetime-local" name="created" value="{{ page.created }}" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}" />
+    <input type="datetime-local" name="updated" value="{{ now() | date(format="%Y-%m-%dT%H:%M") }}" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}" />
     <button type="submit">Submit</button>
   </form>
 {% endblock content %}
