@@ -1,9 +1,9 @@
 use actix_web::error::{Error, ErrorInternalServerError};
-use actix_web::http::header;
 use actix_web::web::{Data, Form};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_theme::renderer::{Renderer, Template};
+use brace_web::redirect::HttpRedirect;
 use futures::future::Future;
 use serde_json::json;
 
@@ -30,12 +30,8 @@ pub fn get(renderer: Data<Renderer>) -> impl Future<Item = HttpResponse, Error =
 pub fn post(
     page: Form<Page>,
     database: Data<Database>,
-) -> impl Future<Item = HttpResponse, Error = Error> {
+) -> impl Future<Item = HttpRedirect, Error = Error> {
     crate::action::create::create(&database, page.into_inner())
         .map_err(ErrorInternalServerError)
-        .and_then(|page| {
-            Ok(HttpResponse::SeeOther()
-                .header(header::LOCATION, format!("/pages/{}", page.id))
-                .finish())
-        })
+        .and_then(|page| HttpRedirect::to(format!("/pages/{}", page.id)))
 }

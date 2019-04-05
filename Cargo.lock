@@ -515,6 +515,8 @@ dependencies = [
 name = "brace-web"
 version = "0.1.0"
 dependencies = [
+ "actix-web 1.0.0-alpha.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures 0.1.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.89 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

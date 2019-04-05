@@ -13,5 +13,7 @@ name = "brace_web"
 path = "src/lib/lib.rs"
 
 [dependencies]
+actix-web = "1.0.0-alpha.2"
+futures = "0.1"
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
