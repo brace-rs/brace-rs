@@ -9,7 +9,7 @@ static QUERY: &'static str = r#"
         title text NOT NULL CHECK (title <> ''),
         content text NOT NULL DEFAULT '',
         created timestamp with time zone NOT NULL DEFAULT now(),
-        updated timestamp with time zone NOT NULL DEFAULT now()
+        updated timestamp with time zone NOT NULL DEFAULT now() CHECK (updated >= created)
     )
 "#;
 
