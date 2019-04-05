@@ -16,6 +16,11 @@ type = "css"
 location = "css/theme.css"
 
 [[resources]]
+name = "form.css"
+type = "css"
+location = "css/form.css"
+
+[[resources]]
 name = "font"
 type = "css"
 location = "https://fonts.googleapis.com/css?family=Roboto:400,500"

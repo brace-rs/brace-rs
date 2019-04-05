@@ -1,5 +1,10 @@
 {% extends "layout" %}
 
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="/static/resources/default/css/theme.css" />
+{% endblock head %}
+
 {% block content %}
   {{ super() }}
   {{ page.content }}
