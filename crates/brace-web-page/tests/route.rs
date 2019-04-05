@@ -8,7 +8,7 @@ use brace_db::{Database, DatabaseConfig};
 use brace_web_page::action::install::install;
 use brace_web_page::action::uninstall::uninstall;
 use brace_web_page::model::Page;
-use brace_web_page::route::routes;
+use brace_web_page::route::api::routes;
 use chrono::Utc;
 use uuid::Uuid;
 
@@ -17,7 +17,7 @@ fn test_page_route_lifecycle() {
     let mut system = System::new("test");
     let database = Database::from_config(DatabaseConfig::default()).unwrap();
     let uuid = Uuid::new_v4();
-    let path = format!("/pages/{}", uuid);
+    let path = format!("/api/pages/{}", uuid);
     let page = Page {
         id: uuid,
         title: "A".to_string(),
@@ -36,13 +36,13 @@ fn test_page_route_lifecycle() {
         )
     });
 
-    let req = srv.request(Method::GET, srv.url("/pages/")).send();
+    let req = srv.request(Method::GET, srv.url("/api/pages/")).send();
     let res = srv.block_on(req).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
 
     let req = srv
-        .request(Method::POST, srv.url("/pages/"))
+        .request(Method::POST, srv.url("/api/pages/"))
         .send_json(&page);
     let res = srv.block_on(req).unwrap();
 
@@ -53,21 +53,21 @@ fn test_page_route_lifecycle() {
     );
 
     let req = srv
-        .request(Method::GET, srv.url(&format!("/pages/{}", uuid)))
+        .request(Method::GET, srv.url(&format!("/api/pages/{}", uuid)))
         .send();
     let res = srv.block_on(req).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
 
     let req = srv
-        .request(Method::PUT, srv.url(&format!("/pages/{}", uuid)))
+        .request(Method::PUT, srv.url(&format!("/api/pages/{}", uuid)))
         .send_json(&page);
     let res = srv.block_on(req).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
 
     let req = srv
-        .request(Method::DELETE, srv.url(&format!("/pages/{}", uuid)))
+        .request(Method::DELETE, srv.url(&format!("/api/pages/{}", uuid)))
         .send();
     let res = srv.block_on(req).unwrap();
 

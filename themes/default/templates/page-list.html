@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title | safe | striptags }}</title>
+  </head>
+  <body>
+    <h1>{{ title | safe }}</h1>
+    <a href="/pages/new">Add page</a>
+    <table>
+      <thead>
+        <tr>
+          <th>Page</th>
+          <th>Operations</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if pages %}
+          {% for page in pages %}
+            <tr>
+              <td>{{ page.title }}</td>
+              <td>
+                <a href="/pages/{{ page.id }}">View</a>
+                <a href="/pages/{{ page.id }}/update">Edit</a>
+                <a href="/pages/{{ page.id }}/delete">Delete</a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="2">
+              There are no pages yet. <a href="/pages/new">Add one</a>.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </body>
+</html>

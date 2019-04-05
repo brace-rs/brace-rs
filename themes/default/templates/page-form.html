@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title | safe | striptags }}</title>
+  </head>
+  <body>
+    <h1>{{ title | safe }}</h1>
+    <form method="post">
+      <input type="hidden" name="id" value="{{ page.id }}" />
+      <input type="hidden" name="created" value="{{ page.created }}" />
+      <input type="hidden" name="updated" value="{{ page.updated }}" />
+      <input type="text" name="title" value="{{ page.title }}" required="true" />
+      <textarea name="content">{{ page.content }}</textarea>
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>

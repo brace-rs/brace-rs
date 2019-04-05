@@ -34,3 +34,23 @@ path = "templates/index.html"
 name = "themes"
 type = "tera"
 path = "templates/themes.html"
+
+[[templates]]
+name = "page"
+type = "tera"
+path = "templates/page.html"
+
+[[templates]]
+name = "page-list"
+type = "tera"
+path = "templates/page-list.html"
+
+[[templates]]
+name = "page-form"
+type = "tera"
+path = "templates/page-form.html"
+
+[[templates]]
+name = "page-delete-form"
+type = "tera"
+path = "templates/page-delete-form.html"

@@ -16,7 +16,7 @@ pub fn create(
         .map_err(ErrorInternalServerError)
         .and_then(|page| {
             HttpResponse::Created()
-                .header(header::LOCATION, format!("/pages/{}", page.id))
+                .header(header::LOCATION, format!("/api/pages/{}", page.id))
                 .json(json!({
                     "value": page,
                 }))
