@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% block head %}
+      <title>{{ title | safe | striptags }}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% endblock head %}
+  </head>
+  <body>
+    <header role="banner">
+      {% block header %}
+        <nav role="navigation">
+          <ul>
+            <li><a href="/">Home</a></li>
+          </ul>
+        </nav>
+      {% endblock header %}
+    </header>
+    <main role="main">
+      {% block content %}
+        <h1>{{ title | safe }}</h1>
+      {% endblock content %}
+    </main>
+    <footer role="contentinfo">
+      {% block footer %}
+        <p>&#169; Copyright {{ now() | date(format="%Y") }}</p>
+      {% endblock footer %}
+    </footer>
+  </body>
+</html>

@@ -15,7 +15,7 @@ path = "src/lib/lib.rs"
 [dependencies]
 actix = "0.8.0-alpha.2"
 failure = "0.1"
-postgres = "0.15"
+postgres = { version = "0.15", features = ["with-uuid", "with-chrono"] }
 r2d2 = "0.8"
 r2d2_postgres = "0.14"
 serde = { version = "1.0", features = ["derive"] }

@@ -1,0 +1,21 @@
+use actix_web::error::{Error, ErrorInternalServerError};
+use actix_web::web::{Data, Json};
+use actix_web::HttpResponse;
+use brace_db::Database;
+use futures::future::Future;
+use serde_json::json;
+
+use crate::model::Page;
+
+pub fn update(
+    database: Data<Database>,
+    page: Json<Page>,
+) -> impl Future<Item = HttpResponse, Error = Error> {
+    crate::action::update::update(&database, page.into_inner())
+        .map_err(ErrorInternalServerError)
+        .and_then(|page| {
+            HttpResponse::Ok().json(json!({
+                "value": page,
+            }))
+        })
+}

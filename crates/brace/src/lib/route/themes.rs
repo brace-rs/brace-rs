@@ -5,16 +5,18 @@ use actix_web::web::Data;
 use actix_web::HttpResponse;
 use brace_theme::config::{ThemeConfig, ThemeInfo};
 use brace_theme::manifest::ManifestConfig;
-use brace_theme::renderer::Template;
+use brace_theme::renderer::{Renderer, Template};
 use brace_theme::resource::ResourceInfo;
 use futures::future::Future;
 use serde_json::{json, to_value};
 
-use crate::AppState;
+use crate::config::AppConfig;
 
-pub fn get(data: Data<AppState>) -> impl Future<Item = HttpResponse, Error = Error> {
-    let themes = data
-        .config()
+pub fn get(
+    conf: Data<AppConfig>,
+    rend: Data<Renderer>,
+) -> impl Future<Item = HttpResponse, Error = Error> {
+    let themes = conf
         .themes
         .iter()
         .filter_map(|theme| match ThemeConfig::from_file(&theme.path) {
@@ -89,8 +91,7 @@ pub fn get(data: Data<AppState>) -> impl Future<Item = HttpResponse, Error = Err
         }),
     );
 
-    data.renderer()
-        .send(template)
+    rend.send(template)
         .map_err(ErrorInternalServerError)
         .and_then(|res| match res {
             Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),

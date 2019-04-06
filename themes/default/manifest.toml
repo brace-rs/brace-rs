@@ -16,6 +16,11 @@ type = "css"
 location = "css/theme.css"
 
 [[resources]]
+name = "form.css"
+type = "css"
+location = "css/form.css"
+
+[[resources]]
 name = "font"
 type = "css"
 location = "https://fonts.googleapis.com/css?family=Roboto:400,500"
@@ -34,3 +39,28 @@ path = "templates/index.html"
 name = "themes"
 type = "tera"
 path = "templates/themes.html"
+
+[[templates]]
+name = "layout"
+type = "tera"
+path = "templates/layout.html"
+
+[[templates]]
+name = "page"
+type = "tera"
+path = "templates/page/page.html"
+
+[[templates]]
+name = "page-list"
+type = "tera"
+path = "templates/page/page-list.html"
+
+[[templates]]
+name = "page-form"
+type = "tera"
+path = "templates/page/page-form.html"
+
+[[templates]]
+name = "page-delete-form"
+type = "tera"
+path = "templates/page/page-delete-form.html"

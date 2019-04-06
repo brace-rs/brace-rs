@@ -3,7 +3,7 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use assert_cmd::prelude::*;
-use brace_web::config::AppConfig;
+use brace::config::AppConfig;
 use tempfile::TempDir;
 
 #[test]
@@ -58,7 +58,7 @@ fn test_web_server_with_config() {
 
     config.web.port = 8002;
 
-    brace_web::init(config, path).unwrap();
+    brace::init(config, path).unwrap();
 
     let mut process = Command::cargo_bin("brace")
         .unwrap()

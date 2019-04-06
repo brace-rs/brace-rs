@@ -1,0 +1,18 @@
+[web]
+host = "0.0.0.0"
+port = 80
+
+[web.log]
+level = "debug"
+format = '%a "%r" %s %b "%{Referer}i" %T'
+
+[database]
+host = "127.0.0.1"
+port = 5432
+username = "postgres"
+password = "postgres"
+database = "dev"
+
+[[themes]]
+name = "default"
+path = "themes/default/theme.toml"

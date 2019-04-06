@@ -1,0 +1,38 @@
+.field {
+  margin: 1rem 0;
+}
+
+.field--hidden,
+.input--hidden {
+  display: none;
+}
+
+.field .label,
+.field .description {
+  display: block;
+}
+
+.input--textarea {
+  resize: vertical;
+}
+
+.button {
+  color: #000000;
+  font-size: 1rem;
+  font-family: inherit;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border: 0.125rem solid #D5D5D5;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.button--primary {
+  background-color: #D5D5D5;
+}
+
+.button:hover {
+  border-color: #C5C5C5;
+  background-color: #C5C5C5;
+}
