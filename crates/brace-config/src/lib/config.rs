@@ -47,6 +47,10 @@ impl Config {
 
         Ok(Self { config: conf })
     }
+
+    pub fn lock(self) -> ImmutableConfig {
+        ImmutableConfig { config: self }
+    }
 }
 
 impl Default for Config {
@@ -54,6 +58,28 @@ impl Default for Config {
         Self {
             config: HashMap::new(),
         }
+    }
+}
+
+pub struct ImmutableConfig {
+    config: Config,
+}
+
+impl ImmutableConfig {
+    pub fn get<T>(&self, key: &str) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
+        self.config.get(key)
+    }
+
+    pub fn load<P>(path: P) -> Result<Self, Error>
+    where
+        P: AsRef<Path>,
+    {
+        let conf = Config::load(path)?;
+
+        Ok(Self { config: conf })
     }
 }
 
@@ -95,5 +121,16 @@ mod tests {
 
         assert_eq!(conf.get::<String>("host").unwrap(), "127.0.0.1".to_string());
         assert_eq!(conf.get::<i32>("port").unwrap(), 80);
+    }
+
+    #[test]
+    fn test_immutable_config() {
+        let mut conf = Config::new();
+
+        conf.set("host", "127.0.0.1").unwrap();
+
+        let conf = conf.lock();
+
+        assert_eq!(conf.get::<String>("host").unwrap(), "127.0.0.1".to_string());
     }
 }
