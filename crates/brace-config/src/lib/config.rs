@@ -18,7 +18,7 @@ impl Config {
         Self::default()
     }
 
-    pub fn set<T>(&mut self, key: &str, value: T) -> Result<(), Error>
+    pub fn set<T>(&mut self, key: &str, value: T) -> Result<&mut Config, Error>
     where
         T: Serialize,
     {
@@ -26,7 +26,7 @@ impl Config {
 
         self.config.insert(key.into(), value);
 
-        Ok(())
+        Ok(self)
     }
 
     pub fn get<T>(&self, key: &str) -> Result<T, Error>
@@ -82,5 +82,18 @@ mod tests {
             conf.get::<Ipv4Addr>("host").unwrap(),
             Ipv4Addr::new(127, 0, 0, 1)
         );
+    }
+
+    #[test]
+    fn test_config_chaining() {
+        let mut conf = Config::new();
+
+        conf.set("host", "127.0.0.1")
+            .unwrap()
+            .set("port", 80)
+            .unwrap();
+
+        assert_eq!(conf.get::<String>("host").unwrap(), "127.0.0.1".to_string());
+        assert_eq!(conf.get::<i32>("port").unwrap(), 80);
     }
 }
