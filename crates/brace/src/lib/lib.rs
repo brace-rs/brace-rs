@@ -63,6 +63,7 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
             .service(brace_web_page::route::api::routes())
             .service(brace_web_page::route::web::routes())
             .service(ThemeResources::new("/static/resources", themes.clone()))
+            .service(brace_web_page::router::PageRouter::new("/"))
     })
     .bind(format!("{}:{}", host, port))?
     .start();

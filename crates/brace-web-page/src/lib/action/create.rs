@@ -6,9 +6,9 @@ use futures::future::Future;
 use crate::model::Page;
 
 static QUERY: &'static str = r#"
-    INSERT INTO pages (id, title, content, created, updated)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING id, title, content, created, updated
+    INSERT INTO pages (id, parent, slug, title, content, created, updated)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING id, parent, slug, title, content, created, updated
 "#;
 
 pub fn create(database: &Database, page: Page) -> impl Future<Item = Page, Error = Error> {
@@ -33,6 +33,8 @@ impl Handler<Create> for DatabaseInner {
             QUERY,
             &[
                 &msg.0.id,
+                &msg.0.parent,
+                &msg.0.slug,
                 &msg.0.title,
                 &msg.0.content,
                 &msg.0.created,
@@ -48,10 +50,12 @@ impl Handler<Create> for DatabaseInner {
 
         Ok(Page {
             id: row.get(0),
-            title: row.get(1),
-            content: row.get(2),
-            created: row.get(3),
-            updated: row.get(4),
+            parent: row.get(1),
+            slug: row.get(2),
+            title: row.get(3),
+            content: row.get(4),
+            created: row.get(5),
+            updated: row.get(6),
         })
     }
 }

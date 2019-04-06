@@ -6,7 +6,7 @@ use futures::future::Future;
 use crate::model::Page;
 
 static QUERY: &'static str = r#"
-    SELECT id, title, content, created, updated
+    SELECT id, parent, slug, title, content, created, updated
     FROM pages
 "#;
 
@@ -34,10 +34,12 @@ impl Handler<List> for DatabaseInner {
             .iter()
             .map(|row| Page {
                 id: row.get(0),
-                title: row.get(1),
-                content: row.get(2),
-                created: row.get(3),
-                updated: row.get(4),
+                parent: row.get(1),
+                slug: row.get(2),
+                title: row.get(3),
+                content: row.get(4),
+                created: row.get(5),
+                updated: row.get(6),
             })
             .collect())
     }

@@ -20,6 +20,8 @@ fn test_page_route_lifecycle() {
     let path = format!("/api/pages/{}", uuid);
     let page = Page {
         id: uuid,
+        parent: None,
+        slug: "a".to_string(),
         title: "A".to_string(),
         content: "A".to_string(),
         created: Utc::now(),

@@ -6,6 +6,8 @@ use futures::future::Future;
 static QUERY: &'static str = r#"
     CREATE TABLE pages (
         id uuid PRIMARY KEY,
+        parent uuid REFERENCES pages(id),
+        slug character varying(255) NOT NULL,
         title text NOT NULL CHECK (title <> ''),
         content text NOT NULL DEFAULT '',
         created timestamp with time zone NOT NULL DEFAULT now(),

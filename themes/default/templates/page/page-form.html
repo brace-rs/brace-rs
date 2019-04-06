@@ -20,6 +20,13 @@
           The title of the page.
         </span>
       </div>
+      <div class="field field--text">
+        <label for="page-slug" class="label">Slug</label>
+        <input type="text" id="page-slug" name="slug" class="input input--text" value="{{ page.slug }}" />
+        <span class="description">
+          The page slug.
+        </span>
+      </div>
       <div class="field field--textarea">
         <label for="page-content" class="label">Content</label>
         <textarea id="page-content" name="content" class="input input--textarea">{{ page.content }}</textarea>

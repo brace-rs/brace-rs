@@ -6,6 +6,7 @@ use futures::Stream;
 pub mod create;
 pub mod delete;
 pub mod list;
+pub mod locate;
 pub mod retrieve;
 pub mod update;
 

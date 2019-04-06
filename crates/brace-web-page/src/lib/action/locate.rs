@@ -2,33 +2,44 @@ use actix::{Handler, Message};
 use brace_db::{Database, DatabaseInner};
 use failure::{format_err, Error};
 use futures::future::Future;
-use uuid::Uuid;
 
 use crate::model::Page;
 
 static QUERY: &'static str = r#"
+    WITH RECURSIVE cte AS (
+        SELECT id, parent, slug, title, content, created, updated, '/' || slug AS path
+        FROM pages
+        WHERE parent is null
+        UNION ALL
+        SELECT t.id, t.parent, t.slug, t.title, t.content, t.created, t.updated, concat_ws('/', r.path, t.slug) AS path
+        FROM pages t
+        JOIN cte r ON t.parent = r.id
+    )
     SELECT id, parent, slug, title, content, created, updated
-    FROM pages
-    WHERE id = $1
+    FROM cte
+    WHERE path = $1
 "#;
 
-pub fn retrieve(database: &Database, page: Uuid) -> impl Future<Item = Page, Error = Error> {
+pub fn locate<S: Into<String>>(
+    database: &Database,
+    page: S,
+) -> impl Future<Item = Page, Error = Error> {
     database
-        .send(Retrieve(page))
+        .send(Locate(page.into()))
         .map_err(|err| format_err!("{}", err))
         .and_then(|res| res)
 }
 
-pub struct Retrieve(pub Uuid);
+pub struct Locate(pub String);
 
-impl Message for Retrieve {
+impl Message for Locate {
     type Result = Result<Page, Error>;
 }
 
-impl Handler<Retrieve> for DatabaseInner {
+impl Handler<Locate> for DatabaseInner {
     type Result = Result<Page, Error>;
 
-    fn handle(&mut self, msg: Retrieve, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: Locate, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get()?;
         let rows = conn.query(QUERY, &[&msg.0])?;
 

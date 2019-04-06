@@ -6,6 +6,8 @@ use uuid::Uuid;
 #[serde(default)]
 pub struct Page {
     pub id: Uuid,
+    pub parent: Option<Uuid>,
+    pub slug: String,
     pub title: String,
     pub content: String,
     #[serde(with = "datetime")]
@@ -18,6 +20,8 @@ impl Default for Page {
     fn default() -> Self {
         Self {
             id: Uuid::new_v4(),
+            parent: None,
+            slug: "".to_string(),
             title: "".to_string(),
             content: "".to_string(),
             created: Utc::now(),
