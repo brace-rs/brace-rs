@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use failure::Error;
+use failure::{format_err, Error};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
@@ -18,24 +18,24 @@ impl Config {
         Self::default()
     }
 
-    pub fn set<T>(&mut self, key: &str, value: T)
+    pub fn set<T>(&mut self, key: &str, value: T) -> Result<(), Error>
     where
         T: Serialize,
     {
-        self.config
-            .insert(key.into(), serde_json::to_value(value).unwrap());
+        let value = serde_json::to_value(value)?;
+
+        self.config.insert(key.into(), value);
+
+        Ok(())
     }
 
-    pub fn get<T>(&self, key: &str) -> Option<T>
+    pub fn get<T>(&self, key: &str) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
         match self.config.get(key.into()) {
-            Some(value) => match T::deserialize(value) {
-                Ok(value) => Some(value),
-                Err(_) => None,
-            },
-            None => None,
+            Some(value) => Ok(T::deserialize(value)?),
+            None => Err(format_err!("Could not find key {}", key)),
         }
     }
 
@@ -67,20 +67,20 @@ mod tests {
     fn test_config_getters() {
         let mut conf = Config::new();
 
-        conf.set("host", "127.0.0.1");
+        conf.set("host", "127.0.0.1").unwrap();
 
-        assert_eq!(conf.get::<String>("host"), Some("127.0.0.1".to_string()));
+        assert_eq!(conf.get::<String>("host").unwrap(), "127.0.0.1".to_string());
         assert_eq!(
-            conf.get::<Ipv4Addr>("host"),
-            Some(Ipv4Addr::new(127, 0, 0, 1))
+            conf.get::<Ipv4Addr>("host").unwrap(),
+            Ipv4Addr::new(127, 0, 0, 1)
         );
 
-        conf.set("host", Ipv4Addr::new(127, 0, 0, 1));
+        conf.set("host", Ipv4Addr::new(127, 0, 0, 1)).unwrap();
 
-        assert_eq!(conf.get::<String>("host"), Some("127.0.0.1".to_string()));
+        assert_eq!(conf.get::<String>("host").unwrap(), "127.0.0.1".to_string());
         assert_eq!(
-            conf.get::<Ipv4Addr>("host"),
-            Some(Ipv4Addr::new(127, 0, 0, 1))
+            conf.get::<Ipv4Addr>("host").unwrap(),
+            Ipv4Addr::new(127, 0, 0, 1)
         );
     }
 }
