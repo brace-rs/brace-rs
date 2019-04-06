@@ -19,6 +19,7 @@ actix-files = "0.1.0-alpha.1"
 actix-service = "0.3"
 actix-web = "1.0.0-alpha.2"
 brace-cli = { path = "../brace-cli" }
+brace-config = { path = "../brace-config" }
 brace-db = { path = "../brace-db" }
 brace-theme = { path = "../brace-theme" }
 brace-web = { path = "../brace-web" }

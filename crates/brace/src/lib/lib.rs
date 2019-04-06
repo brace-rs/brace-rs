@@ -5,6 +5,7 @@ use actix_web::middleware::Logger;
 use actix_web::web::{get, resource};
 use actix_web::App;
 use actix_web::HttpServer;
+use brace_config::file::load_from_file;
 use brace_db::Database;
 use brace_theme::config::ThemeConfig;
 use brace_theme::renderer::{Renderer, RendererConfig};
@@ -43,7 +44,7 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
     let themes = config
         .themes
         .iter()
-        .filter_map(|theme| match ThemeConfig::from_file(&theme.path) {
+        .filter_map(|theme| match load_from_file(&theme.path) {
             Ok(conf) => Some((conf, theme.path.clone())),
             Err(_) => None,
         })

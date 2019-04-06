@@ -1,8 +1,6 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-use failure::Error;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 use super::manifest::ManifestReferenceInfo;
 
@@ -12,21 +10,6 @@ pub struct ThemeConfig {
     pub theme: ThemeInfo,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub manifests: Vec<ManifestReferenceInfo>,
-}
-
-impl ThemeConfig {
-    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        let string = std::fs::read_to_string(path)?;
-        let config = toml::from_str(&string)?;
-
-        Ok(config)
-    }
-
-    pub fn from_json(json: Value) -> Result<Self, Error> {
-        let config = serde_json::from_value(json)?;
-
-        Ok(config)
-    }
 }
 
 impl Default for ThemeConfig {

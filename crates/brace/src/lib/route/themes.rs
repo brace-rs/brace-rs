@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use actix_web::error::{Error, ErrorInternalServerError};
 use actix_web::web::Data;
 use actix_web::HttpResponse;
+use brace_config::file::load_from_file;
 use brace_theme::config::{ThemeConfig, ThemeInfo};
 use brace_theme::manifest::ManifestConfig;
 use brace_theme::renderer::{Renderer, Template};
@@ -19,7 +20,7 @@ pub fn get(
     let themes = conf
         .themes
         .iter()
-        .filter_map(|theme| match ThemeConfig::from_file(&theme.path) {
+        .filter_map(|theme| match load_from_file(&theme.path) {
             Ok(conf) => Some((conf, theme.path.as_path())),
             Err(_) => None,
         })
@@ -37,43 +38,45 @@ pub fn get(
                 .manifests
                 .iter()
                 .filter_map(|manifest| match theme_path.parent() {
-                    Some(parent) => match ManifestConfig::from_file(parent.join(&manifest.path)) {
-                        Ok(manifest) => Some(
-                            manifest
-                                .resources
-                                .iter()
-                                .map(|resource| {
-                                    let mut resource = resource.clone();
+                    Some(parent) => {
+                        match load_from_file::<ManifestConfig, _>(parent.join(&manifest.path)) {
+                            Ok(manifest) => Some(
+                                manifest
+                                    .resources
+                                    .iter()
+                                    .map(|resource| {
+                                        let mut resource = resource.clone();
 
-                                    match resource {
-                                        ResourceInfo::StyleSheet(ref mut info) => {
-                                            if info.location.is_internal() {
-                                                info.location = PathBuf::new()
-                                                    .join("/static/resources")
-                                                    .join(theme.theme.name.clone())
-                                                    .join("css")
-                                                    .join(&info.name)
-                                                    .into();
+                                        match resource {
+                                            ResourceInfo::StyleSheet(ref mut info) => {
+                                                if info.location.is_internal() {
+                                                    info.location = PathBuf::new()
+                                                        .join("/static/resources")
+                                                        .join(theme.theme.name.clone())
+                                                        .join("css")
+                                                        .join(&info.name)
+                                                        .into();
+                                                }
+                                            }
+                                            ResourceInfo::JavaScript(ref mut info) => {
+                                                if info.location.is_internal() {
+                                                    info.location = PathBuf::new()
+                                                        .join("/static/resources")
+                                                        .join(theme.theme.name.clone())
+                                                        .join("js")
+                                                        .join(&info.name)
+                                                        .into();
+                                                }
                                             }
                                         }
-                                        ResourceInfo::JavaScript(ref mut info) => {
-                                            if info.location.is_internal() {
-                                                info.location = PathBuf::new()
-                                                    .join("/static/resources")
-                                                    .join(theme.theme.name.clone())
-                                                    .join("js")
-                                                    .join(&info.name)
-                                                    .into();
-                                            }
-                                        }
-                                    }
 
-                                    resource
-                                })
-                                .collect::<Vec<ResourceInfo>>(),
-                        ),
-                        Err(_) => None,
-                    },
+                                        resource
+                                    })
+                                    .collect::<Vec<ResourceInfo>>(),
+                            ),
+                            Err(_) => None,
+                        }
+                    }
                     None => None,
                 })
                 .flatten()
