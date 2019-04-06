@@ -19,20 +19,25 @@ pub fn get(
     crate::action::retrieve::retrieve(&database, info.page)
         .map_err(ErrorInternalServerError)
         .and_then(move |page| {
-            let template = Template::new(
-                "page-form",
-                json!({
-                    "title": format!("Update page <em>{}</em>", page.title),
-                    "page": page,
-                }),
-            );
-
-            renderer
-                .send(template)
+            crate::action::list::list(&database)
                 .map_err(ErrorInternalServerError)
-                .and_then(|res| match res {
-                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-                    Err(err) => Err(ErrorInternalServerError(err)),
+                .and_then(move |pages| {
+                    let template = Template::new(
+                        "page-form",
+                        json!({
+                            "title": format!("Update page <em>{}</em>", page.title),
+                            "page": page,
+                            "pages": pages,
+                        }),
+                    );
+
+                    renderer
+                        .send(template)
+                        .map_err(ErrorInternalServerError)
+                        .and_then(|res| match res {
+                            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                            Err(err) => Err(ErrorInternalServerError(err)),
+                        })
                 })
         })
 }

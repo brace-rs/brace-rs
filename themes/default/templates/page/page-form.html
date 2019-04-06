@@ -27,6 +27,25 @@
           The page slug.
         </span>
       </div>
+      {% if pages %}
+      <div class="field field--select">
+        <label for="page-parent" class="label">Parent</label>
+        <select id="page-parent" name="parent" class="input input--select">
+          <option value="">- None -</option>
+          {% for pageopt in pages %}
+            {% if pageopt.id == page.id %}
+            {% elif pageopt.id == page.parent %}
+              <option value="{{ pageopt.id }}" selected="true">{{ pageopt.title }} - {{ pageopt.path }}</option>
+            {% else %}
+              <option value="{{ pageopt.id }}">{{ pageopt.title }} - {{ pageopt.path }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <span class="description">
+          The parent page.
+        </span>
+      </div>
+      {% endif %}
       <div class="field field--textarea">
         <label for="page-content" class="label">Content</label>
         <textarea id="page-content" name="content" class="input input--textarea">{{ page.content }}</textarea>

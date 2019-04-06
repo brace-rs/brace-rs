@@ -9,21 +9,29 @@ use serde_json::json;
 
 use crate::model::Page;
 
-pub fn get(renderer: Data<Renderer>) -> impl Future<Item = HttpResponse, Error = Error> {
-    let template = Template::new(
-        "page-form",
-        json!({
-            "title": "Create page",
-            "page": Page::default(),
-        }),
-    );
-
-    renderer
-        .send(template)
+pub fn get(
+    database: Data<Database>,
+    renderer: Data<Renderer>,
+) -> impl Future<Item = HttpResponse, Error = Error> {
+    crate::action::list::list(&database)
         .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
-            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-            Err(err) => Err(ErrorInternalServerError(err)),
+        .and_then(move |pages| {
+            let template = Template::new(
+                "page-form",
+                json!({
+                    "title": "Create page",
+                    "page": Page::default(),
+                    "pages": pages,
+                }),
+            );
+
+            renderer
+                .send(template)
+                .map_err(ErrorInternalServerError)
+                .and_then(|res| match res {
+                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                    Err(err) => Err(ErrorInternalServerError(err)),
+                })
         })
 }
 

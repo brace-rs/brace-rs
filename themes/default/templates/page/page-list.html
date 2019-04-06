@@ -12,8 +12,7 @@
     <thead>
       <tr>
         <th>Page</th>
-        <th>Parent</th>
-        <th>Slug</th>
+        <th>Path</th>
         <th>Operations</th>
       </tr>
     </thead>
@@ -22,8 +21,7 @@
         {% for page in pages %}
           <tr>
             <td>{{ page.title }}</td>
-            <td>{{ page.parent }}</td>
-            <td>{{ page.slug }}</td>
+            <td>{{ page.path }}</td>
             <td>
               <a href="/pages/{{ page.id }}">View</a>
               <a href="/pages/{{ page.id }}/update">Edit</a>
