@@ -51,6 +51,12 @@ impl Config {
     pub fn lock(self) -> ImmutableConfig {
         ImmutableConfig { config: self }
     }
+
+    pub fn merge(&mut self, config: &Config) -> &mut Config {
+        self.config
+            .extend(config.config.iter().map(|(k, v)| (k.clone(), v.clone())));
+        self
+    }
 }
 
 impl Default for Config {
@@ -132,5 +138,21 @@ mod tests {
         let conf = conf.lock();
 
         assert_eq!(conf.get::<String>("host").unwrap(), "127.0.0.1".to_string());
+    }
+
+    #[test]
+    fn test_config_merging() {
+        let mut conf1 = Config::new();
+        let mut conf2 = Config::new();
+
+        conf1.set("host", "127.0.0.1").unwrap();
+        conf2.set("port", 80).unwrap();
+        conf1.merge(&conf2);
+
+        assert_eq!(
+            conf1.get::<String>("host").unwrap(),
+            "127.0.0.1".to_string()
+        );
+        assert_eq!(conf1.get::<i32>("port").unwrap(), 80);
     }
 }
