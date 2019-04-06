@@ -33,7 +33,7 @@ impl Config {
     where
         T: DeserializeOwned,
     {
-        match self.config.get(key.into()) {
+        match self.config.get(key) {
             Some(value) => Ok(T::deserialize(value)?),
             None => Err(format_err!("Could not find key {}", key)),
         }
