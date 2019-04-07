@@ -24,6 +24,10 @@ impl Config {
     {
         let value = serde_json::to_value(value)?;
 
+        if key.is_empty() {
+            return Err(format_err!("Invalid key"));
+        }
+
         self.config.insert(key.into(), value);
 
         Ok(self)
@@ -33,6 +37,10 @@ impl Config {
     where
         T: DeserializeOwned,
     {
+        if key.is_empty() {
+            return Err(format_err!("Invalid key"));
+        }
+
         match self.config.get(key) {
             Some(value) => Ok(T::deserialize(value)?),
             None => Err(format_err!("Could not find key {}", key)),
