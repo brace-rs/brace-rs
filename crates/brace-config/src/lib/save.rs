@@ -4,6 +4,7 @@ use std::path::Path;
 
 use failure::{format_err, Error};
 use serde::Serialize;
+use toml::Value;
 
 pub fn file<T, P>(path: P, value: &T) -> Result<(), Error>
 where
@@ -33,6 +34,7 @@ where
     T: Serialize,
     P: AsRef<Path>,
 {
+    let value = Value::try_from(value)?;
     let string = toml::to_string_pretty(&value)?;
     let mut file = OpenOptions::new()
         .write(true)
