@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use actix_web::error::{Error, ErrorInternalServerError};
 use actix_web::web::Data;
 use actix_web::HttpResponse;
-use brace_config::file::load_from_file;
+use brace_config::load;
 use brace_theme::config::{ThemeConfig, ThemeInfo};
 use brace_theme::manifest::ManifestConfig;
 use brace_theme::renderer::{Renderer, Template};
@@ -20,7 +20,7 @@ pub fn get(
     let themes = conf
         .themes
         .iter()
-        .filter_map(|theme| match load_from_file(&theme.path) {
+        .filter_map(|theme| match load::file(&theme.path) {
             Ok(conf) => Some((conf, theme.path.as_path())),
             Err(_) => None,
         })
@@ -39,7 +39,7 @@ pub fn get(
                 .iter()
                 .filter_map(|manifest| match theme_path.parent() {
                     Some(parent) => {
-                        match load_from_file::<ManifestConfig, _>(parent.join(&manifest.path)) {
+                        match load::file::<ManifestConfig, _>(parent.join(&manifest.path)) {
                             Ok(manifest) => Some(
                                 manifest
                                     .resources

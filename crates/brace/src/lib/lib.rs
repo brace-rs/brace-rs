@@ -5,7 +5,7 @@ use actix_web::middleware::Logger;
 use actix_web::web::{get, resource};
 use actix_web::App;
 use actix_web::HttpServer;
-use brace_config::file::load_from_file;
+use brace_config::{load, save};
 use brace_db::Database;
 use brace_theme::config::ThemeConfig;
 use brace_theme::renderer::{Renderer, RendererConfig};
@@ -26,7 +26,7 @@ pub fn init(config: AppConfig, path: &Path) -> Result<(), Error> {
     let path = get_dir(path)?;
 
     std::fs::create_dir_all(path.join("themes/default")).unwrap();
-    std::fs::write(path.join("config.toml"), toml::to_string_pretty(&config)?)?;
+    save::file(path.join("config.toml"), &config)?;
     brace_theme::init(ThemeConfig::default(), &path.join("themes/default")).unwrap();
 
     Ok(())
@@ -44,7 +44,7 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
     let themes = config
         .themes
         .iter()
-        .filter_map(|theme| match load_from_file(&theme.path) {
+        .filter_map(|theme| match load::file(&theme.path) {
             Ok(conf) => Some((conf, theme.path.clone())),
             Err(_) => None,
         })

@@ -6,7 +6,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::{Map, Value};
 
-use super::file::load_from_file;
+use super::{load, save};
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -82,9 +82,18 @@ impl Config {
     where
         P: AsRef<Path>,
     {
-        let conf: HashMap<String, Value> = load_from_file(path)?;
+        let conf: HashMap<String, Value> = load::file(path)?;
 
         Ok(Self { config: conf })
+    }
+
+    pub fn save<P>(&self, path: P) -> Result<(), Error>
+    where
+        P: AsRef<Path>,
+    {
+        save::file(path, &self.config)?;
+
+        Ok(())
     }
 
     pub fn lock(self) -> ImmutableConfig {

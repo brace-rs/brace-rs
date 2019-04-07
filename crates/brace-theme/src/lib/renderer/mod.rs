@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
-use brace_config::file::load_from_file;
+use brace_config::load;
 use failure::{format_err, Error};
 use path_absolutize::Absolutize;
 use serde_json::Value;
@@ -30,12 +30,12 @@ impl Renderer {
 
         for theme in conf.themes {
             let path = theme.path;
-            let conf: ThemeConfig = load_from_file(&path)?;
+            let conf: ThemeConfig = load::file(&path)?;
 
             match path.parent() {
                 Some(dir) => {
                     for manifest in conf.manifests {
-                        let mut mcfg: ManifestConfig = load_from_file(&dir.join(manifest.path))?;
+                        let mut mcfg: ManifestConfig = load::file(&dir.join(manifest.path))?;
 
                         for template in mcfg.templates.iter_mut() {
                             match template {
