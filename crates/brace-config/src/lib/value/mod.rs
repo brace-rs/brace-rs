@@ -578,4 +578,82 @@ mod tests {
         assert!(table.get::<Vec<String>>("array").is_ok());
         assert_eq!(table.get::<Vec<String>>("array").unwrap().len(), 2);
     }
+
+    #[test]
+    fn test_enum_simple() {
+        #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+        #[serde(rename_all = "lowercase")]
+        enum Simple {
+            One,
+            Two,
+        }
+
+        let mut table = Value::table();
+
+        assert!(table.set("one", Simple::One).is_ok());
+        assert!(table.set("two", Simple::Two).is_ok());
+
+        assert_eq!(table.get::<String>("one").unwrap(), "one");
+        assert_eq!(table.get::<String>("two").unwrap(), "two");
+
+        assert_eq!(table.get::<Simple>("one").unwrap(), Simple::One);
+        assert_eq!(table.get::<Simple>("two").unwrap(), Simple::Two);
+    }
+
+    #[test]
+    fn test_enum_complex() {
+        #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+        enum Complex {
+            A,
+            B(String),
+            C(String, HashMap<String, usize>, Vec<String>),
+            D {
+                a: String,
+            },
+            E {
+                a: String,
+                b: HashMap<String, usize>,
+                c: Vec<String>,
+            },
+        }
+
+        let mut table = Value::table();
+        let mut map = HashMap::<String, usize>::new();
+        let arr = vec!["a".to_string(), "b".to_string()];
+
+        map.insert("a".to_string(), 1);
+        map.insert("b".to_string(), 2);
+
+        assert!(table.set("a", Complex::A).is_ok());
+        assert!(table.set("b", Complex::B("B".to_string())).is_ok());
+        assert!(table
+            .set("c", Complex::C("C".to_string(), map.clone(), arr.clone()))
+            .is_ok());
+        assert!(table.set("d", Complex::D { a: "D".to_string() }).is_ok());
+        assert!(table
+            .set(
+                "e",
+                Complex::E {
+                    a: "E".to_string(),
+                    b: map,
+                    c: arr
+                }
+            )
+            .is_ok());
+
+        assert_eq!(table.get::<String>("a").unwrap(), "A");
+        assert_eq!(table.get::<String>("b.B").unwrap(), "B");
+        assert_eq!(table.get::<String>("c.C.0").unwrap(), "C");
+        assert_eq!(table.get::<String>("c.C.1.b").unwrap(), "2");
+        assert_eq!(table.get::<String>("c.C.2.0").unwrap(), "a");
+        assert_eq!(table.get::<String>("d.D.a").unwrap(), "D");
+        assert_eq!(table.get::<String>("e.E.c.1").unwrap(), "b");
+        assert_eq!(table.get::<String>("e.E.b.a").unwrap(), "1");
+
+        assert!(table.get::<Complex>("a").is_ok());
+        assert!(table.get::<Complex>("b").is_ok());
+        assert!(table.get::<Complex>("c").is_ok());
+        assert!(table.get::<Complex>("d").is_ok());
+        assert!(table.get::<Complex>("e").is_ok());
+    }
 }
