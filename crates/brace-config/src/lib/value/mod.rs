@@ -2,12 +2,15 @@ use std::collections::HashMap;
 use std::error::Error as StdError;
 use std::fmt::{self, Debug, Display};
 
-use serde::de::{Deserialize, Deserializer, IntoDeserializer, MapAccess, SeqAccess, Visitor};
+use serde::de::{
+    Deserialize, DeserializeOwned, Deserializer, IntoDeserializer, MapAccess, SeqAccess, Visitor,
+};
 use serde::ser::{Serialize, Serializer};
 
 use self::array::Array;
 use self::de::{Error as DeError, ValueDeserializer};
 use self::entry::Entry;
+use self::ser::ValueSerializer;
 use self::table::Table;
 
 pub mod array;
@@ -15,6 +18,20 @@ pub mod de;
 pub mod entry;
 pub mod ser;
 pub mod table;
+
+pub fn from_value<T>(value: Value) -> Result<T, Error>
+where
+    T: DeserializeOwned,
+{
+    T::deserialize(ValueDeserializer::new(&value)).map_err(Error::custom)
+}
+
+pub fn to_value<T>(value: T) -> Result<Value, Error>
+where
+    T: Serialize,
+{
+    value.serialize(ValueSerializer).map_err(Error::custom)
+}
 
 #[derive(Clone, PartialEq)]
 pub enum Value {

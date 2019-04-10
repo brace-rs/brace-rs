@@ -2,7 +2,7 @@ pub use self::config::Config;
 pub use self::value::array::Array;
 pub use self::value::entry::Entry;
 pub use self::value::table::Table;
-pub use self::value::Value;
+pub use self::value::{from_value, to_value, Value};
 
 pub mod config;
 pub mod load;
