@@ -254,6 +254,24 @@ impl<'de> IntoDeserializer<'de, DeError> for &'de Value {
     }
 }
 
+impl From<Entry> for Value {
+    fn from(value: Entry) -> Self {
+        Value::Entry(value)
+    }
+}
+
+impl From<Array> for Value {
+    fn from(value: Array) -> Self {
+        Value::Array(value)
+    }
+}
+
+impl From<Table> for Value {
+    fn from(value: Table) -> Self {
+        Value::Table(value)
+    }
+}
+
 impl From<bool> for Value {
     fn from(value: bool) -> Self {
         Value::Entry(Entry::from(value))
