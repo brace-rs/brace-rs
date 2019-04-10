@@ -1,231 +1,87 @@
-use std::collections::HashMap;
 use std::path::Path;
 
-use failure::{format_err, Error};
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-use serde_json::{Map, Value};
+use serde::{Deserialize, Serialize};
 
-use super::{load, save};
+use crate::value::{table::Table, Error};
+use crate::{load, save};
 
 #[derive(Debug, Clone)]
-pub struct Config {
-    config: HashMap<String, Value>,
-}
+pub struct Config(Table);
 
 impl Config {
     pub fn new() -> Self {
         Self::default()
     }
 
+    pub fn get<'de, T>(&'de self, key: &str) -> Result<T, Error>
+    where
+        T: 'de + Deserialize<'de>,
+    {
+        self.0.get(key)
+    }
+
     pub fn set<T>(&mut self, key: &str, value: T) -> Result<&mut Config, Error>
     where
         T: Serialize,
     {
-        if key.is_empty() {
-            return Err(format_err!("Invalid key"));
-        }
-
-        let keys: Vec<&str> = key.splitn(2, '.').collect();
-
-        if keys.len() == 1 {
-            self.config.insert(key.into(), serde_json::to_value(value)?);
-        } else {
-            match self.config.get_mut(keys[0]) {
-                Some(target) => match set(target, keys[1], serde_json::to_value(value)?) {
-                    Ok(_) => (),
-                    Err(err) => return Err(err),
-                },
-                None => {
-                    let mut obj = Value::Object(Map::new());
-
-                    match set(&mut obj, keys[1], serde_json::to_value(value)?) {
-                        Ok(_) => {
-                            self.config.insert(keys[0].into(), obj);
-                        }
-                        Err(err) => return Err(err),
-                    }
-                }
-            }
-        }
+        self.0.set(key, value)?;
 
         Ok(self)
-    }
-
-    pub fn get<T>(&self, key: &str) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
-    {
-        if key.is_empty() {
-            return Err(format_err!("Invalid key"));
-        }
-
-        let keys: Vec<&str> = key.splitn(2, '.').collect();
-
-        if keys.len() == 1 {
-            match self.config.get(key) {
-                Some(value) => Ok(T::deserialize(value)?),
-                None => Err(format_err!("Invalid key {}", key)),
-            }
-        } else {
-            match self.config.get(keys[0]) {
-                Some(value) => match get(value, keys[1]) {
-                    Some(value) => Ok(T::deserialize(value)?),
-                    None => Err(format_err!("Invalid key {}", key)),
-                },
-                None => Err(format_err!("Invalid key {}", key)),
-            }
-        }
     }
 
     pub fn load<P>(path: P) -> Result<Self, Error>
     where
         P: AsRef<Path>,
     {
-        let conf: HashMap<String, Value> = load::file(path)?;
-
-        Ok(Self { config: conf })
+        match load::file::<Table, _>(path.as_ref()) {
+            Ok(conf) => Ok(Self(conf)),
+            Err(err) => Err(Error::custom(err)),
+        }
     }
 
     pub fn save<P>(&self, path: P) -> Result<(), Error>
     where
         P: AsRef<Path>,
     {
-        save::file(path, &self.config)?;
-
-        Ok(())
+        match save::file(path.as_ref(), &self.0) {
+            Ok(()) => Ok(()),
+            Err(err) => Err(Error::custom(err)),
+        }
     }
 
     pub fn lock(self) -> ImmutableConfig {
-        ImmutableConfig { config: self }
+        ImmutableConfig(self)
     }
 
-    pub fn merge(&mut self, config: &Config) -> &mut Config {
-        self.config
-            .extend(config.config.iter().map(|(k, v)| (k.clone(), v.clone())));
-        self
+    pub fn merge(&mut self, config: &Config) -> Result<&mut Config, Error> {
+        self.0.merge(&config.0)?;
+
+        Ok(self)
     }
 }
 
 impl Default for Config {
     fn default() -> Self {
-        Self {
-            config: HashMap::new(),
-        }
+        Self(Table::new())
     }
 }
 
-pub struct ImmutableConfig {
-    config: Config,
-}
+pub struct ImmutableConfig(Config);
 
 impl ImmutableConfig {
-    pub fn get<T>(&self, key: &str) -> Result<T, Error>
+    pub fn get<'de, T>(&'de self, key: &str) -> Result<T, Error>
     where
-        T: DeserializeOwned,
+        T: 'de + Deserialize<'de>,
     {
-        self.config.get(key)
+        self.0.get(key)
     }
 
     pub fn load<P>(path: P) -> Result<Self, Error>
     where
         P: AsRef<Path>,
     {
-        let conf = Config::load(path)?;
-
-        Ok(Self { config: conf })
+        Ok(Self(Config::load(path)?))
     }
-}
-
-fn get<'a>(source: &'a Value, key: &str) -> Option<&'a Value> {
-    let keys = key.split('.');
-    let mut target = source;
-
-    for key in keys {
-        let target_opt = match *target {
-            Value::Object(ref map) => map.get(key),
-            Value::Array(ref arr) => key.parse::<usize>().ok().and_then(|x| arr.get(x)),
-            _ => return None,
-        };
-        if let Some(t) = target_opt {
-            target = t;
-        } else {
-            return None;
-        }
-    }
-
-    Some(target)
-}
-
-fn set<'a>(source: &'a mut Value, key: &str, value: Value) -> Result<(), Error> {
-    let keys: Vec<&str> = key.splitn(2, '.').collect();
-    let key = keys[0];
-
-    if keys.len() == 1 {
-        match source {
-            Value::Object(map) => {
-                map.insert(key.into(), value);
-            }
-            Value::Array(arr) => {
-                arr.insert(key.parse()?, value);
-            }
-            Value::Null => match key.parse::<usize>() {
-                Ok(key) => {
-                    let mut arr = Vec::new();
-                    arr.insert(key, value);
-                    *source = Value::Array(arr);
-                }
-                Err(_) => {
-                    let mut map = Map::new();
-                    map.insert(key.into(), value);
-                    *source = Value::Object(map);
-                }
-            },
-            _ => return Err(format_err!("Unsupported nesting")),
-        }
-    } else {
-        let tail = keys[1];
-
-        match source {
-            Value::Object(map) => match map.get_mut(key) {
-                Some(target) => return set(target, tail, value),
-                None => {
-                    let mut obj = Value::Object(Map::new());
-                    match set(&mut obj, tail, value) {
-                        Ok(_) => {
-                            map.insert(key.into(), obj);
-                        }
-                        Err(err) => return Err(err),
-                    }
-                }
-            },
-            Value::Array(arr) => match arr.get_mut(key.parse::<usize>()?) {
-                Some(target) => return set(target, tail, value),
-                None => {
-                    let mut obj = Value::Object(Map::new());
-                    match set(&mut obj, tail, value) {
-                        Ok(_) => {
-                            arr.insert(key.parse()?, obj);
-                        }
-                        Err(err) => return Err(err),
-                    }
-                }
-            },
-            Value::Null => match key.parse::<usize>() {
-                Ok(_) => {
-                    *source = Value::Array(Vec::new());
-                    return set(source, key, value);
-                }
-                Err(_) => {
-                    *source = Value::Object(Map::new());
-                    return set(source, key, value);
-                }
-            },
-            _ => return Err(format_err!("Unsupported nesting")),
-        }
-    }
-
-    Ok(())
 }
 
 #[cfg(test)]
@@ -256,7 +112,7 @@ mod tests {
     }
 
     #[test]
-    fn test_config_nested() {
+    fn test_config_nested_table() {
         let mut conf = Config::new();
 
         conf.set("web.host", "127.0.0.1").unwrap();
@@ -281,8 +137,32 @@ mod tests {
             Ipv4Addr::new(127, 0, 0, 1)
         );
 
+        conf.set("web.port", "8080").unwrap();
+
+        assert_eq!(conf.get::<String>("web.port").unwrap(), "8080".to_string());
+        assert_eq!(conf.get::<i32>("web.port").unwrap(), 8080);
+
         assert!(conf.set("web.address.host", "127.0.0.1").is_ok());
         assert!(conf.set("web.host.address", "127.0.0.1").is_err());
+    }
+
+    #[test]
+    fn test_config_nested_array() {
+        use std::collections::HashMap;
+
+        let mut conf = Config::new();
+
+        conf.set("list.0.0.item", "1").unwrap();
+        conf.set("list.1.0.item", "2").unwrap();
+
+        assert_eq!(
+            conf.get::<String>("list.0.0.item").unwrap(),
+            "1".to_string()
+        );
+        assert_eq!(conf.get::<usize>("list.0.0.item").unwrap(), 1,);
+        assert!(conf.get::<Vec<HashMap<String, String>>>("list.0").is_ok());
+        assert!(conf.get::<Vec<HashMap<String, String>>>("list.1").is_ok());
+        assert!(conf.get::<Vec<HashMap<String, String>>>("list.2").is_err());
     }
 
     #[test]
@@ -316,7 +196,7 @@ mod tests {
 
         conf1.set("host", "127.0.0.1").unwrap();
         conf2.set("port", 80).unwrap();
-        conf1.merge(&conf2);
+        conf1.merge(&conf2).unwrap();
 
         assert_eq!(
             conf1.get::<String>("host").unwrap(),
