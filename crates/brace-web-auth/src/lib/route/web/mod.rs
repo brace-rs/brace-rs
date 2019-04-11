@@ -1,11 +1,13 @@
 use actix_web::error::PayloadError;
 use actix_web::web::{self, Bytes};
-use actix_web::Scope;
+use actix_web::{Resource, Scope};
 use futures::Stream;
 
 pub mod create;
 pub mod delete;
 pub mod list;
+pub mod login;
+pub mod logout;
 pub mod retrieve;
 pub mod update;
 
@@ -30,4 +32,16 @@ pub fn routes() -> Scope<PayloadStream> {
                 .route(web::get().to_async(delete::get))
                 .route(web::post().to_async(delete::post)),
         )
+}
+
+pub fn login_route() -> Resource<PayloadStream> {
+    web::resource("/login")
+        .route(web::get().to_async(login::get))
+        .route(web::post().to_async(login::post))
+}
+
+pub fn logout_route() -> Resource<PayloadStream> {
+    web::resource("/logout")
+        .route(web::get().to_async(logout::get))
+        .route(web::post().to_async(logout::post))
 }

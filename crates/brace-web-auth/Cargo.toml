@@ -16,12 +16,14 @@ path = "src/lib/lib.rs"
 actix = "0.8.0-alpha.2"
 actix-service = "0.3"
 actix-web = "1.0.0-alpha.2"
+argon2rs = "0.2"
 brace-db = { path = "../brace-db" }
 brace-theme = { path = "../brace-theme" }
 brace-web = { path = "../brace-web" }
 chrono = { version = "0.4", features = ["serde"] }
 failure = "0.1"
 futures = "0.1"
+rand = "0.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 uuid = { version = "0.5", features = ["serde", "v4"] }

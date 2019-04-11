@@ -25,6 +25,21 @@ impl Default for User {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UserAuth {
+    pub email: String,
+    pub password: String,
+}
+
+impl Default for UserAuth {
+    fn default() -> Self {
+        Self {
+            email: "".to_string(),
+            password: "".to_string(),
+        }
+    }
+}
+
 mod serde_datetime_utc {
     use chrono::{DateTime, NaiveDateTime, Utc};
     use serde::de::Error;

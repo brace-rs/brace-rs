@@ -4,6 +4,7 @@ use failure::{format_err, Error};
 use futures::future::Future;
 
 use crate::model::User;
+use crate::util::hash;
 
 static QUERY: &'static str = r#"
     UPDATE users
@@ -35,7 +36,7 @@ impl Handler<Update> for DatabaseInner {
             &[
                 &msg.0.id,
                 &msg.0.email,
-                &msg.0.password,
+                &hash(&msg.0.password)?,
                 &msg.0.created,
                 &msg.0.updated,
             ],
