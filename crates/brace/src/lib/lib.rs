@@ -61,6 +61,8 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
             .wrap(Logger::new(&format))
             .service(resource("/").route(get().to_async(route::index::get)))
             .service(resource("/themes").route(get().to_async(route::themes::get)))
+            .service(brace_web_auth::route::api::routes())
+            .service(brace_web_auth::route::web::routes())
             .service(brace_web_page::route::api::routes())
             .service(brace_web_page::route::web::routes())
             .service(ThemeResources::new("/static/resources", themes.clone()))

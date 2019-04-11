@@ -1,0 +1,39 @@
+{% extends "layout" %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="/static/resources/default/css/theme.css" />
+{% endblock head %}
+
+{% block content %}
+  {{ super() }}
+  <a href="/users/new">Add user</a>
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Operations</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if users %}
+        {% for user in users %}
+          <tr>
+            <td>{{ user.email }}</td>
+            <td>
+              <a href="/users/{{ user.id }}">View</a>
+              <a href="/users/{{ user.id }}/update">Edit</a>
+              <a href="/users/{{ user.id }}/delete">Delete</a>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="2">
+            There are no users yet. <a href="/users/new">Add one</a>.
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+{% endblock content %}
