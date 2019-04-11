@@ -3,6 +3,7 @@ use std::net::Ipv4Addr;
 use std::path::Path;
 
 use brace_cli::prelude::*;
+use brace_config::load;
 use failure::format_err;
 use path_absolutize::Absolutize;
 
@@ -36,7 +37,7 @@ pub fn cmd() -> Command {
 
 pub fn exec(shell: &mut Shell, matches: &ArgMatches) -> ExecResult {
     match matches.value_of("config") {
-        Some(file) => match AppConfig::from_file(file) {
+        Some(file) => match load::file(file) {
             Ok(config) => {
                 let config = overload_file(file, config, shell, matches)?;
 

@@ -12,6 +12,7 @@ use actix_web::dev::{
 };
 use actix_web::error::Error;
 use actix_web::{HttpRequest, Responder};
+use brace_config::load;
 use brace_theme::config::ThemeConfig;
 use brace_theme::manifest::ManifestConfig;
 use brace_theme::resource::ResourceInfo;
@@ -210,12 +211,10 @@ fn load_manifests(theme: ThemeConfig, path: &Path) -> Vec<ManifestConfig> {
     theme
         .manifests
         .iter()
-        .filter_map(
-            |manifest| match ManifestConfig::from_file(path.join(&manifest.path)) {
-                Ok(conf) => Some(conf),
-                Err(_) => None,
-            },
-        )
+        .filter_map(|manifest| match load::file(path.join(&manifest.path)) {
+            Ok(conf) => Some(conf),
+            Err(_) => None,
+        })
         .collect()
 }
 
