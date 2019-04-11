@@ -537,6 +537,15 @@ dependencies = [
 [[package]]
 name = "brace-web-auth"
 version = "0.1.0"
+dependencies = [
+ "actix 0.8.0-alpha.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "brace-db 0.1.0",
+ "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures 0.1.25 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.89 (registry+https://github.com/rust-lang/crates.io-index)",
+ "uuid 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "brace-web-page"
