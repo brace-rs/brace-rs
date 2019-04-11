@@ -81,6 +81,12 @@ impl Default for Config {
     }
 }
 
+impl From<Table> for Config {
+    fn from(value: Table) -> Self {
+        Self(value)
+    }
+}
+
 pub struct ImmutableConfig(Config);
 
 impl ImmutableConfig {

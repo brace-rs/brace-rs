@@ -4,6 +4,9 @@ pub use self::value::entry::Entry;
 pub use self::value::table::Table;
 pub use self::value::{from_value, to_value, Value};
 
+#[macro_use]
+mod macros;
+
 pub mod config;
 pub mod load;
 pub mod save;

@@ -15,7 +15,7 @@ fn test_web_server_without_config() {
         .spawn()
         .unwrap();
 
-    sleep(Duration::from_millis(500));
+    sleep(Duration::from_millis(5000));
 
     let res1 = reqwest::get("http://127.0.0.1:8080");
     let res2 = reqwest::get("http://127.0.0.1:8080/themes");
@@ -37,7 +37,7 @@ fn test_web_server_with_arguments() {
         .spawn()
         .unwrap();
 
-    sleep(Duration::from_millis(500));
+    sleep(Duration::from_millis(5000));
 
     let res1 = reqwest::get("http://127.0.0.1:8001");
     let res2 = reqwest::get("http://127.0.0.1:8001/themes");
@@ -71,7 +71,7 @@ fn test_web_server_with_config() {
         .spawn()
         .unwrap();
 
-    sleep(Duration::from_millis(500));
+    sleep(Duration::from_millis(5000));
 
     let res1 = reqwest::get("http://127.0.0.1:8002");
     let res2 = reqwest::get("http://127.0.0.1:8002/themes");
