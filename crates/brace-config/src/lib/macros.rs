@@ -1,4 +1,15 @@
 #[macro_export]
+macro_rules! config {
+    () => {
+        $crate::Config::new()
+    };
+
+    ( $($tt:tt)+ ) => {
+        $crate::Config::from($crate::table!($($tt)+))
+    };
+}
+
+#[macro_export]
 macro_rules! value {
     ([]) => {
         $crate::Value::array()
@@ -165,6 +176,15 @@ macro_rules! value_unexpected {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn test_config() {
+        let config1 = config! { "key" = "value" };
+        let config2 = config! {};
+
+        assert_eq!(config1.get::<String>("key").unwrap(), "value");
+        assert!(config2.get::<String>("key").is_err());
+    }
+
     #[test]
     fn test_value() {
         let entry = value!("entry");
