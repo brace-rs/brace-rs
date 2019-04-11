@@ -90,11 +90,32 @@ impl Value {
         }
     }
 
+    pub fn set_default<T>(&mut self, key: &str, value: T) -> Result<(), Error>
+    where
+        T: Serialize,
+    {
+        match self {
+            Value::Entry(_) => Err(Error::custom("cannot call `set_default` on entry variant")),
+            Value::Array(array) => array.set_default(key, value),
+            Value::Table(table) => table.set_default(key, value),
+        }
+    }
+
     pub fn set_value(&mut self, key: &str, value: Value) -> Result<(), Error> {
         match self {
             Value::Entry(_) => Err(Error::custom("cannot call `set_value` on entry variant")),
             Value::Array(array) => array.set_value(key, value),
             Value::Table(table) => table.set_value(key, value),
+        }
+    }
+
+    pub fn set_value_default(&mut self, key: &str, value: Value) -> Result<(), Error> {
+        match self {
+            Value::Entry(_) => Err(Error::custom(
+                "cannot call `set_value_default` on entry variant",
+            )),
+            Value::Array(array) => array.set_value_default(key, value),
+            Value::Table(table) => table.set_value_default(key, value),
         }
     }
 
@@ -106,8 +127,12 @@ impl Value {
         }
     }
 
-    pub fn merge_value(&mut self, value: &Value) -> Result<(), Error> {
-        self.merge(value)
+    pub fn merge_default(&mut self, value: &Self) -> Result<(), Error> {
+        match self {
+            Value::Entry(_) => Ok(()),
+            Value::Array(array) => array.merge_value_default(value),
+            Value::Table(table) => table.merge_value_default(value),
+        }
     }
 
     pub fn as_entry(&self) -> Option<&Entry> {
@@ -655,5 +680,80 @@ mod tests {
         assert!(table.get::<Complex>("c").is_ok());
         assert!(table.get::<Complex>("d").is_ok());
         assert!(table.get::<Complex>("e").is_ok());
+    }
+
+    #[test]
+    fn test_set_default() {
+        let mut table = Value::table();
+
+        assert!(table.set_default("key", "A").is_ok());
+        assert_eq!(table.get::<String>("key").unwrap(), "A");
+
+        assert!(table.set("key", "B").is_ok());
+        assert_eq!(table.get::<String>("key").unwrap(), "B");
+
+        assert!(table.set_default("key", "C").is_ok());
+        assert_eq!(table.get::<String>("key").unwrap(), "B");
+
+        assert!(table.set_default("a.0.b", "A").is_ok());
+        assert_eq!(table.get::<String>("a.0.b").unwrap(), "A");
+
+        assert!(table.set("a.0.b", "B").is_ok());
+        assert_eq!(table.get::<String>("a.0.b").unwrap(), "B");
+
+        assert!(table.set_default("a.0.b", "C").is_ok());
+        assert_eq!(table.get::<String>("a.0.b").unwrap(), "B");
+    }
+
+    #[test]
+    fn test_merge_default_simple() {
+        let mut table1 = Value::table();
+        let mut table2 = Value::table();
+
+        assert!(table1.set("a", "A").is_ok());
+        assert!(table2.set("b", "B").is_ok());
+
+        assert!(table1.get::<String>("a").is_ok());
+        assert!(table1.get::<String>("b").is_err());
+        assert!(table2.get::<String>("a").is_err());
+        assert!(table2.get::<String>("b").is_ok());
+
+        assert!(table1.set("b", "b").is_ok());
+
+        assert!(table1.merge_default(&table2).is_ok());
+
+        assert_eq!(table1.get::<String>("a").unwrap(), "A");
+        assert_eq!(table1.get::<String>("b").unwrap(), "b");
+
+        assert!(table1.merge(&table2).is_ok());
+
+        assert_eq!(table1.get::<String>("a").unwrap(), "A");
+        assert_eq!(table1.get::<String>("b").unwrap(), "B");
+    }
+
+    #[test]
+    fn test_merge_default_complex() {
+        let mut table1 = Value::table();
+        let mut table2 = Value::table();
+
+        assert!(table1.set("a.a.0.a", "A").is_ok());
+        assert!(table2.set("a.b.0.a", "B").is_ok());
+
+        assert!(table1.get::<String>("a.a.0.a").is_ok());
+        assert!(table1.get::<String>("a.b.0.a").is_err());
+        assert!(table2.get::<String>("a.a.0.a").is_err());
+        assert!(table2.get::<String>("a.b.0.a").is_ok());
+
+        assert!(table1.set("a.b.0.a", "b").is_ok());
+
+        assert!(table1.merge_default(&table2).is_ok());
+
+        assert_eq!(table1.get::<String>("a.a.0.a").unwrap(), "A");
+        assert_eq!(table1.get::<String>("a.b.0.a").unwrap(), "b");
+
+        assert!(table1.merge(&table2).is_ok());
+
+        assert_eq!(table1.get::<String>("a.a.0.a").unwrap(), "A");
+        assert_eq!(table1.get::<String>("a.b.0.a").unwrap(), "B");
     }
 }

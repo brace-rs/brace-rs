@@ -111,6 +111,17 @@ impl Table {
         }
     }
 
+    pub fn set_default<T>(&mut self, key: &str, value: T) -> Result<(), Error>
+    where
+        T: Serialize,
+    {
+        if self.get_value(key).is_err() {
+            self.set(key, value)?;
+        }
+
+        Ok(())
+    }
+
     pub fn set_value(&mut self, key: &str, value: Value) -> Result<(), Error> {
         let keys: Vec<&str> = key.splitn(3, '.').collect();
 
@@ -156,6 +167,14 @@ impl Table {
         }
     }
 
+    pub fn set_value_default(&mut self, key: &str, value: Value) -> Result<(), Error> {
+        if self.get_value(key).is_err() {
+            self.set_value(key, value)?;
+        }
+
+        Ok(())
+    }
+
     pub fn merge(&mut self, table: &Self) -> Result<(), Error> {
         for (key, val) in &table.0 {
             match self.0.get_mut(key) {
@@ -171,11 +190,34 @@ impl Table {
         Ok(())
     }
 
+    pub fn merge_default(&mut self, table: &Self) -> Result<(), Error> {
+        for (key, val) in &table.0 {
+            match self.0.get_mut(key) {
+                Some(item) => {
+                    item.merge_default(&val)?;
+                }
+                None => {
+                    self.0.insert(key.to_owned(), val.clone());
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn merge_value(&mut self, value: &Value) -> Result<(), Error> {
         match value {
             Value::Entry(_) => Err(Error::custom("cannot merge entry with table")),
             Value::Array(_) => Err(Error::custom("cannot merge array with table")),
             Value::Table(table) => self.merge(table),
+        }
+    }
+
+    pub fn merge_value_default(&mut self, value: &Value) -> Result<(), Error> {
+        match value {
+            Value::Entry(_) => Err(Error::custom("cannot merge entry with table")),
+            Value::Array(_) => Err(Error::custom("cannot merge array with table")),
+            Value::Table(table) => self.merge_default(table),
         }
     }
 }

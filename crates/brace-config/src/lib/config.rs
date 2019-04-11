@@ -29,6 +29,15 @@ impl Config {
         Ok(self)
     }
 
+    pub fn set_default<T>(&mut self, key: &str, value: T) -> Result<&mut Config, Error>
+    where
+        T: Serialize,
+    {
+        self.0.set_default(key, value)?;
+
+        Ok(self)
+    }
+
     pub fn load<P>(path: P) -> Result<Self, Error>
     where
         P: AsRef<Path>,
@@ -55,6 +64,12 @@ impl Config {
 
     pub fn merge(&mut self, config: &Config) -> Result<&mut Config, Error> {
         self.0.merge(&config.0)?;
+
+        Ok(self)
+    }
+
+    pub fn merge_default(&mut self, config: &Config) -> Result<&mut Config, Error> {
+        self.0.merge_default(&config.0)?;
 
         Ok(self)
     }
