@@ -10,5 +10,5 @@ jobs:
     parameters:
       rust_version: ${{ parameters.rust_version }}
 
-  - script: cargo test --all
+  - script: cargo test --all -- --test-threads=1
     displayName: Run cargo test
