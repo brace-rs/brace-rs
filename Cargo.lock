@@ -535,6 +535,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "brace-web-auth"
+version = "0.1.0"
+
+[[package]]
 name = "brace-web-page"
 version = "0.1.0"
 dependencies = [
