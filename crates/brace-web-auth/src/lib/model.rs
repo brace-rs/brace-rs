@@ -1,12 +1,14 @@
 use actix_web::dev::ServiceFromRequest;
-use actix_web::error::{Error, ErrorInternalServerError};
+use actix_web::error::Error;
 use actix_web::middleware::identity::Identity;
 use actix_web::web::Data;
 use actix_web::FromRequest;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Local, Utc};
 use futures::future::{ok, Either, Future, FutureResult};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+use crate::util::decode_token;
 
 type BoxedFuture<I, E> = Box<Future<Item = I, Error = E>>;
 
@@ -58,22 +60,103 @@ impl<P> FromRequest<P> for CurrentUser {
     type Future = Either<FutureResult<Self, Self::Error>, BoxedFuture<Self, Self::Error>>;
 
     fn from_request(req: &mut ServiceFromRequest<P>) -> Self::Future {
-        match Identity::from_request(req) {
-            Ok(id) => match id.identity() {
-                Some(user) => match user.parse::<Uuid>() {
-                    Ok(uuid) => match Data::from_request(req) {
-                        Ok(database) => Either::B(Box::new(
-                            crate::action::retrieve::retrieve(&database, uuid)
-                                .map_err(ErrorInternalServerError)
-                                .and_then(move |user| ok(CurrentUser::Authenticated(user))),
-                        )),
-                        Err(_) => Either::A(ok(CurrentUser::Anonymous)),
-                    },
-                    Err(_) => Either::A(ok(CurrentUser::Anonymous)),
-                },
-                None => Either::A(ok(CurrentUser::Anonymous)),
-            },
-            Err(_) => Either::A(ok(CurrentUser::Anonymous)),
+        if let Ok(id) = Identity::from_request(req) {
+            if let Some(user) = id.identity() {
+                if let Ok(uuid) = user.parse::<Uuid>() {
+                    if let Ok(database) = Data::from_request(req) {
+                        return Either::B(Box::new(
+                            crate::action::retrieve::retrieve(&database, uuid).then(move |user| {
+                                match user {
+                                    Ok(user) => ok(CurrentUser::Authenticated(user)),
+                                    Err(_) => {
+                                        id.forget();
+                                        ok(CurrentUser::Anonymous)
+                                    }
+                                }
+                            }),
+                        ));
+                    }
+                }
+            }
+
+            id.forget();
+        }
+
+        Either::A(ok(CurrentUser::Anonymous))
+    }
+}
+
+pub enum CurrentAuth {
+    Unauthenticated,
+    Authenticated(User),
+}
+
+impl<P> FromRequest<P> for CurrentAuth {
+    type Error = Error;
+    type Future = Either<FutureResult<Self, Self::Error>, BoxedFuture<Self, Self::Error>>;
+
+    fn from_request(req: &mut ServiceFromRequest<P>) -> Self::Future {
+        if let Some(header) = req.headers().get("Authorization") {
+            if let Ok(header) = header.to_str() {
+                let parts = header.split(' ').collect::<Vec<&str>>();
+
+                if parts.len() == 2 && parts[0] == "Bearer" {
+                    if let Ok(auth) = decode_token(parts[1]) {
+                        if let Ok(database) = Data::from_request(req) {
+                            return Either::B(Box::new(
+                                crate::action::locate::locate(&database, auth.email).then(
+                                    move |res| match res {
+                                        Ok(user) => ok(CurrentAuth::Authenticated(user)),
+                                        Err(_) => ok(CurrentAuth::Unauthenticated),
+                                    },
+                                ),
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
+        Either::A(ok(CurrentAuth::Unauthenticated))
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SlimUser {
+    pub email: String,
+}
+
+impl From<Claims> for SlimUser {
+    fn from(claims: Claims) -> Self {
+        SlimUser {
+            email: claims.email,
+        }
+    }
+}
+
+impl From<User> for SlimUser {
+    fn from(user: User) -> Self {
+        SlimUser { email: user.email }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Claims {
+    pub email: String,
+    pub iss: String,
+    pub sub: String,
+    pub iat: i64,
+    pub exp: i64,
+}
+
+impl Claims {
+    pub fn with_email(email: &str) -> Self {
+        Claims {
+            iss: "localhost".into(),
+            sub: "auth".into(),
+            email: email.to_owned(),
+            iat: Local::now().timestamp(),
+            exp: (Local::now() + Duration::hours(24)).timestamp(),
         }
     }
 }

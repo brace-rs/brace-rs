@@ -67,6 +67,7 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
             ))
             .service(resource("/").route(get().to_async(route::index::get)))
             .service(resource("/themes").route(get().to_async(route::themes::get)))
+            .service(brace_web_auth::route::api::auth_route())
             .service(brace_web_auth::route::web::login_route())
             .service(brace_web_auth::route::web::logout_route())
             .service(brace_web_auth::route::api::routes())

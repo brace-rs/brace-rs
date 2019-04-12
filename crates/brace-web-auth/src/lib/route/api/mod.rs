@@ -1,8 +1,9 @@
 use actix_web::error::PayloadError;
 use actix_web::web::{self, Bytes};
-use actix_web::Scope;
+use actix_web::{Resource, Scope};
 use futures::Stream;
 
+pub mod auth;
 pub mod create;
 pub mod delete;
 pub mod list;
@@ -24,4 +25,8 @@ pub fn routes() -> Scope<PayloadStream> {
                 .route(web::put().to_async(update::update))
                 .route(web::delete().to_async(delete::delete)),
         )
+}
+
+pub fn auth_route() -> Resource<PayloadStream> {
+    web::resource("/api/auth").route(web::post().to_async(auth::post))
 }
