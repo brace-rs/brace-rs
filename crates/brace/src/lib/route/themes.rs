@@ -6,8 +6,8 @@ use actix_web::HttpResponse;
 use brace_config::load;
 use brace_theme::config::{ThemeConfig, ThemeInfo};
 use brace_theme::manifest::ManifestConfig;
-use brace_theme::renderer::{Renderer, Template};
 use brace_theme::resource::ResourceInfo;
+use brace_web::render::{Renderer, Template};
 use futures::future::Future;
 use serde_json::{json, to_value};
 

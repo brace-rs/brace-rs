@@ -1,13 +1,9 @@
-use std::process::Command;
-
 use actix::System;
-use assert_cmd::prelude::*;
+use brace_theme::config::ThemeReferenceInfo;
+use brace_web::render::{Renderer, RendererConfig, Template};
 use futures::future::lazy;
 use serde_json::{json, Value};
 use tempfile::TempDir;
-
-use brace_theme::config::ThemeReferenceInfo;
-use brace_theme::renderer::{Renderer, RendererConfig, Template};
 
 static TEMPLATE_FILE: &'static str = "Hello {{ message }}!";
 
@@ -49,26 +45,6 @@ name = "custom-text"
 type = "text"
 text = "Hello {{ message }}!"
 "#;
-
-#[test]
-fn test_theme_command_init() {
-    let dir = TempDir::new().unwrap();
-    let path = dir.path();
-
-    Command::cargo_bin("brace")
-        .unwrap()
-        .args(&["theme", "init", path.to_str().unwrap()])
-        .assert()
-        .success();
-
-    let cfg = std::fs::metadata(path.join("theme.toml")).unwrap();
-    let man = std::fs::metadata(path.join("manifest.toml")).unwrap();
-    let tpl = std::fs::metadata(path.join("templates/index.html")).unwrap();
-
-    assert!(cfg.is_file());
-    assert!(man.is_file());
-    assert!(tpl.is_file());
-}
 
 #[test]
 fn test_theme_template_render_static() {

@@ -1,7 +1,7 @@
 use actix_web::error::{Error, ErrorInternalServerError};
 use actix_web::web::Data;
 use actix_web::HttpResponse;
-use brace_theme::renderer::{Renderer, Template};
+use brace_web::render::{Renderer, Template};
 use futures::future::Future;
 use serde_json::json;
 

@@ -3,8 +3,8 @@ use actix_web::middleware::identity::Identity;
 use actix_web::web::{Data, Form};
 use actix_web::HttpResponse;
 use brace_db::Database;
-use brace_theme::renderer::{Renderer, Template};
 use brace_web::redirect::HttpRedirect;
+use brace_web::render::{Renderer, Template};
 use futures::future::{err, ok, Either, Future};
 use serde_json::json;
 

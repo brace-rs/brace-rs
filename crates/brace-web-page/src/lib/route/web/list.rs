@@ -2,7 +2,7 @@ use actix_web::error::{Error, ErrorForbidden, ErrorInternalServerError};
 use actix_web::web::Data;
 use actix_web::HttpResponse;
 use brace_db::Database;
-use brace_theme::renderer::{Renderer, Template};
+use brace_web::render::{Renderer, Template};
 use brace_web_auth::model::CurrentUser;
 use futures::future::{err, Either, Future};
 use serde_json::json;
