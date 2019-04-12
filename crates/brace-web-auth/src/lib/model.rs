@@ -1,6 +1,14 @@
+use actix_web::dev::ServiceFromRequest;
+use actix_web::error::{Error, ErrorInternalServerError};
+use actix_web::middleware::identity::Identity;
+use actix_web::web::Data;
+use actix_web::FromRequest;
 use chrono::{DateTime, Utc};
+use futures::future::{ok, Either, Future, FutureResult};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+type BoxedFuture<I, E> = Box<Future<Item = I, Error = E>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct User {
@@ -36,6 +44,36 @@ impl Default for UserAuth {
         Self {
             email: "".to_string(),
             password: "".to_string(),
+        }
+    }
+}
+
+pub enum CurrentUser {
+    Anonymous,
+    Authenticated(User),
+}
+
+impl<P> FromRequest<P> for CurrentUser {
+    type Error = Error;
+    type Future = Either<FutureResult<Self, Self::Error>, BoxedFuture<Self, Self::Error>>;
+
+    fn from_request(req: &mut ServiceFromRequest<P>) -> Self::Future {
+        match Identity::from_request(req) {
+            Ok(id) => match id.identity() {
+                Some(user) => match user.parse::<Uuid>() {
+                    Ok(uuid) => match Data::from_request(req) {
+                        Ok(database) => Either::B(Box::new(
+                            crate::action::retrieve::retrieve(&database, uuid)
+                                .map_err(ErrorInternalServerError)
+                                .and_then(move |user| ok(CurrentUser::Authenticated(user))),
+                        )),
+                        Err(_) => Either::A(ok(CurrentUser::Anonymous)),
+                    },
+                    Err(_) => Either::A(ok(CurrentUser::Anonymous)),
+                },
+                None => Either::A(ok(CurrentUser::Anonymous)),
+            },
+            Err(_) => Either::A(ok(CurrentUser::Anonymous)),
         }
     }
 }
