@@ -3,59 +3,42 @@ use actix_web::web::{Data, Path};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_theme::renderer::{Renderer, Template};
-use brace_web::redirect::HttpRedirect;
-use brace_web_auth::model::CurrentUser;
 use futures::future::{err, Either, Future};
 use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::model::Page;
+use crate::model::{CurrentUser, User};
 
 pub fn get(
     user: CurrentUser,
     info: Path<Info>,
-    renderer: Data<Renderer>,
     database: Data<Database>,
+    renderer: Data<Renderer>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match user {
         CurrentUser::Anonymous => Either::A(err(ErrorForbidden("Forbidden"))),
         CurrentUser::Authenticated(_) => Either::B(
-            crate::action::retrieve::retrieve(&database, info.page)
+            crate::action::retrieve::retrieve(&database, info.user)
                 .map_err(ErrorInternalServerError)
-                .and_then(move |page| render(page, &renderer)),
+                .and_then(move |user| render(user, &renderer)),
         ),
     }
 }
 
-pub fn post(
-    user: CurrentUser,
-    info: Path<Info>,
-    database: Data<Database>,
-) -> impl Future<Item = HttpRedirect, Error = Error> {
-    match user {
-        CurrentUser::Anonymous => Either::A(err(ErrorForbidden("Forbidden"))),
-        CurrentUser::Authenticated(_) => Either::B(
-            crate::action::delete::delete(&database, info.page)
-                .map_err(ErrorInternalServerError)
-                .and_then(|_| HttpRedirect::to("/pages/")),
-        ),
-    }
-}
-
-fn render(page: Page, renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
+fn render(user: User, renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
     let template = Template::new(
-        "page-delete-form",
+        "user",
         json!({
-            "title": format!("Delete page <em>{}</em>?", page.title),
-            "page": page,
+            "title": format!("User <em>{}</em>", user.email),
+            "user": user,
         }),
     );
 
     renderer
         .send(template)
         .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
+        .and_then(move |res| match res {
             Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
             Err(err) => Err(ErrorInternalServerError(err)),
         })
@@ -63,5 +46,5 @@ fn render(page: Page, renderer: &Renderer) -> impl Future<Item = HttpResponse, E
 
 #[derive(Deserialize)]
 pub struct Info {
-    page: Uuid,
+    user: Uuid,
 }

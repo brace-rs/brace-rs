@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use actix::System;
+use actix_web::middleware::identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::middleware::Logger;
 use actix_web::web::{get, resource};
 use actix_web::App;
@@ -59,8 +60,17 @@ pub fn run(config: AppConfig, path: &Path) -> Result<(), Error> {
             .data(database.clone())
             .data(renderer.clone())
             .wrap(Logger::new(&format))
+            .wrap(IdentityService::new(
+                CookieIdentityPolicy::new(&[0; 32])
+                    .name("auth")
+                    .secure(false),
+            ))
             .service(resource("/").route(get().to_async(route::index::get)))
             .service(resource("/themes").route(get().to_async(route::themes::get)))
+            .service(brace_web_auth::route::web::login_route())
+            .service(brace_web_auth::route::web::logout_route())
+            .service(brace_web_auth::route::api::routes())
+            .service(brace_web_auth::route::web::routes())
             .service(brace_web_page::route::api::routes())
             .service(brace_web_page::route::web::routes())
             .service(ThemeResources::new("/static/resources", themes.clone()))

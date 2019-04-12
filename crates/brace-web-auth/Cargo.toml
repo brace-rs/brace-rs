@@ -1,46 +1,33 @@
 [package]
-name = "brace"
+name = "brace-web-auth"
 version = "0.1.0"
 authors = ["Daniel Balcomb <daniel.balcomb@gmail.com>"]
-description = "A content management system built with the rust programming language."
+description = "The web authentication component of the brace project."
 edition = "2018"
 homepage = "https://github.com/brace-rs/brace"
 repository = "https://github.com/brace-rs/brace"
-readme = "README.md"
 license = "MIT OR Apache-2.0"
 
 [lib]
-name = "brace"
+name = "brace_web_auth"
 path = "src/lib/lib.rs"
 
 [dependencies]
 actix = "0.8.0-alpha.2"
-actix-files = "0.1.0-alpha.1"
 actix-service = "0.3"
 actix-web = "1.0.0-alpha.2"
-brace-cli = { path = "../brace-cli" }
-brace-config = { path = "../brace-config" }
+argon2rs = "0.2"
 brace-db = { path = "../brace-db" }
 brace-theme = { path = "../brace-theme" }
 brace-web = { path = "../brace-web" }
-brace-web-auth = { path = "../brace-web-auth" }
-brace-web-page = { path = "../brace-web-page" }
-chrono = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
 failure = "0.1"
-fern = "0.5"
 futures = "0.1"
-log = "0.4"
-path-absolutize = "1.1"
+rand = "0.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-toml = "0.5"
+uuid = { version = "0.5", features = ["serde", "v4"] }
 
 [dev-dependencies]
-assert_cmd = "0.11"
-reqwest = "0.9"
-tempfile = "3.0"
-
-[[bin]]
-name = "brace"
-test = false
-doc = false
+actix-http = { version = "0.1.0-alpha.3" }
+actix-http-test = { version = "0.1.0-alpha.3" }

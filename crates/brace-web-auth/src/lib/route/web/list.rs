@@ -3,11 +3,10 @@ use actix_web::web::Data;
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_theme::renderer::{Renderer, Template};
-use brace_web_auth::model::CurrentUser;
 use futures::future::{err, Either, Future};
 use serde_json::json;
 
-use crate::model::PageWithPath;
+use crate::model::{CurrentUser, User};
 
 pub fn get(
     user: CurrentUser,
@@ -19,20 +18,20 @@ pub fn get(
         CurrentUser::Authenticated(_) => Either::B(
             crate::action::list::list(&database)
                 .map_err(ErrorInternalServerError)
-                .and_then(move |pages| render(pages, &renderer)),
+                .and_then(move |users| render(users, &renderer)),
         ),
     }
 }
 
 fn render(
-    pages: Vec<PageWithPath>,
+    users: Vec<User>,
     renderer: &Renderer,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let template = Template::new(
-        "page-list",
+        "user-list",
         json!({
-            "title": "Pages",
-            "pages": pages,
+            "title": "Users",
+            "users": users,
         }),
     );
 

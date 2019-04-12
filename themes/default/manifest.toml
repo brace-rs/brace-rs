@@ -64,3 +64,33 @@ path = "templates/page/page-form.html"
 name = "page-delete-form"
 type = "tera"
 path = "templates/page/page-delete-form.html"
+
+[[templates]]
+name = "user"
+type = "tera"
+path = "templates/user/user.html"
+
+[[templates]]
+name = "user-list"
+type = "tera"
+path = "templates/user/user-list.html"
+
+[[templates]]
+name = "user-form"
+type = "tera"
+path = "templates/user/user-form.html"
+
+[[templates]]
+name = "user-delete-form"
+type = "tera"
+path = "templates/user/user-delete-form.html"
+
+[[templates]]
+name = "login-form"
+type = "tera"
+path = "templates/auth/login-form.html"
+
+[[templates]]
+name = "logout-form"
+type = "tera"
+path = "templates/auth/logout-form.html"

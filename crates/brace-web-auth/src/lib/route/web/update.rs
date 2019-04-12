@@ -1,16 +1,15 @@
 use actix_web::error::{Error, ErrorForbidden, ErrorInternalServerError};
-use actix_web::web::{Data, Path};
+use actix_web::web::{Data, Form, Path};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_theme::renderer::{Renderer, Template};
 use brace_web::redirect::HttpRedirect;
-use brace_web_auth::model::CurrentUser;
 use futures::future::{err, Either, Future};
 use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::model::Page;
+use crate::model::{CurrentUser, User};
 
 pub fn get(
     user: CurrentUser,
@@ -21,34 +20,34 @@ pub fn get(
     match user {
         CurrentUser::Anonymous => Either::A(err(ErrorForbidden("Forbidden"))),
         CurrentUser::Authenticated(_) => Either::B(
-            crate::action::retrieve::retrieve(&database, info.page)
+            crate::action::retrieve::retrieve(&database, info.user)
                 .map_err(ErrorInternalServerError)
-                .and_then(move |page| render(page, &renderer)),
+                .and_then(move |user| render(user, &renderer)),
         ),
     }
 }
 
 pub fn post(
     user: CurrentUser,
-    info: Path<Info>,
+    data: Form<User>,
     database: Data<Database>,
 ) -> impl Future<Item = HttpRedirect, Error = Error> {
     match user {
         CurrentUser::Anonymous => Either::A(err(ErrorForbidden("Forbidden"))),
         CurrentUser::Authenticated(_) => Either::B(
-            crate::action::delete::delete(&database, info.page)
+            crate::action::update::update(&database, data.into_inner())
                 .map_err(ErrorInternalServerError)
-                .and_then(|_| HttpRedirect::to("/pages/")),
+                .and_then(|user| HttpRedirect::to(format!("/users/{}", user.id))),
         ),
     }
 }
 
-fn render(page: Page, renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
+fn render(user: User, renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
     let template = Template::new(
-        "page-delete-form",
+        "user-form",
         json!({
-            "title": format!("Delete page <em>{}</em>?", page.title),
-            "page": page,
+            "title": format!("Update user <em>{}</em>", user.email),
+            "user": user,
         }),
     );
 
@@ -63,5 +62,5 @@ fn render(page: Page, renderer: &Renderer) -> impl Future<Item = HttpResponse, E
 
 #[derive(Deserialize)]
 pub struct Info {
-    page: Uuid,
+    user: Uuid,
 }
