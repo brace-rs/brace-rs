@@ -120,7 +120,7 @@ impl<P> ThemeResourcesService<P> {
     ) -> Either<FutureResult<ServiceResponse, Error>, FutureResponse> {
         log::debug!("ThemeResources: Failed to handle {}: {}", req.path(), err);
         if let Some(ref mut default) = self.default {
-            Either::B(default.call(ServiceRequest::from_parts(req, payload)))
+            default.call(ServiceRequest::from_parts(req, payload))
         } else {
             Either::A(ok(ServiceResponse::from_err(err, req.clone())))
         }
