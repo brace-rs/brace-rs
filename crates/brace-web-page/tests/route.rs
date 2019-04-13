@@ -9,11 +9,9 @@ use brace_web_auth::action::create::create;
 use brace_web_auth::action::install::install as install_users;
 use brace_web_auth::action::uninstall::uninstall as uninstall_users;
 use brace_web_auth::model::User;
-use brace_web_auth::route::api::auth_route;
 use brace_web_page::action::install::install;
 use brace_web_page::action::uninstall::uninstall;
 use brace_web_page::model::Page;
-use brace_web_page::route::api::routes;
 use chrono::Utc;
 use futures::future::Future;
 use serde_json::{json, Value};
@@ -42,8 +40,8 @@ fn test_page_route_lifecycle() {
         HttpService::new(
             App::new()
                 .data(Database::from_config(DatabaseConfig::default()).unwrap())
-                .service(auth_route())
-                .service(routes()),
+                .configure(brace_web_auth::route::api::config)
+                .configure(brace_web_page::route::api::config),
         )
     });
 
