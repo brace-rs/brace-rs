@@ -31,7 +31,7 @@ jobs:
 - template: ci/azure-pipelines/job-rust-check.yml
   parameters:
     name: rust_check_minver
-    rust_version: 1.32.0
+    rust_version: 1.33.0
 
 - template: ci/azure-pipelines/job-rust-test.yml
   parameters:
