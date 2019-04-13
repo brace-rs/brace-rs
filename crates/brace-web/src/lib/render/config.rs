@@ -1,6 +1,5 @@
+use brace_theme::config::ThemeReferenceInfo;
 use serde::{Deserialize, Serialize};
-
-use crate::config::ThemeReferenceInfo;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]

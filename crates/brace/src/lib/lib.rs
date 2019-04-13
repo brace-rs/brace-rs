@@ -9,7 +9,7 @@ use actix_web::HttpServer;
 use brace_config::{load, save};
 use brace_db::Database;
 use brace_theme::config::ThemeConfig;
-use brace_theme::renderer::{Renderer, RendererConfig};
+use brace_web::render::{Renderer, RendererConfig};
 use failure::Error;
 use log::info;
 

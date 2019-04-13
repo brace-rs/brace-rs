@@ -12,7 +12,6 @@ pub mod cli;
 pub mod config;
 pub mod library;
 pub mod manifest;
-pub mod renderer;
 pub mod resource;
 pub mod template;
 pub mod util;

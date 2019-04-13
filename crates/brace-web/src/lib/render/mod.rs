@@ -5,14 +5,15 @@ use std::sync::{Arc, RwLock};
 
 use actix::{Actor, Addr, SyncArbiter, SyncContext};
 use brace_config::load;
+use brace_theme::manifest::ManifestConfig;
+use brace_theme::template::TemplateInfo;
+use brace_theme::ThemeConfig;
 use failure::{format_err, Error};
 use path_absolutize::Absolutize;
 use serde_json::Value;
 use tera::Tera;
 
-use crate::manifest::ManifestConfig;
-use crate::template::{MapFunction, TemplateFunction, TemplateInfo};
-use crate::ThemeConfig;
+use self::template::{MapFunction, TemplateFunction};
 
 pub use self::config::RendererConfig;
 pub use self::template::Template;

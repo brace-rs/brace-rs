@@ -9,7 +9,7 @@ use actix_web::dev::{
 use actix_web::error::{Error, ErrorNotFound};
 use actix_web::HttpRequest;
 use brace_db::Database;
-use brace_theme::renderer::Renderer;
+use brace_web::render::Renderer;
 use futures::future::{ok, Either, Future, FutureResult};
 use futures::{Async, Poll};
 

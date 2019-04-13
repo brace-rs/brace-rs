@@ -13,7 +13,17 @@ name = "brace_web"
 path = "src/lib/lib.rs"
 
 [dependencies]
+actix = "0.8.0-alpha.2"
 actix-web = "1.0.0-alpha.2"
+brace-config = { path = "../brace-config" }
+brace-theme = { path = "../brace-theme" }
+failure = "0.1"
 futures = "0.1"
 log = "0.4"
+path-absolutize = "1.1"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tera = "1.0.0-beta.3"
+
+[dev-dependencies]
+tempfile = "3.0"
