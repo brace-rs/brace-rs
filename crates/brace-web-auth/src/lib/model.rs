@@ -1,8 +1,8 @@
-use actix_web::dev::ServiceFromRequest;
+use actix_web::dev::Payload;
 use actix_web::error::Error;
 use actix_web::middleware::identity::Identity;
 use actix_web::web::Data;
-use actix_web::FromRequest;
+use actix_web::{FromRequest, HttpRequest};
 use chrono::{DateTime, Duration, Local, Utc};
 use futures::future::{ok, Either, Future, FutureResult};
 use serde::{Deserialize, Serialize};
@@ -59,11 +59,11 @@ impl<P> FromRequest<P> for CurrentUser {
     type Error = Error;
     type Future = Either<FutureResult<Self, Self::Error>, BoxedFuture<Self, Self::Error>>;
 
-    fn from_request(req: &mut ServiceFromRequest<P>) -> Self::Future {
-        if let Ok(id) = Identity::from_request(req) {
+    fn from_request(req: &HttpRequest, payload: &mut Payload<P>) -> Self::Future {
+        if let Ok(id) = Identity::from_request(req, payload) {
             if let Some(user) = id.identity() {
                 if let Ok(uuid) = user.parse::<Uuid>() {
-                    if let Ok(database) = Data::from_request(req) {
+                    if let Ok(database) = Data::from_request(req, payload) {
                         return Either::B(Box::new(
                             crate::action::retrieve::retrieve(&database, uuid).then(move |user| {
                                 match user {
@@ -95,14 +95,14 @@ impl<P> FromRequest<P> for CurrentAuth {
     type Error = Error;
     type Future = Either<FutureResult<Self, Self::Error>, BoxedFuture<Self, Self::Error>>;
 
-    fn from_request(req: &mut ServiceFromRequest<P>) -> Self::Future {
+    fn from_request(req: &HttpRequest, payload: &mut Payload<P>) -> Self::Future {
         if let Some(header) = req.headers().get("Authorization") {
             if let Ok(header) = header.to_str() {
                 let parts = header.split(' ').collect::<Vec<&str>>();
 
                 if parts.len() == 2 && parts[0] == "Bearer" {
                     if let Ok(auth) = decode_token(parts[1]) {
-                        if let Ok(database) = Data::from_request(req) {
+                        if let Ok(database) = Data::from_request(req, payload) {
                             return Either::B(Box::new(
                                 crate::action::locate::locate(&database, auth.email).then(
                                     move |res| match res {

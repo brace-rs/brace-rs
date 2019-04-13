@@ -13,7 +13,7 @@ name = "brace_db"
 path = "src/lib/lib.rs"
 
 [dependencies]
-actix = "0.8.0-alpha.2"
+actix = "0.8.0-alpha.3"
 failure = "0.1"
 postgres = { version = "0.15", features = ["with-uuid", "with-chrono"] }
 r2d2 = "0.8"

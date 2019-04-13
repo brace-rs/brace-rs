@@ -99,7 +99,7 @@ impl<P> PageRouterService<P> {
         payload: Payload<P>,
     ) -> Either<FutureResult<ServiceResponse, Error>, FutureResponse> {
         if let Some(ref mut default) = self.default {
-            Either::B(default.call(ServiceRequest::from_parts(req, payload)))
+            default.call(ServiceRequest::from_parts(req, payload))
         } else {
             Either::A(ok(ServiceResponse::from_err(err, req.clone())))
         }
