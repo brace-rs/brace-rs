@@ -27,6 +27,13 @@
           The page slug.
         </span>
       </div>
+      <div class="field field--textarea">
+        <label for="page-description" class="label">Description</label>
+        <textarea id="page-description" name="description" class="input input--textarea">{{ page.description }}</textarea>
+        <span class="description">
+          The description of the page.
+        </span>
+      </div>
       {% if pages %}
       <div class="field field--select">
         <label for="page-parent" class="label">Parent</label>
@@ -46,13 +53,6 @@
         </span>
       </div>
       {% endif %}
-      <div class="field field--textarea">
-        <label for="page-content" class="label">Content</label>
-        <textarea id="page-content" name="content" class="input input--textarea">{{ page.content }}</textarea>
-        <span class="description">
-          The content of the page.
-        </span>
-      </div>
       <div class="field field--datetime">
         <label for="page-created" class="label">Created</label>
         <input type="datetime-local" id="page-created" name="created" class="input input--datetime" value="{{ page.created }}" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}" />

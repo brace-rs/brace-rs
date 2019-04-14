@@ -10,7 +10,7 @@ pub struct Page {
     pub parent: Option<Uuid>,
     pub slug: String,
     pub title: String,
-    pub content: String,
+    pub description: String,
     #[serde(with = "serde_datetime_utc")]
     pub created: DateTime<Utc>,
     #[serde(with = "serde_datetime_utc")]
@@ -24,7 +24,7 @@ impl Default for Page {
             parent: None,
             slug: "".to_string(),
             title: "".to_string(),
-            content: "".to_string(),
+            description: "".to_string(),
             created: Utc::now(),
             updated: Utc::now(),
         }
@@ -38,7 +38,7 @@ pub struct PageWithPath {
     pub parent: Option<Uuid>,
     pub slug: String,
     pub title: String,
-    pub content: String,
+    pub description: String,
     #[serde(with = "serde_datetime_utc")]
     pub created: DateTime<Utc>,
     #[serde(with = "serde_datetime_utc")]

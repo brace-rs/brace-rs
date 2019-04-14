@@ -7,15 +7,15 @@ use crate::model::Page;
 
 static QUERY: &'static str = r#"
     WITH RECURSIVE cte AS (
-        SELECT id, parent, slug, title, content, created, updated, '/' || slug AS path
+        SELECT id, parent, slug, title, description, created, updated, '/' || slug AS path
         FROM pages
         WHERE parent is null
         UNION ALL
-        SELECT t.id, t.parent, t.slug, t.title, t.content, t.created, t.updated, concat_ws('/', r.path, t.slug) AS path
+        SELECT t.id, t.parent, t.slug, t.title, t.description, t.created, t.updated, concat_ws('/', r.path, t.slug) AS path
         FROM pages t
         JOIN cte r ON t.parent = r.id
     )
-    SELECT id, parent, slug, title, content, created, updated
+    SELECT id, parent, slug, title, description, created, updated
     FROM cte
     WHERE path = $1
 "#;
@@ -54,7 +54,7 @@ impl Handler<Locate> for DatabaseInner {
             parent: row.get(1),
             slug: row.get(2),
             title: row.get(3),
-            content: row.get(4),
+            description: row.get(4),
             created: row.get(5),
             updated: row.get(6),
         })

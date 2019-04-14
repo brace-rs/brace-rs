@@ -28,7 +28,7 @@ fn test_page_route_lifecycle() {
         parent: None,
         slug: "a".to_string(),
         title: "A".to_string(),
-        content: "A".to_string(),
+        description: "A".to_string(),
         created: Utc::now(),
         updated: Utc::now(),
     };
