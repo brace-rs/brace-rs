@@ -7,15 +7,15 @@ use crate::model::PageWithPath;
 
 static QUERY: &'static str = r#"
     WITH RECURSIVE cte AS (
-        SELECT id, parent, slug, title, description, created, updated, '/' || slug AS path
+        SELECT id, parent, slug, title, description, document, created, updated, '/' || slug AS path
         FROM pages
         WHERE parent is null
         UNION ALL
-        SELECT t.id, t.parent, t.slug, t.title, t.description, t.created, t.updated, concat_ws('/', r.path, t.slug) AS path
+        SELECT t.id, t.parent, t.slug, t.title, t.description, t.document, t.created, t.updated, concat_ws('/', r.path, t.slug) AS path
         FROM pages t
         JOIN cte r ON t.parent = r.id
     )
-    SELECT id, parent, slug, title, description, created, updated, path
+    SELECT id, parent, slug, title, description, document, created, updated, path
     FROM cte
     ORDER BY path
 "#;
@@ -48,9 +48,10 @@ impl Handler<List> for DatabaseInner {
                 slug: row.get(2),
                 title: row.get(3),
                 description: row.get(4),
-                created: row.get(5),
-                updated: row.get(6),
-                path: row.get(7),
+                document: row.get(5),
+                created: row.get(6),
+                updated: row.get(7),
+                path: row.get(8),
             })
             .collect())
     }

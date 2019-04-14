@@ -10,6 +10,7 @@ static QUERY: &'static str = r#"
         slug character varying(255) NOT NULL,
         title text NOT NULL CHECK (title <> ''),
         description text NOT NULL DEFAULT '',
+        document jsonb NOT NULL DEFAULT '{}'::jsonb,
         created timestamp with time zone NOT NULL DEFAULT now(),
         updated timestamp with time zone NOT NULL DEFAULT now() CHECK (updated >= created)
     )

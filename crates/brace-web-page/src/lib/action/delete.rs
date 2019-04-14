@@ -9,7 +9,7 @@ use crate::model::Page;
 static QUERY: &'static str = r#"
     DELETE FROM pages *
     WHERE id = $1
-    RETURNING id, parent, slug, title, description, created, updated
+    RETURNING id, parent, slug, title, description, document, created, updated
 "#;
 
 pub fn delete(database: &Database, page: Uuid) -> impl Future<Item = Page, Error = Error> {
@@ -44,8 +44,9 @@ impl Handler<Delete> for DatabaseInner {
             slug: row.get(2),
             title: row.get(3),
             description: row.get(4),
-            created: row.get(5),
-            updated: row.get(6),
+            document: row.get(5),
+            created: row.get(6),
+            updated: row.get(7),
         })
     }
 }

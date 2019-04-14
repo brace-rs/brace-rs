@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::model::Page;
 
 static QUERY: &'static str = r#"
-    SELECT id, parent, slug, title, description, created, updated
+    SELECT id, parent, slug, title, description, document, created, updated
     FROM pages
     WHERE id = $1
 "#;
@@ -44,8 +44,9 @@ impl Handler<Retrieve> for DatabaseInner {
             slug: row.get(2),
             title: row.get(3),
             description: row.get(4),
-            created: row.get(5),
-            updated: row.get(6),
+            document: row.get(5),
+            created: row.get(6),
+            updated: row.get(7),
         })
     }
 }
