@@ -7,9 +7,9 @@ use crate::model::Page;
 
 static QUERY: &'static str = r#"
     UPDATE pages
-    SET parent = $2, slug = $3, title = $4, content = $5, created = $6, updated = $7
+    SET parent = $2, slug = $3, title = $4, description = $5, document = $6, created = $7, updated = $8
     WHERE id = $1
-    RETURNING id, parent, slug, title, content, created, updated
+    RETURNING id, parent, slug, title, description, document, created, updated
 "#;
 
 pub fn update(database: &Database, page: Page) -> impl Future<Item = Page, Error = Error> {
@@ -37,7 +37,8 @@ impl Handler<Update> for DatabaseInner {
                 &msg.0.parent,
                 &msg.0.slug,
                 &msg.0.title,
-                &msg.0.content,
+                &msg.0.description,
+                &msg.0.document,
                 &msg.0.created,
                 &msg.0.updated,
             ],
@@ -54,9 +55,10 @@ impl Handler<Update> for DatabaseInner {
             parent: row.get(1),
             slug: row.get(2),
             title: row.get(3),
-            content: row.get(4),
-            created: row.get(5),
-            updated: row.get(6),
+            description: row.get(4),
+            document: row.get(5),
+            created: row.get(6),
+            updated: row.get(7),
         })
     }
 }

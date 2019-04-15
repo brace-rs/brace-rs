@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -10,7 +11,8 @@ pub struct Page {
     pub parent: Option<Uuid>,
     pub slug: String,
     pub title: String,
-    pub content: String,
+    pub description: String,
+    pub document: Value,
     #[serde(with = "serde_datetime_utc")]
     pub created: DateTime<Utc>,
     #[serde(with = "serde_datetime_utc")]
@@ -24,7 +26,8 @@ impl Default for Page {
             parent: None,
             slug: "".to_string(),
             title: "".to_string(),
-            content: "".to_string(),
+            description: "".to_string(),
+            document: json!({}),
             created: Utc::now(),
             updated: Utc::now(),
         }
@@ -38,7 +41,8 @@ pub struct PageWithPath {
     pub parent: Option<Uuid>,
     pub slug: String,
     pub title: String,
-    pub content: String,
+    pub description: String,
+    pub document: Value,
     #[serde(with = "serde_datetime_utc")]
     pub created: DateTime<Utc>,
     #[serde(with = "serde_datetime_utc")]

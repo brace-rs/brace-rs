@@ -10,6 +10,7 @@ use brace_web_page::action::uninstall::uninstall;
 use brace_web_page::action::update::update;
 use brace_web_page::model::Page;
 use chrono::Utc;
+use serde_json::json;
 use uuid::Uuid;
 
 #[test]
@@ -22,7 +23,8 @@ fn test_page_lifecycle() {
         parent: None,
         slug: "foo".to_string(),
         title: "Foo".to_string(),
-        content: "FOO".to_string(),
+        description: "FOO".to_string(),
+        document: json!({}),
         created: Utc::now(),
         updated: Utc::now(),
     };
@@ -33,7 +35,8 @@ fn test_page_lifecycle() {
         parent: Some(uuid),
         slug: "bar".to_string(),
         title: "Bar".to_string(),
-        content: "BAR".to_string(),
+        description: "BAR".to_string(),
+        document: json!({}),
         created: Utc::now(),
         updated: Utc::now(),
     };
@@ -74,7 +77,8 @@ fn test_page_lifecycle() {
         parent: None,
         slug: "b".to_string(),
         title: "B".to_string(),
-        content: "B".to_string(),
+        description: "B".to_string(),
+        document: json!({}),
         created: Utc::now(),
         updated: Utc::now(),
     };
@@ -97,7 +101,8 @@ fn test_page_lifecycle() {
         parent: None,
         slug: "c".to_string(),
         title: "C".to_string(),
-        content: "C".to_string(),
+        description: "C".to_string(),
+        document: json!({}),
         created: Utc::now(),
         updated: Utc::now(),
     };
