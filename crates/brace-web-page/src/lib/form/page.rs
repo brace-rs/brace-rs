@@ -1,20 +1,23 @@
 use std::collections::HashMap;
 
+use brace_db::Database;
 use brace_web_form::{field, FormBuilder, FormHandler};
 use chrono::Utc;
 use failure::Error;
+use futures::future::Future;
 
-use crate::model::{Page, PageWithPath};
+use crate::model::Page;
 
 pub struct PageForm;
 
 impl FormHandler<Page> for PageForm {
-    type Context = Vec<PageWithPath>;
+    type Context = Database;
 
     fn build(&self, form: &mut FormBuilder<Page>, ctx: Self::Context) -> Result<(), Error> {
+        let pages = crate::action::list::list(&ctx).wait()?;
         let mut map = HashMap::<String, String>::new();
 
-        for page in ctx {
+        for page in pages {
             if form.state().id != page.id {
                 map.insert(
                     page.id.to_string(),

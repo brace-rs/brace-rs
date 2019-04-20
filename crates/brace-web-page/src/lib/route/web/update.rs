@@ -12,7 +12,7 @@ use serde_json::json;
 use uuid::Uuid;
 
 use crate::form::page::PageForm;
-use crate::model::{Page, PageWithPath};
+use crate::model::Page;
 
 pub fn get(
     user: CurrentUser,
@@ -25,11 +25,7 @@ pub fn get(
         CurrentUser::Authenticated(_) => Either::B(
             crate::action::retrieve::retrieve(&database, info.page)
                 .map_err(ErrorInternalServerError)
-                .and_then(move |page| {
-                    crate::action::list::list(&database)
-                        .map_err(ErrorInternalServerError)
-                        .and_then(move |pages| render(page, pages, &renderer))
-                }),
+                .and_then(move |page| render(page, &database, &renderer)),
         ),
     }
 }
@@ -51,11 +47,11 @@ pub fn post(
 
 fn render(
     page: Page,
-    pages: Vec<PageWithPath>,
+    database: &Database,
     renderer: &Renderer,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let title = format!("Update page <em>{}</em>", page.title);
-    let form = Form::build(PageForm, page, pages).unwrap();
+    let form = Form::build(PageForm, page, database.clone()).unwrap();
     let template = Template::new(
         "form-layout",
         json!({

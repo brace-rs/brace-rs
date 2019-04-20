@@ -10,7 +10,7 @@ use futures::future::{err, Either, Future};
 use serde_json::json;
 
 use crate::form::page::PageForm;
-use crate::model::{Page, PageWithPath};
+use crate::model::Page;
 
 pub fn get(
     user: CurrentUser,
@@ -19,11 +19,7 @@ pub fn get(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match user {
         CurrentUser::Anonymous => Either::A(err(ErrorForbidden("Forbidden"))),
-        CurrentUser::Authenticated(_) => Either::B(
-            crate::action::list::list(&database)
-                .map_err(ErrorInternalServerError)
-                .and_then(move |pages| render(pages, &renderer)),
-        ),
+        CurrentUser::Authenticated(_) => Either::B(render(&database, &renderer)),
     }
 }
 
@@ -43,10 +39,10 @@ pub fn post(
 }
 
 fn render(
-    pages: Vec<PageWithPath>,
+    database: &Database,
     renderer: &Renderer,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
-    let form = Form::build(PageForm, Page::default(), pages).unwrap();
+    let form = Form::build(PageForm, Page::default(), database.clone()).unwrap();
     let template = Template::new(
         "form-layout",
         json!({
