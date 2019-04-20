@@ -10,11 +10,11 @@
   {{ super() }}
   <form method="post">
     <div class="message">
-      Are you sure that you want to delete the page <em>{{ page.title }}</em>?
+      {{ message | safe }}
     </div>
     <div class="actions">
       <button type="submit" class="button button--primary">Confirm</button>
-      <a href="/pages/" class="button">Cancel</a>
+      <a href="/" class="button">Cancel</a>
     </div>
   </form>
 {% endblock content %}
