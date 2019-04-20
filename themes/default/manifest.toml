@@ -66,16 +66,6 @@ type = "tera"
 path = "templates/user/user-list.html"
 
 [[templates]]
-name = "login-form"
-type = "tera"
-path = "templates/auth/login-form.html"
-
-[[templates]]
-name = "logout-form"
-type = "tera"
-path = "templates/auth/logout-form.html"
-
-[[templates]]
 name = "form"
 type = "tera"
 path = "templates/form/form.html"

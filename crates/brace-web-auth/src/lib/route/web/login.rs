@@ -1,13 +1,15 @@
 use actix_web::error::{Error, ErrorInternalServerError};
 use actix_web::middleware::identity::Identity;
-use actix_web::web::{Data, Form};
+use actix_web::web::{Data, Form as FormData};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
+use brace_web_form::Form;
 use futures::future::{err, ok, Either, Future};
 use serde_json::json;
 
+use crate::form::login::LoginForm;
 use crate::model::UserAuth;
 use crate::util::verify;
 
@@ -23,7 +25,7 @@ pub fn get(
 
 pub fn post(
     id: Identity,
-    auth: Form<UserAuth>,
+    auth: FormData<UserAuth>,
     database: Data<Database>,
     renderer: Data<Renderer>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
@@ -56,12 +58,13 @@ fn render(
     renderer: &Renderer,
     message: Option<&str>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
+    let form = Form::build(LoginForm, auth, ()).unwrap();
     let template = Template::new(
-        "login-form",
+        "form-layout",
         json!({
             "title": "Log in",
             "message": message,
-            "auth": auth,
+            "form": form,
         }),
     );
 

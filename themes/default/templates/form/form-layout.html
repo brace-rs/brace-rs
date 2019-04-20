@@ -8,5 +8,10 @@
 
 {% block content %}
   {{ super() }}
+  {% if message %}
+    <div class="message">
+      {{ message }}
+    </div>
+  {% endif %}
   {{ template(name="form", value=form) | safe }}
 {% endblock content %}

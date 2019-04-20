@@ -46,10 +46,10 @@ pub fn post(id: Identity) -> impl Future<Item = HttpRedirect, Error = Error> {
 
 fn render(user: User, renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
     let template = Template::new(
-        "logout-form",
+        "form-confirm",
         json!({
             "title": "Log out",
-            "user": user,
+            "message": format!("Are you sure that you want to log out of user <em>{}</em>?", user.email),
         }),
     );
 
