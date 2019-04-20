@@ -1,13 +1,15 @@
 use actix_web::error::{Error, ErrorForbidden, ErrorInternalServerError};
-use actix_web::web::{Data, Form};
+use actix_web::web::{Data, Form as FormData};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
 use brace_web_auth::model::CurrentUser;
+use brace_web_form::Form;
 use futures::future::{err, Either, Future};
 use serde_json::json;
 
+use crate::form::create::CreateForm;
 use crate::model::{Page, PageWithPath};
 
 pub fn get(
@@ -27,7 +29,7 @@ pub fn get(
 
 pub fn post(
     user: CurrentUser,
-    page: Form<Page>,
+    page: FormData<Page>,
     database: Data<Database>,
 ) -> impl Future<Item = HttpRedirect, Error = Error> {
     match user {
@@ -44,19 +46,19 @@ fn render(
     pages: Vec<PageWithPath>,
     renderer: &Renderer,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
+    let form = Form::build(CreateForm, (), pages).unwrap();
     let template = Template::new(
         "page-form",
         json!({
             "title": "Create page",
-            "page": Page::default(),
-            "pages": pages,
+            "form": form,
         }),
     );
 
     renderer
         .send(template)
         .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
+        .and_then(move |res| match res {
             Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
             Err(err) => Err(ErrorInternalServerError(err)),
         })

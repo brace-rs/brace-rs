@@ -8,43 +8,5 @@
 
 {% block content %}
   {{ super() }}
-  <form method="post">
-    <div class="fields">
-      <div class="field field--hidden">
-        <input type="hidden" name="id" class="input input--hidden" value="{{ user.id }}" />
-      </div>
-      <div class="field field--text">
-        <label for="user-email" class="label">Email</label>
-        <input type="text" id="user-email" name="email" class="input input--email input--required" value="{{ user.email }}" required="true" />
-        <span class="description">
-          The email address of the user.
-        </span>
-      </div>
-      <div class="field field--password">
-        <label for="user-password" class="label">Password</label>
-        <input type="password" id="user-password" name="password" class="input input--password input--required" value="{{ user.password }}" required="true" />
-        <span class="description">
-          The password of the user.
-        </span>
-      </div>
-      <div class="field field--datetime">
-        <label for="user-created" class="label">Created</label>
-        <input type="datetime-local" id="user-created" name="created" class="input input--datetime" value="{{ user.created }}" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}" />
-        <span class="description">
-          The date/time of when the user was first created.
-        </span>
-      </div>
-      <div class="field field--datetime">
-        <label for="user-updated" class="label">Updated</label>
-        <input type="datetime-local" id="user-updated" name="updated" class="input input--datetime" value="{{ now() | date(format="%Y-%m-%dT%H:%M") }}" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}" />
-        <span class="description">
-          The date/time of when the user was last updated.
-        </span>
-      </div>
-    </div>
-    <div class="actions">
-      <button type="submit" class="button button--primary">Submit</button>
-      <a href="/users/" class="button">Cancel</a>
-    </div>
-  </form>
+  {{ template(name="form", value=form) | safe }}
 {% endblock content %}

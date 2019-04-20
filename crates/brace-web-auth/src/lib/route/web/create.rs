@@ -1,12 +1,14 @@
 use actix_web::error::{Error, ErrorForbidden, ErrorInternalServerError};
-use actix_web::web::{Data, Form};
+use actix_web::web::{Data, Form as FormData};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
+use brace_web_form::Form;
 use futures::future::{err, Either, Future};
 use serde_json::json;
 
+use crate::form::create::CreateForm;
 use crate::model::{CurrentUser, User};
 
 pub fn get(
@@ -21,7 +23,7 @@ pub fn get(
 
 pub fn post(
     user: CurrentUser,
-    data: Form<User>,
+    data: FormData<User>,
     database: Data<Database>,
 ) -> impl Future<Item = HttpRedirect, Error = Error> {
     match user {
@@ -35,11 +37,12 @@ pub fn post(
 }
 
 fn render(renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
+    let form = Form::build(CreateForm, (), ()).unwrap();
     let template = Template::new(
         "user-form",
         json!({
             "title": "Create user",
-            "user": User::default(),
+            "form": form,
         }),
     );
 
