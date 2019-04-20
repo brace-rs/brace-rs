@@ -94,3 +94,38 @@ path = "templates/auth/login-form.html"
 name = "logout-form"
 type = "tera"
 path = "templates/auth/logout-form.html"
+
+[[templates]]
+name = "form"
+type = "tera"
+path = "templates/form/form.html"
+
+[[templates]]
+name = "field"
+type = "tera"
+path = "templates/form/field/field.html"
+
+[[templates]]
+name = "field--datetime"
+type = "tera"
+path = "templates/form/field/field--datetime.html"
+
+[[templates]]
+name = "field--hidden"
+type = "tera"
+path = "templates/form/field/field--hidden.html"
+
+[[templates]]
+name = "field--select"
+type = "tera"
+path = "templates/form/field/field--select.html"
+
+[[templates]]
+name = "field--text"
+type = "tera"
+path = "templates/form/field/field--text.html"
+
+[[templates]]
+name = "field--textarea"
+type = "tera"
+path = "templates/form/field/field--textarea.html"
