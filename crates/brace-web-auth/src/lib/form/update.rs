@@ -13,14 +13,14 @@ impl FormHandler<User> for UpdateForm {
         form.field(field::hidden("id").value(form.state().id.to_string()));
 
         form.field(
-            field::text("email")
+            field::email("email")
                 .label("Email")
                 .description("The email address of the user.")
                 .value(form.state().email.clone()),
         );
 
         form.field(
-            field::text("password")
+            field::password("password")
                 .label("Password")
                 .description("The password of the user."),
         );

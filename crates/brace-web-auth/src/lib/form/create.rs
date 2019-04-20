@@ -12,13 +12,13 @@ impl FormHandler for CreateForm {
         form.field(field::hidden("id").value(Uuid::new_v4().to_string()));
 
         form.field(
-            field::text("email")
+            field::email("email")
                 .label("Email")
                 .description("The email address of the user."),
         );
 
         form.field(
-            field::text("password")
+            field::password("password")
                 .label("Password")
                 .description("The password of the user."),
         );

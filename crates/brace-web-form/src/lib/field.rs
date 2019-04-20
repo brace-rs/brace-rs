@@ -38,6 +38,20 @@ where
     Datetime::new(name)
 }
 
+pub fn email<S>(name: S) -> Email
+where
+    S: Into<String>,
+{
+    Email::new(name)
+}
+
+pub fn password<S>(name: S) -> Password
+where
+    S: Into<String>,
+{
+    Password::new(name)
+}
+
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum Field {
@@ -46,6 +60,8 @@ pub enum Field {
     Hidden(Hidden),
     Select(Select),
     Datetime(Datetime),
+    Email(Email),
+    Password(Password),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -309,6 +325,130 @@ impl Datetime {
 impl From<Datetime> for Field {
     fn from(field: Datetime) -> Self {
         Field::Datetime(field)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Email {
+    pub name: String,
+    pub value: String,
+    pub label: Option<String>,
+    pub description: Option<String>,
+    pub placeholder: Option<String>,
+}
+
+impl Email {
+    pub fn new<T>(name: T) -> Self
+    where
+        T: Into<String>,
+    {
+        Self {
+            name: name.into(),
+            value: "".to_owned(),
+            label: None,
+            description: None,
+            placeholder: None,
+        }
+    }
+
+    pub fn value<T>(mut self, value: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.value = value.into();
+        self
+    }
+
+    pub fn label<T>(mut self, label: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.label = Some(label.into());
+        self
+    }
+
+    pub fn description<T>(mut self, description: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn placeholder<T>(mut self, placeholder: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.placeholder = Some(placeholder.into());
+        self
+    }
+}
+
+impl From<Email> for Field {
+    fn from(field: Email) -> Self {
+        Field::Email(field)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Password {
+    pub name: String,
+    pub value: String,
+    pub label: Option<String>,
+    pub description: Option<String>,
+    pub placeholder: Option<String>,
+}
+
+impl Password {
+    pub fn new<T>(name: T) -> Self
+    where
+        T: Into<String>,
+    {
+        Self {
+            name: name.into(),
+            value: "".to_owned(),
+            label: None,
+            description: None,
+            placeholder: None,
+        }
+    }
+
+    pub fn value<T>(mut self, value: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.value = value.into();
+        self
+    }
+
+    pub fn label<T>(mut self, label: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.label = Some(label.into());
+        self
+    }
+
+    pub fn description<T>(mut self, description: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn placeholder<T>(mut self, placeholder: T) -> Self
+    where
+        T: Into<String>,
+    {
+        self.placeholder = Some(placeholder.into());
+        self
+    }
+}
+
+impl From<Password> for Field {
+    fn from(field: Password) -> Self {
+        Field::Password(field)
     }
 }
 

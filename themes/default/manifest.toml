@@ -101,9 +101,19 @@ type = "tera"
 path = "templates/form/field/field--datetime.html"
 
 [[templates]]
+name = "field--email"
+type = "tera"
+path = "templates/form/field/field--email.html"
+
+[[templates]]
 name = "field--hidden"
 type = "tera"
 path = "templates/form/field/field--hidden.html"
+
+[[templates]]
+name = "field--password"
+type = "tera"
+path = "templates/form/field/field--password.html"
 
 [[templates]]
 name = "field--select"
