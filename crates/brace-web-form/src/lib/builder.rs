@@ -33,7 +33,5 @@ impl<S> FormBuilder<S> {
 pub trait FormHandler<S = ()> {
     type Context;
 
-    fn build(&self, _form: &mut FormBuilder<S>, _ctx: Self::Context) -> Result<(), Error> {
-        Ok(())
-    }
+    fn build(&self, form: &mut FormBuilder<S>, ctx: Self::Context) -> Result<(), Error>;
 }
