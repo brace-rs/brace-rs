@@ -48,7 +48,7 @@ fn render(user: User, renderer: &Renderer) -> impl Future<Item = HttpResponse, E
     let title = format!("Update user <em>{}</em>", user.email);
     let form = Form::build(UpdateForm, user, ()).unwrap();
     let template = Template::new(
-        "user-form",
+        "form-layout",
         json!({
             "title": title,
             "form": form,

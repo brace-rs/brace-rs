@@ -56,11 +56,6 @@ type = "tera"
 path = "templates/page/page-list.html"
 
 [[templates]]
-name = "page-form"
-type = "tera"
-path = "templates/page/page-form.html"
-
-[[templates]]
 name = "page-delete-form"
 type = "tera"
 path = "templates/page/page-delete-form.html"
@@ -74,11 +69,6 @@ path = "templates/user/user.html"
 name = "user-list"
 type = "tera"
 path = "templates/user/user-list.html"
-
-[[templates]]
-name = "user-form"
-type = "tera"
-path = "templates/user/user-form.html"
 
 [[templates]]
 name = "user-delete-form"
@@ -99,6 +89,11 @@ path = "templates/auth/logout-form.html"
 name = "form"
 type = "tera"
 path = "templates/form/form.html"
+
+[[templates]]
+name = "form-layout"
+type = "tera"
+path = "templates/form/form-layout.html"
 
 [[templates]]
 name = "field"

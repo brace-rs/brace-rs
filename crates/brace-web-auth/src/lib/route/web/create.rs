@@ -39,7 +39,7 @@ pub fn post(
 fn render(renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
     let form = Form::build(CreateForm, (), ()).unwrap();
     let template = Template::new(
-        "user-form",
+        "form-layout",
         json!({
             "title": "Create user",
             "form": form,

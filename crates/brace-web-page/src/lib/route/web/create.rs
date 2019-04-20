@@ -48,7 +48,7 @@ fn render(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let form = Form::build(CreateForm, (), pages).unwrap();
     let template = Template::new(
-        "page-form",
+        "form-layout",
         json!({
             "title": "Create page",
             "form": form,

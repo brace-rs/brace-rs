@@ -57,7 +57,7 @@ fn render(
     let title = format!("Update page <em>{}</em>", page.title);
     let form = Form::build(UpdateForm, page, pages).unwrap();
     let template = Template::new(
-        "page-form",
+        "form-layout",
         json!({
             "title": title,
             "form": form,
