@@ -1,20 +1,22 @@
 use brace_web_form::{field, FormBuilder, FormHandler};
 use chrono::Utc;
 use failure::Error;
-use uuid::Uuid;
 
-pub struct CreateForm;
+use crate::model::User;
 
-impl FormHandler for CreateForm {
+pub struct UserForm;
+
+impl FormHandler<User> for UserForm {
     type Context = ();
 
-    fn build(&self, form: &mut FormBuilder<()>, _: Self::Context) -> Result<(), Error> {
-        form.field(field::hidden("id").value(Uuid::new_v4().to_string()));
+    fn build(&self, form: &mut FormBuilder<User>, _: Self::Context) -> Result<(), Error> {
+        form.field(field::hidden("id").value(form.state().id.to_string()));
 
         form.field(
             field::email("email")
                 .label("Email")
-                .description("The email address of the user."),
+                .description("The email address of the user.")
+                .value(form.state().email.clone()),
         );
 
         form.field(
@@ -27,7 +29,7 @@ impl FormHandler for CreateForm {
             field::datetime("created")
                 .label("Created")
                 .description("The date/time of when the user was first created.")
-                .value(Utc::now()),
+                .value(form.state().created),
         );
 
         form.field(

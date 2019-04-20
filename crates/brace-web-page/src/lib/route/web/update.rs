@@ -11,7 +11,7 @@ use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::form::update::UpdateForm;
+use crate::form::page::PageForm;
 use crate::model::{Page, PageWithPath};
 
 pub fn get(
@@ -55,7 +55,7 @@ fn render(
     renderer: &Renderer,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let title = format!("Update page <em>{}</em>", page.title);
-    let form = Form::build(UpdateForm, page, pages).unwrap();
+    let form = Form::build(PageForm, page, pages).unwrap();
     let template = Template::new(
         "form-layout",
         json!({

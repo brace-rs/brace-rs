@@ -10,7 +10,7 @@ use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::form::update::UpdateForm;
+use crate::form::user::UserForm;
 use crate::model::{CurrentUser, User};
 
 pub fn get(
@@ -46,7 +46,7 @@ pub fn post(
 
 fn render(user: User, renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
     let title = format!("Update user <em>{}</em>", user.email);
-    let form = Form::build(UpdateForm, user, ()).unwrap();
+    let form = Form::build(UserForm, user, ()).unwrap();
     let template = Template::new(
         "form-layout",
         json!({

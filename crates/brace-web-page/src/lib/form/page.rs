@@ -6,9 +6,9 @@ use failure::Error;
 
 use crate::model::{Page, PageWithPath};
 
-pub struct UpdateForm;
+pub struct PageForm;
 
-impl FormHandler<Page> for UpdateForm {
+impl FormHandler<Page> for PageForm {
     type Context = Vec<PageWithPath>;
 
     fn build(&self, form: &mut FormBuilder<Page>, ctx: Self::Context) -> Result<(), Error> {

@@ -8,7 +8,7 @@ use brace_web_form::Form;
 use futures::future::{err, Either, Future};
 use serde_json::json;
 
-use crate::form::create::CreateForm;
+use crate::form::user::UserForm;
 use crate::model::{CurrentUser, User};
 
 pub fn get(
@@ -37,7 +37,7 @@ pub fn post(
 }
 
 fn render(renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
-    let form = Form::build(CreateForm, (), ()).unwrap();
+    let form = Form::build(UserForm, User::default(), ()).unwrap();
     let template = Template::new(
         "form-layout",
         json!({
