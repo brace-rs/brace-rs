@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use failure::Error;
 
 use super::field::Field;
@@ -5,6 +7,7 @@ use super::field::Field;
 pub struct FormBuilder<S = ()> {
     pub(crate) state: Box<S>,
     pub(crate) fields: Vec<Field>,
+    pub(crate) builders: VecDeque<Box<Fn(&mut FormBuilder<S>) -> Result<(), Error>>>,
 }
 
 impl<S> FormBuilder<S> {
@@ -12,6 +15,7 @@ impl<S> FormBuilder<S> {
         Self {
             state: Box::new(state),
             fields: Vec::new(),
+            builders: VecDeque::new(),
         }
     }
 }
@@ -26,6 +30,14 @@ impl<S> FormBuilder<S> {
         T: Into<Field>,
     {
         self.fields.push(field.into());
+        self
+    }
+
+    pub fn builder<T>(&mut self, builder: T) -> &mut Self
+    where
+        T: 'static + Fn(&mut FormBuilder<S>) -> Result<(), Error>,
+    {
+        self.builders.push_back(Box::new(builder));
         self
     }
 }

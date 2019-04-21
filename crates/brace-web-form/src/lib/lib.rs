@@ -22,6 +22,10 @@ impl<S> Form<S> {
         let mut builder = FormBuilder::new(state);
         form.build(&mut builder, ctx)?;
 
+        while let Some(callback) = builder.builders.pop_front() {
+            (callback)(&mut builder)?;
+        }
+
         Ok(Form {
             state: builder.state,
             fields: builder.fields,
