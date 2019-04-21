@@ -10,15 +10,15 @@ impl FormHandler<UserAuth> for LoginForm {
     type Context = ();
 
     fn build(&self, form: &mut FormBuilder<UserAuth>, _: Self::Context) -> Result<(), Error> {
-        form.field(field::hidden("id").value(Uuid::new_v4().to_string()));
+        form.insert(field::hidden("id").value(Uuid::new_v4().to_string()));
 
-        form.field(
+        form.insert(
             field::email("email")
                 .label("Email")
                 .value(form.state().email.clone()),
         );
 
-        form.field(field::password("password").label("Password"));
+        form.insert(field::password("password").label("Password"));
 
         Ok(())
     }

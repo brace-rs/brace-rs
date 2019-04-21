@@ -25,7 +25,7 @@ impl<S> FormBuilder<S> {
         &self.state
     }
 
-    pub fn field<T>(&mut self, field: T) -> &mut Self
+    pub fn insert<T>(&mut self, field: T) -> &mut Self
     where
         T: Into<Field>,
     {

@@ -14,37 +14,37 @@ impl FormHandler<Page> for PageForm {
     type Context = Database;
 
     fn build(&self, form: &mut FormBuilder<Page>, ctx: Self::Context) -> Result<(), Error> {
-        form.field(field::hidden("id").value(form.state().id.to_string()));
+        form.insert(field::hidden("id").value(form.state().id.to_string()));
 
-        form.field(
+        form.insert(
             field::text("title")
                 .label("Title")
                 .description("The title of the page.")
                 .value(form.state().title.clone()),
         );
 
-        form.field(
+        form.insert(
             field::text("slug")
                 .label("Slug")
                 .description("The page slug.")
                 .value(form.state().slug.clone()),
         );
 
-        form.field(
+        form.insert(
             field::textarea("description")
                 .label("Description")
                 .description("The description of the page.")
                 .value(form.state().description.clone()),
         );
 
-        form.field(
+        form.insert(
             field::datetime("created")
                 .label("Created")
                 .description("The date/time of when the page was first created.")
                 .value(form.state().created),
         );
 
-        form.field(
+        form.insert(
             field::datetime("updated")
                 .label("Updated")
                 .description("The date/time of when the page was last updated.")
@@ -70,7 +70,7 @@ fn build_parent(form: &mut FormBuilder<Page>, ctx: &Database) -> Result<(), Erro
         }
     }
 
-    form.field(
+    form.insert(
         field::select("parent")
             .label("Parent")
             .description("The parent page.")
