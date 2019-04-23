@@ -19,7 +19,7 @@ pub fn get(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match id.identity() {
         Some(_) => Either::A(ok(HttpRedirect::to("/").into_response())),
-        None => Either::B(render(UserAuth::default(), &renderer, None)),
+        None => Either::B(render(UserAuth::default(), renderer, None)),
     }
 }
 
@@ -38,7 +38,7 @@ pub fn post(
                 } else {
                     Either::B(Box::new(render(
                         auth.into_inner(),
-                        &renderer,
+                        renderer,
                         Some("Invalid user credentials"),
                     )))
                 }
@@ -47,7 +47,7 @@ pub fn post(
         },
         Err(_) => Either::B(Box::new(render(
             auth.into_inner(),
-            &renderer,
+            renderer,
             Some("Invalid user credentials"),
         ))),
     })
@@ -55,24 +55,27 @@ pub fn post(
 
 fn render(
     auth: UserAuth,
-    renderer: &Renderer,
-    message: Option<&str>,
+    renderer: Data<Renderer>,
+    message: Option<&'static str>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
-    let form = Form::build(LoginForm, auth, ()).unwrap();
-    let template = Template::new(
-        "form-layout",
-        json!({
-            "title": "Log in",
-            "message": message,
-            "form": form,
-        }),
-    );
-
-    renderer
-        .send(template)
+    Form::build(LoginForm, auth, ())
         .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
-            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-            Err(err) => Err(ErrorInternalServerError(err)),
+        .and_then(move |form| {
+            let template = Template::new(
+                "form-layout",
+                json!({
+                    "title": "Log in",
+                    "message": message,
+                    "form": form,
+                }),
+            );
+
+            renderer
+                .send(template)
+                .map_err(ErrorInternalServerError)
+                .and_then(|res| match res {
+                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                    Err(err) => Err(ErrorInternalServerError(err)),
+                })
         })
 }

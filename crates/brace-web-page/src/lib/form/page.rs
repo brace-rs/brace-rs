@@ -12,8 +12,9 @@ pub struct PageForm;
 
 impl FormHandler<Page> for PageForm {
     type Context = Database;
+    type Future = FormBuilder<Page>;
 
-    fn build(&self, form: &mut FormBuilder<Page>, ctx: Self::Context) -> Result<(), Error> {
+    fn build(&self, mut form: FormBuilder<Page>, ctx: Self::Context) -> Self::Future {
         form.insert(field::hidden("id").value(form.state().id.to_string()));
 
         form.insert(
@@ -53,35 +54,39 @@ impl FormHandler<Page> for PageForm {
 
         form.builder(move |form| build_parent(form, &ctx));
 
-        Ok(())
+        form
     }
 }
 
-fn build_parent(form: &mut FormBuilder<Page>, ctx: &Database) -> Result<(), Error> {
-    let pages = crate::action::list::list(&ctx).wait()?;
-    let mut map = HashMap::<String, String>::new();
+fn build_parent(
+    mut form: FormBuilder<Page>,
+    ctx: &Database,
+) -> impl Future<Item = FormBuilder<Page>, Error = Error> {
+    crate::action::list::list(&ctx).and_then(|pages| {
+        let mut map = HashMap::<String, String>::new();
 
-    for page in pages {
-        if form.state().id != page.id {
-            map.insert(
-                page.id.to_string(),
-                format!("{} - {}", page.title, page.path),
-            );
+        for page in pages {
+            if form.state().id != page.id {
+                map.insert(
+                    page.id.to_string(),
+                    format!("{} - {}", page.title, page.path),
+                );
+            }
         }
-    }
 
-    form.insert(
-        field::select("parent")
-            .label("Parent")
-            .description("The parent page.")
-            .value(
-                form.state()
-                    .parent
-                    .map(|id| id.to_string())
-                    .unwrap_or_else(|| "".to_owned()),
-            )
-            .options(map),
-    );
+        form.insert(
+            field::select("parent")
+                .label("Parent")
+                .description("The parent page.")
+                .value(
+                    form.state()
+                        .parent
+                        .map(|id| id.to_string())
+                        .unwrap_or_else(|| "".to_owned()),
+                )
+                .options(map),
+        );
 
-    Ok(())
+        form
+    })
 }

@@ -1,5 +1,4 @@
 use brace_web_form::{field, FormBuilder, FormHandler};
-use failure::Error;
 use uuid::Uuid;
 
 use crate::model::UserAuth;
@@ -8,8 +7,9 @@ pub struct LoginForm;
 
 impl FormHandler<UserAuth> for LoginForm {
     type Context = ();
+    type Future = FormBuilder<UserAuth>;
 
-    fn build(&self, form: &mut FormBuilder<UserAuth>, _: Self::Context) -> Result<(), Error> {
+    fn build(&self, mut form: FormBuilder<UserAuth>, _: Self::Context) -> Self::Future {
         form.insert(field::hidden("id").value(Uuid::new_v4().to_string()));
 
         form.insert(
@@ -20,6 +20,6 @@ impl FormHandler<UserAuth> for LoginForm {
 
         form.insert(field::password("password").label("Password"));
 
-        Ok(())
+        form
     }
 }

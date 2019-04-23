@@ -17,7 +17,7 @@ pub fn get(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match user {
         CurrentUser::Anonymous => Either::A(err(ErrorForbidden("Forbidden"))),
-        CurrentUser::Authenticated(_) => Either::B(render(&renderer)),
+        CurrentUser::Authenticated(_) => Either::B(render(renderer)),
     }
 }
 
@@ -36,21 +36,24 @@ pub fn post(
     }
 }
 
-fn render(renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
-    let form = Form::build(UserForm, User::default(), ()).unwrap();
-    let template = Template::new(
-        "form-layout",
-        json!({
-            "title": "Create user",
-            "form": form,
-        }),
-    );
-
-    renderer
-        .send(template)
+fn render(renderer: Data<Renderer>) -> impl Future<Item = HttpResponse, Error = Error> {
+    Form::build(UserForm, User::default(), ())
         .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
-            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-            Err(err) => Err(ErrorInternalServerError(err)),
+        .and_then(move |form| {
+            let template = Template::new(
+                "form-layout",
+                json!({
+                    "title": "Create user",
+                    "form": form,
+                }),
+            );
+
+            renderer
+                .send(template)
+                .map_err(ErrorInternalServerError)
+                .and_then(|res| match res {
+                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                    Err(err) => Err(ErrorInternalServerError(err)),
+                })
         })
 }

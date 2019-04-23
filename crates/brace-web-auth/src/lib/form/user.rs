@@ -1,6 +1,5 @@
 use brace_web_form::{field, FormBuilder, FormHandler};
 use chrono::Utc;
-use failure::Error;
 
 use crate::model::User;
 
@@ -8,8 +7,9 @@ pub struct UserForm;
 
 impl FormHandler<User> for UserForm {
     type Context = ();
+    type Future = FormBuilder<User>;
 
-    fn build(&self, form: &mut FormBuilder<User>, _: Self::Context) -> Result<(), Error> {
+    fn build(&self, mut form: FormBuilder<User>, _: Self::Context) -> Self::Future {
         form.insert(field::hidden("id").value(form.state().id.to_string()));
 
         form.insert(
@@ -39,6 +39,6 @@ impl FormHandler<User> for UserForm {
                 .value(Utc::now()),
         );
 
-        Ok(())
+        form
     }
 }

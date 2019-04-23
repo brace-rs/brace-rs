@@ -25,7 +25,7 @@ pub fn get(
         CurrentUser::Authenticated(_) => Either::B(
             crate::action::retrieve::retrieve(&database, info.page)
                 .map_err(ErrorInternalServerError)
-                .and_then(move |page| render(page, &database, &renderer)),
+                .and_then(move |page| render(page, database, renderer)),
         ),
     }
 }
@@ -47,25 +47,29 @@ pub fn post(
 
 fn render(
     page: Page,
-    database: &Database,
-    renderer: &Renderer,
+    database: Data<Database>,
+    renderer: Data<Renderer>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let title = format!("Update page <em>{}</em>", page.title);
-    let form = Form::build(PageForm, page, database.clone()).unwrap();
-    let template = Template::new(
-        "form-layout",
-        json!({
-            "title": title,
-            "form": form,
-        }),
-    );
 
-    renderer
-        .send(template)
+    Form::build(PageForm, page, (*database).clone())
         .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
-            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-            Err(err) => Err(ErrorInternalServerError(err)),
+        .and_then(move |form| {
+            let template = Template::new(
+                "form-layout",
+                json!({
+                    "title": title,
+                    "form": form,
+                }),
+            );
+
+            renderer
+                .send(template)
+                .map_err(ErrorInternalServerError)
+                .and_then(|res| match res {
+                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                    Err(err) => Err(ErrorInternalServerError(err)),
+                })
         })
 }
 

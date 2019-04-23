@@ -24,7 +24,7 @@ pub fn get(
         CurrentUser::Authenticated(_) => Either::B(
             crate::action::retrieve::retrieve(&database, info.user)
                 .map_err(ErrorInternalServerError)
-                .and_then(move |user| render(user, &renderer)),
+                .and_then(move |user| render(user, renderer)),
         ),
     }
 }
@@ -44,23 +44,27 @@ pub fn post(
     }
 }
 
-fn render(user: User, renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
+fn render(user: User, renderer: Data<Renderer>) -> impl Future<Item = HttpResponse, Error = Error> {
     let title = format!("Update user <em>{}</em>", user.email);
-    let form = Form::build(UserForm, user, ()).unwrap();
-    let template = Template::new(
-        "form-layout",
-        json!({
-            "title": title,
-            "form": form,
-        }),
-    );
 
-    renderer
-        .send(template)
+    Form::build(UserForm, user, ())
         .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
-            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-            Err(err) => Err(ErrorInternalServerError(err)),
+        .and_then(move |form| {
+            let template = Template::new(
+                "form-layout",
+                json!({
+                    "title": title,
+                    "form": form,
+                }),
+            );
+
+            renderer
+                .send(template)
+                .map_err(ErrorInternalServerError)
+                .and_then(|res| match res {
+                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                    Err(err) => Err(ErrorInternalServerError(err)),
+                })
         })
 }
 

@@ -19,7 +19,7 @@ pub fn get(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match user {
         CurrentUser::Anonymous => Either::A(err(ErrorForbidden("Forbidden"))),
-        CurrentUser::Authenticated(_) => Either::B(render(&database, &renderer)),
+        CurrentUser::Authenticated(_) => Either::B(render(database, renderer)),
     }
 }
 
@@ -39,23 +39,26 @@ pub fn post(
 }
 
 fn render(
-    database: &Database,
-    renderer: &Renderer,
+    database: Data<Database>,
+    renderer: Data<Renderer>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
-    let form = Form::build(PageForm, Page::default(), database.clone()).unwrap();
-    let template = Template::new(
-        "form-layout",
-        json!({
-            "title": "Create page",
-            "form": form,
-        }),
-    );
-
-    renderer
-        .send(template)
+    Form::build(PageForm, Page::default(), (*database).clone())
         .map_err(ErrorInternalServerError)
-        .and_then(move |res| match res {
-            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-            Err(err) => Err(ErrorInternalServerError(err)),
+        .and_then(move |form| {
+            let template = Template::new(
+                "form-layout",
+                json!({
+                    "title": "Create page",
+                    "form": form,
+                }),
+            );
+
+            renderer
+                .send(template)
+                .map_err(ErrorInternalServerError)
+                .and_then(move |res| match res {
+                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                    Err(err) => Err(ErrorInternalServerError(err)),
+                })
         })
 }
