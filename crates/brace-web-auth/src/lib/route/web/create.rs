@@ -4,7 +4,7 @@ use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
-use brace_web_form::Form;
+use brace_web_form::{Form, FormState};
 use futures::future::{err, Either, Future};
 use serde_json::json;
 
@@ -37,23 +37,28 @@ pub fn post(
 }
 
 fn render(renderer: Data<Renderer>) -> impl Future<Item = HttpResponse, Error = Error> {
-    Form::build(UserForm, User::default(), ())
-        .map_err(ErrorInternalServerError)
-        .and_then(move |form| {
-            let template = Template::new(
-                "form-layout",
-                json!({
-                    "title": "Create user",
-                    "form": form,
-                }),
-            );
-
-            renderer
-                .send(template)
+    match FormState::with(User::default()) {
+        Ok(state) => Either::A(
+            Form::build(UserForm, state, ())
                 .map_err(ErrorInternalServerError)
-                .and_then(|res| match res {
-                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-                    Err(err) => Err(ErrorInternalServerError(err)),
-                })
-        })
+                .and_then(move |form| {
+                    let template = Template::new(
+                        "form-layout",
+                        json!({
+                            "title": "Create user",
+                            "form": form,
+                        }),
+                    );
+
+                    renderer
+                        .send(template)
+                        .map_err(ErrorInternalServerError)
+                        .and_then(|res| match res {
+                            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                            Err(err) => Err(ErrorInternalServerError(err)),
+                        })
+                }),
+        ),
+        Err(e) => Either::B(err(ErrorInternalServerError(e))),
+    }
 }

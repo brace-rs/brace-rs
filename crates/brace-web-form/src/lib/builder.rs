@@ -4,28 +4,29 @@ use failure::Error;
 use futures::future::{ok, Future, FutureResult, IntoFuture};
 
 use super::field::Field;
+use super::state::FormState;
 
-type BoxedCallbackWrapper<S> =
-    Box<dyn FormCallbackWrapper<S, Future = Box<dyn Future<Item = FormBuilder<S>, Error = Error>>>>;
+type BoxedCallbackWrapper =
+    Box<dyn FormCallbackWrapper<Future = Box<dyn Future<Item = FormBuilder, Error = Error>>>>;
 
-pub struct FormBuilder<S = ()> {
-    pub(crate) state: Box<S>,
+pub struct FormBuilder {
+    pub(crate) state: FormState,
     pub(crate) fields: Vec<Field>,
-    pub(crate) builders: VecDeque<BoxedCallbackWrapper<S>>,
+    pub(crate) builders: VecDeque<BoxedCallbackWrapper>,
 }
 
-impl<S> FormBuilder<S> {
-    pub fn new(state: S) -> Self {
+impl FormBuilder {
+    pub fn new(state: FormState) -> Self {
         Self {
-            state: Box::new(state),
+            state,
             fields: Vec::new(),
             builders: VecDeque::new(),
         }
     }
 }
 
-impl<S> FormBuilder<S> {
-    pub fn state(&self) -> &S {
+impl FormBuilder {
+    pub fn state(&self) -> &FormState {
         &self.state
     }
 
@@ -39,7 +40,7 @@ impl<S> FormBuilder<S> {
 
     pub fn builder<T>(&mut self, builder: T) -> &mut Self
     where
-        T: FormCallbackWrapper<S, Future = Box<dyn Future<Item = FormBuilder<S>, Error = Error>>>
+        T: FormCallbackWrapper<Future = Box<dyn Future<Item = FormBuilder, Error = Error>>>
             + 'static,
     {
         self.builders.push_back(Box::new(builder));
@@ -47,7 +48,7 @@ impl<S> FormBuilder<S> {
     }
 }
 
-impl<S> IntoFuture for FormBuilder<S> {
+impl IntoFuture for FormBuilder {
     type Item = Self;
     type Error = Error;
     type Future = FutureResult<Self::Item, Self::Error>;
@@ -57,45 +58,44 @@ impl<S> IntoFuture for FormBuilder<S> {
     }
 }
 
-pub trait FormHandler<S = ()> {
+pub trait FormHandler {
     type Context;
-    type Future: IntoFuture<Item = FormBuilder<S>, Error = Error>;
+    type Future: IntoFuture<Item = FormBuilder, Error = Error>;
 
-    fn build(&self, form: FormBuilder<S>, ctx: Self::Context) -> Self::Future;
+    fn build(&self, form: FormBuilder, ctx: Self::Context) -> Self::Future;
 }
 
-pub trait FormCallback<S = ()> {
-    type Future: IntoFuture<Item = FormBuilder<S>, Error = Error>;
+pub trait FormCallback {
+    type Future: IntoFuture<Item = FormBuilder, Error = Error>;
 
-    fn build(&self, form: FormBuilder<S>) -> Self::Future;
+    fn build(&self, form: FormBuilder) -> Self::Future;
 }
 
-impl<S, R, F> FormCallback<S> for F
+impl<R, F> FormCallback for F
 where
-    R: IntoFuture<Item = FormBuilder<S>, Error = Error> + 'static,
-    F: Fn(FormBuilder<S>) -> R,
+    R: IntoFuture<Item = FormBuilder, Error = Error> + 'static,
+    F: Fn(FormBuilder) -> R,
 {
-    type Future = Box<dyn Future<Item = FormBuilder<S>, Error = Error>>;
+    type Future = Box<dyn Future<Item = FormBuilder, Error = Error>>;
 
-    fn build(&self, form: FormBuilder<S>) -> Self::Future {
+    fn build(&self, form: FormBuilder) -> Self::Future {
         Box::new((self)(form).into_future())
     }
 }
 
-pub trait FormCallbackWrapper<S = ()> {
-    type Future: IntoFuture<Item = FormBuilder<S>, Error = Error>;
+pub trait FormCallbackWrapper {
+    type Future: IntoFuture<Item = FormBuilder, Error = Error>;
 
-    fn build_boxed(&self, form: FormBuilder<S>) -> Self::Future;
+    fn build_boxed(&self, form: FormBuilder) -> Self::Future;
 }
 
-impl<S, F> FormCallbackWrapper<S> for F
+impl<F> FormCallbackWrapper for F
 where
-    S: 'static,
-    F: FormCallback<S> + 'static,
+    F: FormCallback + 'static,
 {
-    type Future = Box<dyn Future<Item = FormBuilder<S>, Error = Error>>;
+    type Future = Box<dyn Future<Item = FormBuilder, Error = Error>>;
 
-    fn build_boxed(&self, form: FormBuilder<S>) -> Self::Future {
+    fn build_boxed(&self, form: FormBuilder) -> Self::Future {
         Box::new(self.build(form).into_future())
     }
 }

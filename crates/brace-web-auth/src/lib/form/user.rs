@@ -1,22 +1,21 @@
 use brace_web_form::{field, FormBuilder, FormHandler};
-use chrono::Utc;
-
-use crate::model::User;
+use chrono::{DateTime, NaiveDateTime, Utc};
+use failure::Error;
 
 pub struct UserForm;
 
-impl FormHandler<User> for UserForm {
+impl FormHandler for UserForm {
     type Context = ();
-    type Future = FormBuilder<User>;
+    type Future = Result<FormBuilder, Error>;
 
-    fn build(&self, mut form: FormBuilder<User>, _: Self::Context) -> Self::Future {
-        form.insert(field::hidden("id").value(form.state().id.to_string()));
+    fn build(&self, mut form: FormBuilder, _: Self::Context) -> Self::Future {
+        form.insert(field::hidden("id").value(form.state().get::<String>("id")?));
 
         form.insert(
             field::email("email")
                 .label("Email")
                 .description("The email address of the user.")
-                .value(form.state().email.clone()),
+                .value(form.state().get::<String>("email")?),
         );
 
         form.insert(
@@ -25,11 +24,19 @@ impl FormHandler<User> for UserForm {
                 .description("The password of the user."),
         );
 
+        let created = DateTime::<Utc>::from_utc(
+            NaiveDateTime::parse_from_str(
+                &form.state().get::<String>("created")?,
+                "%Y-%m-%dT%H:%M",
+            )?,
+            Utc,
+        );
+
         form.insert(
             field::datetime("created")
                 .label("Created")
                 .description("The date/time of when the user was first created.")
-                .value(form.state().created),
+                .value(created),
         );
 
         form.insert(
@@ -39,6 +46,6 @@ impl FormHandler<User> for UserForm {
                 .value(Utc::now()),
         );
 
-        form
+        Ok(form)
     }
 }

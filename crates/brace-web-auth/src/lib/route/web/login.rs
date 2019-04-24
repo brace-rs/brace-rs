@@ -5,7 +5,7 @@ use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
-use brace_web_form::Form;
+use brace_web_form::{Form, FormState};
 use futures::future::{err, ok, Either, Future};
 use serde_json::json;
 
@@ -58,24 +58,29 @@ fn render(
     renderer: Data<Renderer>,
     message: Option<&'static str>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
-    Form::build(LoginForm, auth, ())
-        .map_err(ErrorInternalServerError)
-        .and_then(move |form| {
-            let template = Template::new(
-                "form-layout",
-                json!({
-                    "title": "Log in",
-                    "message": message,
-                    "form": form,
-                }),
-            );
-
-            renderer
-                .send(template)
+    match FormState::with(auth) {
+        Ok(state) => Either::A(
+            Form::build(LoginForm, state, ())
                 .map_err(ErrorInternalServerError)
-                .and_then(|res| match res {
-                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-                    Err(err) => Err(ErrorInternalServerError(err)),
-                })
-        })
+                .and_then(move |form| {
+                    let template = Template::new(
+                        "form-layout",
+                        json!({
+                            "title": "Log in",
+                            "message": message,
+                            "form": form,
+                        }),
+                    );
+
+                    renderer
+                        .send(template)
+                        .map_err(ErrorInternalServerError)
+                        .and_then(|res| match res {
+                            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                            Err(err) => Err(ErrorInternalServerError(err)),
+                        })
+                }),
+        ),
+        Err(e) => Either::B(err(ErrorInternalServerError(e))),
+    }
 }

@@ -5,7 +5,7 @@ use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
 use brace_web_auth::model::CurrentUser;
-use brace_web_form::Form;
+use brace_web_form::{Form, FormState};
 use futures::future::{err, Either, Future};
 use serde::Deserialize;
 use serde_json::json;
@@ -52,25 +52,30 @@ fn render(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     let title = format!("Update page <em>{}</em>", page.title);
 
-    Form::build(PageForm, page, (*database).clone())
-        .map_err(ErrorInternalServerError)
-        .and_then(move |form| {
-            let template = Template::new(
-                "form-layout",
-                json!({
-                    "title": title,
-                    "form": form,
-                }),
-            );
-
-            renderer
-                .send(template)
+    match FormState::with(page) {
+        Ok(state) => Either::A(
+            Form::build(PageForm, state, (*database).clone())
                 .map_err(ErrorInternalServerError)
-                .and_then(|res| match res {
-                    Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-                    Err(err) => Err(ErrorInternalServerError(err)),
-                })
-        })
+                .and_then(move |form| {
+                    let template = Template::new(
+                        "form-layout",
+                        json!({
+                            "title": title,
+                            "form": form,
+                        }),
+                    );
+
+                    renderer
+                        .send(template)
+                        .map_err(ErrorInternalServerError)
+                        .and_then(|res| match res {
+                            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
+                            Err(err) => Err(ErrorInternalServerError(err)),
+                        })
+                }),
+        ),
+        Err(e) => Either::B(err(ErrorInternalServerError(e))),
+    }
 }
 
 #[derive(Deserialize)]
