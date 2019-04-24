@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use brace_db::Database;
-use brace_web_form::{field, FormBuilder, FormHandler};
+use brace_web_form::{field, Form, FormBuilder};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use failure::Error;
 use futures::future::Future;
@@ -9,11 +9,11 @@ use uuid::Uuid;
 
 pub struct PageForm;
 
-impl FormHandler for PageForm {
+impl FormBuilder for PageForm {
     type Context = Database;
-    type Future = Result<FormBuilder, Error>;
+    type Future = Result<Form, Error>;
 
-    fn build(&self, mut form: FormBuilder, ctx: Self::Context) -> Self::Future {
+    fn build(&self, mut form: Form, ctx: Self::Context) -> Self::Future {
         form.insert(field::hidden("id").value(form.state().get::<String>("id")?));
 
         form.insert(
@@ -65,10 +65,7 @@ impl FormHandler for PageForm {
     }
 }
 
-fn build_parent(
-    mut form: FormBuilder,
-    ctx: &Database,
-) -> impl Future<Item = FormBuilder, Error = Error> {
+fn build_parent(mut form: Form, ctx: &Database) -> impl Future<Item = Form, Error = Error> {
     crate::action::list::list(&ctx).and_then(|pages| {
         let mut map = HashMap::<String, String>::new();
 
