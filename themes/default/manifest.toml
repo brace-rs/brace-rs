@@ -119,3 +119,18 @@ path = "templates/form/field/field--text.html"
 name = "field--textarea"
 type = "tera"
 path = "templates/form/field/field--textarea.html"
+
+[[templates]]
+name = "action"
+type = "tera"
+path = "templates/form/action/action.html"
+
+[[templates]]
+name = "action--cancel"
+type = "tera"
+path = "templates/form/action/action--cancel.html"
+
+[[templates]]
+name = "action--submit"
+type = "tera"
+path = "templates/form/action/action--submit.html"

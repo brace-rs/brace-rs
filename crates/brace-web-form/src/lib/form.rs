@@ -4,6 +4,7 @@ use failure::Error;
 use futures::future::{loop_fn, ok, Future, FutureResult, IntoFuture, Loop};
 use serde::{Deserialize, Serialize};
 
+use super::action::Action;
 use super::builder::{FormBuilder, FormCallbackWrapper};
 use super::field::Field;
 use super::state::FormState;
@@ -15,6 +16,7 @@ type BoxedCallbackWrapper =
 pub struct Form {
     pub(crate) state: FormState,
     pub(crate) fields: Vec<Field>,
+    pub(crate) actions: Vec<Action>,
     #[serde(skip, default = "VecDeque::new")]
     pub(crate) builders: VecDeque<BoxedCallbackWrapper>,
 }
@@ -24,6 +26,7 @@ impl Form {
         Self {
             state,
             fields: Vec::new(),
+            actions: Vec::new(),
             builders: VecDeque::new(),
         }
     }
@@ -62,6 +65,14 @@ impl Form {
         T: Into<Field>,
     {
         self.fields.push(field.into());
+        self
+    }
+
+    pub fn action<T>(&mut self, action: T) -> &mut Self
+    where
+        T: Into<Action>,
+    {
+        self.actions.push(action.into());
         self
     }
 

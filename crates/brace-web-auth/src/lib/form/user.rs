@@ -1,4 +1,4 @@
-use brace_web_form::{field, Form, FormBuilder};
+use brace_web_form::{action, field, Form, FormBuilder};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use failure::Error;
 
@@ -45,6 +45,9 @@ impl FormBuilder for UserForm {
                 .description("The date/time of when the user was last updated.")
                 .value(Utc::now()),
         );
+
+        form.action(action::submit(""));
+        form.action(action::cancel("/"));
 
         Ok(form)
     }

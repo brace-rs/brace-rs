@@ -2,6 +2,7 @@ pub use self::builder::FormBuilder;
 pub use self::form::Form;
 pub use self::state::FormState;
 
+pub mod action;
 pub mod builder;
 pub mod field;
 pub mod form;

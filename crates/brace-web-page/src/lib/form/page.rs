@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use brace_db::Database;
-use brace_web_form::{field, Form, FormBuilder};
+use brace_web_form::{action, field, Form, FormBuilder};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use failure::Error;
 use futures::future::Future;
@@ -58,6 +58,9 @@ impl FormBuilder for PageForm {
                 .description("The date/time of when the page was last updated.")
                 .value(Utc::now()),
         );
+
+        form.action(action::submit(""));
+        form.action(action::cancel("/"));
 
         form.builder(move |form| build_parent(form, &ctx));
 

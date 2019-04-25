@@ -1,4 +1,4 @@
-use brace_web_form::{field, Form, FormBuilder};
+use brace_web_form::{action, field, Form, FormBuilder};
 use failure::Error;
 use uuid::Uuid;
 
@@ -18,6 +18,9 @@ impl FormBuilder for LoginForm {
         );
 
         form.insert(field::password("password").label("Password"));
+
+        form.action(action::submit(""));
+        form.action(action::cancel("/"));
 
         Ok(form)
     }

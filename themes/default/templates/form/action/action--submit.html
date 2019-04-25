@@ -1,0 +1,5 @@
+{% extends "action" %}
+
+{% block content %}
+  <button type="submit"{% if name %} name="{{ name }}"{% endif %}{% if url %} formaction="{{ url }}"{% endif %} class="button button--primary">{{ label }}</button>
+{% endblock content %}
