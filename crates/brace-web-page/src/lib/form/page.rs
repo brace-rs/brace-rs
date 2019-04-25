@@ -14,32 +14,32 @@ impl FormBuilder for PageForm {
     type Future = Result<Form, Error>;
 
     fn build(&self, mut form: Form, ctx: Self::Context) -> Self::Future {
-        form.insert(field::hidden("id").value(form.state().get::<String>("id")?));
+        form.insert(field::hidden("id").value(form.data().get::<String>("id")?));
 
         form.insert(
             field::text("title")
                 .label("Title")
                 .description("The title of the page.")
-                .value(form.state().get::<String>("title")?),
+                .value(form.data().get::<String>("title")?),
         );
 
         form.insert(
             field::text("slug")
                 .label("Slug")
                 .description("The page slug.")
-                .value(form.state().get::<String>("slug")?),
+                .value(form.data().get::<String>("slug")?),
         );
 
         form.insert(
             field::textarea("description")
                 .label("Description")
                 .description("The description of the page.")
-                .value(form.state().get::<String>("description")?),
+                .value(form.data().get::<String>("description")?),
         );
 
         let created = DateTime::<Utc>::from_utc(
             NaiveDateTime::parse_from_str(
-                &form.state().get::<String>("created")?,
+                &form.data().get::<String>("created")?,
                 "%Y-%m-%dT%H:%M",
             )?,
             Utc,
@@ -73,7 +73,7 @@ fn build_parent(mut form: Form, ctx: &Database) -> impl Future<Item = Form, Erro
         let mut map = HashMap::<String, String>::new();
 
         for page in pages {
-            if form.state().get::<Uuid>("id")? != page.id {
+            if form.data().get::<Uuid>("id")? != page.id {
                 map.insert(
                     page.id.to_string(),
                     format!("{} - {}", page.title, page.path),
@@ -86,7 +86,7 @@ fn build_parent(mut form: Form, ctx: &Database) -> impl Future<Item = Form, Erro
                 .label("Parent")
                 .description("The parent page.")
                 .value(
-                    form.state()
+                    form.data()
                         .get::<String>("parent")
                         .unwrap_or_else(|_| "".to_owned()),
                 )

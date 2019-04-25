@@ -6,15 +6,15 @@ use serde::{Deserialize, Serialize};
 
 use super::action::Action;
 use super::builder::{FormBuilder, FormCallbackWrapper};
+use super::data::FormData;
 use super::field::Field;
-use super::state::FormState;
 
 type BoxedCallbackWrapper =
     Box<dyn FormCallbackWrapper<Future = Box<dyn Future<Item = Form, Error = Error>>>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct Form {
-    pub(crate) state: FormState,
+    pub(crate) data: FormData,
     pub(crate) fields: Vec<Field>,
     pub(crate) actions: Vec<Action>,
     #[serde(skip, default = "VecDeque::new")]
@@ -22,9 +22,9 @@ pub struct Form {
 }
 
 impl Form {
-    pub fn new(state: FormState) -> Self {
+    pub fn new(data: FormData) -> Self {
         Self {
-            state,
+            data,
             fields: Vec::new(),
             actions: Vec::new(),
             builders: VecDeque::new(),
@@ -33,14 +33,14 @@ impl Form {
 
     pub fn build<F>(
         form: F,
-        state: FormState,
+        data: FormData,
         ctx: F::Context,
     ) -> impl Future<Item = Self, Error = Error>
     where
         F: FormBuilder,
         F::Future: 'static,
     {
-        let builder = Box::new(form.build(Form::new(state), ctx).into_future());
+        let builder = Box::new(form.build(Form::new(data), ctx).into_future());
 
         loop_fn(
             builder as Box<dyn Future<Item = Form, Error = Error>>,
@@ -56,8 +56,8 @@ impl Form {
 }
 
 impl Form {
-    pub fn state(&self) -> &FormState {
-        &self.state
+    pub fn data(&self) -> &FormData {
+        &self.data
     }
 
     pub fn insert<T>(&mut self, field: T) -> &mut Self

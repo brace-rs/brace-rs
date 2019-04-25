@@ -14,7 +14,7 @@ impl FormBuilder for LoginForm {
         form.insert(
             field::email("email")
                 .label("Email")
-                .value(form.state().get::<String>("email")?),
+                .value(form.data().get::<String>("email")?),
         );
 
         form.insert(field::password("password").label("Password"));

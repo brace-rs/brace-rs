@@ -9,13 +9,13 @@ impl FormBuilder for UserForm {
     type Future = Result<Form, Error>;
 
     fn build(&self, mut form: Form, _: Self::Context) -> Self::Future {
-        form.insert(field::hidden("id").value(form.state().get::<String>("id")?));
+        form.insert(field::hidden("id").value(form.data().get::<String>("id")?));
 
         form.insert(
             field::email("email")
                 .label("Email")
                 .description("The email address of the user.")
-                .value(form.state().get::<String>("email")?),
+                .value(form.data().get::<String>("email")?),
         );
 
         form.insert(
@@ -26,7 +26,7 @@ impl FormBuilder for UserForm {
 
         let created = DateTime::<Utc>::from_utc(
             NaiveDateTime::parse_from_str(
-                &form.state().get::<String>("created")?,
+                &form.data().get::<String>("created")?,
                 "%Y-%m-%dT%H:%M",
             )?,
             Utc,

@@ -1,11 +1,11 @@
 use actix_web::error::{Error, ErrorInternalServerError};
 use actix_web::middleware::identity::Identity;
-use actix_web::web::{Data, Form as FormData};
+use actix_web::web::{Data, Form as FormExtractor};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
-use brace_web_form::{Form, FormState};
+use brace_web_form::{Form, FormData};
 use futures::future::{err, ok, Either, Future};
 use serde_json::json;
 
@@ -25,7 +25,7 @@ pub fn get(
 
 pub fn post(
     id: Identity,
-    auth: FormData<UserAuth>,
+    auth: FormExtractor<UserAuth>,
     database: Data<Database>,
     renderer: Data<Renderer>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
@@ -58,9 +58,9 @@ fn render(
     renderer: Data<Renderer>,
     message: Option<&'static str>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
-    match FormState::with(auth) {
-        Ok(state) => Either::A(
-            Form::build(LoginForm, state, ())
+    match FormData::with(auth) {
+        Ok(data) => Either::A(
+            Form::build(LoginForm, data, ())
                 .map_err(ErrorInternalServerError)
                 .and_then(move |form| {
                     let template = Template::new(
