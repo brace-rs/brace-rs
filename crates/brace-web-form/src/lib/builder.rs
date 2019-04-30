@@ -9,13 +9,7 @@ pub trait FormBuilder {
     fn build(&self, form: Form) -> Self::Future;
 }
 
-pub trait FormCallback {
-    type Future: IntoFuture<Item = Form, Error = Error>;
-
-    fn build(&self, form: Form) -> Self::Future;
-}
-
-impl<R, F> FormCallback for F
+impl<R, F> FormBuilder for F
 where
     R: IntoFuture<Item = Form, Error = Error> + 'static,
     F: Fn(Form) -> R,
@@ -27,19 +21,15 @@ where
     }
 }
 
-pub trait FormCallbackWrapper {
-    type Future: IntoFuture<Item = Form, Error = Error>;
-
-    fn build_boxed(&self, form: Form) -> Self::Future;
+pub trait BoxedFormBuilder {
+    fn build_boxed(&self, form: Form) -> Box<dyn Future<Item = Form, Error = Error>>;
 }
 
-impl<F> FormCallbackWrapper for F
+impl<F> BoxedFormBuilder for F
 where
-    F: FormCallback + 'static,
+    F: FormBuilder + 'static,
 {
-    type Future = Box<dyn Future<Item = Form, Error = Error>>;
-
-    fn build_boxed(&self, form: Form) -> Self::Future {
+    fn build_boxed(&self, form: Form) -> Box<dyn Future<Item = Form, Error = Error>> {
         Box::new(self.build(form).into_future())
     }
 }

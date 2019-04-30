@@ -5,12 +5,9 @@ use futures::future::{loop_fn, ok, Future, FutureResult, IntoFuture, Loop};
 use serde::{Deserialize, Serialize};
 
 use super::action::Action;
-use super::builder::{FormBuilder, FormCallbackWrapper};
+use super::builder::{BoxedFormBuilder, FormBuilder};
 use super::data::FormData;
 use super::field::Field;
-
-type BoxedCallbackWrapper =
-    Box<dyn FormCallbackWrapper<Future = Box<dyn Future<Item = Form, Error = Error>>>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct Form {
@@ -18,7 +15,7 @@ pub struct Form {
     pub(crate) fields: Vec<Field>,
     pub(crate) actions: Vec<Action>,
     #[serde(skip, default = "VecDeque::new")]
-    pub(crate) builders: VecDeque<BoxedCallbackWrapper>,
+    pub(crate) builders: VecDeque<Box<BoxedFormBuilder>>,
 }
 
 impl Form {
@@ -74,7 +71,7 @@ impl Form {
 
     pub fn builder<T>(&mut self, builder: T) -> &mut Self
     where
-        T: FormCallbackWrapper<Future = Box<dyn Future<Item = Form, Error = Error>>> + 'static,
+        T: BoxedFormBuilder + 'static,
     {
         self.builders.push_back(Box::new(builder));
         self
