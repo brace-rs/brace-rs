@@ -58,6 +58,7 @@ fn render(
                 PageForm {
                     database: (*database).clone(),
                 },
+                (),
                 data,
             )
             .map_err(ErrorInternalServerError)

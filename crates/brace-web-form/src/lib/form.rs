@@ -10,33 +10,35 @@ use super::data::FormData;
 use super::field::Field;
 
 #[derive(Serialize, Deserialize)]
-pub struct Form {
+pub struct Form<S = ()> {
     pub(crate) data: FormData,
+    pub(crate) state: Box<S>,
     pub(crate) fields: Vec<Field>,
     pub(crate) actions: Vec<Action>,
     #[serde(skip, default = "VecDeque::new")]
-    pub(crate) builders: VecDeque<Box<BoxedFormBuilder>>,
+    pub(crate) builders: VecDeque<Box<BoxedFormBuilder<S>>>,
 }
 
-impl Form {
-    pub fn new(data: FormData) -> Self {
+impl<S> Form<S> {
+    pub fn new(state: S, data: FormData) -> Self {
         Self {
             data,
+            state: Box::new(state),
             fields: Vec::new(),
             actions: Vec::new(),
             builders: VecDeque::new(),
         }
     }
 
-    pub fn build<F>(form: F, data: FormData) -> impl Future<Item = Self, Error = Error>
+    pub fn build<F>(form: F, state: S, data: FormData) -> impl Future<Item = Self, Error = Error>
     where
-        F: FormBuilder,
+        F: FormBuilder<S>,
         F::Future: 'static,
     {
-        let builder = Box::new(form.build(Form::new(data)).into_future());
+        let builder = Box::new(form.build(Form::new(state, data)).into_future());
 
         loop_fn(
-            builder as Box<dyn Future<Item = Form, Error = Error>>,
+            builder as Box<dyn Future<Item = Form<S>, Error = Error>>,
             |form| {
                 form.into_future()
                     .and_then(|mut form| match form.builders.pop_front() {
@@ -48,9 +50,13 @@ impl Form {
     }
 }
 
-impl Form {
+impl<S> Form<S> {
     pub fn data(&self) -> &FormData {
         &self.data
+    }
+
+    pub fn state(&self) -> &S {
+        &self.state
     }
 
     pub fn insert<T>(&mut self, field: T) -> &mut Self
@@ -71,14 +77,14 @@ impl Form {
 
     pub fn builder<T>(&mut self, builder: T) -> &mut Self
     where
-        T: BoxedFormBuilder + 'static,
+        T: BoxedFormBuilder<S> + 'static,
     {
         self.builders.push_back(Box::new(builder));
         self
     }
 }
 
-impl IntoFuture for Form {
+impl<S> IntoFuture for Form<S> {
     type Item = Self;
     type Error = Error;
     type Future = FutureResult<Self::Item, Self::Error>;

@@ -3,33 +3,34 @@ use futures::future::{Future, IntoFuture};
 
 use super::form::Form;
 
-pub trait FormBuilder {
-    type Future: IntoFuture<Item = Form, Error = Error>;
+pub trait FormBuilder<S = ()> {
+    type Future: IntoFuture<Item = Form<S>, Error = Error>;
 
-    fn build(&self, form: Form) -> Self::Future;
+    fn build(&self, form: Form<S>) -> Self::Future;
 }
 
-impl<R, F> FormBuilder for F
+impl<S, R, F> FormBuilder<S> for F
 where
-    R: IntoFuture<Item = Form, Error = Error> + 'static,
-    F: Fn(Form) -> R,
+    R: IntoFuture<Item = Form<S>, Error = Error> + 'static,
+    F: Fn(Form<S>) -> R,
 {
-    type Future = Box<dyn Future<Item = Form, Error = Error>>;
+    type Future = Box<dyn Future<Item = Form<S>, Error = Error>>;
 
-    fn build(&self, form: Form) -> Self::Future {
+    fn build(&self, form: Form<S>) -> Self::Future {
         Box::new((self)(form).into_future())
     }
 }
 
-pub trait BoxedFormBuilder {
-    fn build_boxed(&self, form: Form) -> Box<dyn Future<Item = Form, Error = Error>>;
+pub trait BoxedFormBuilder<S> {
+    fn build_boxed(&self, form: Form<S>) -> Box<dyn Future<Item = Form<S>, Error = Error>>;
 }
 
-impl<F> BoxedFormBuilder for F
+impl<S, F> BoxedFormBuilder<S> for F
 where
-    F: FormBuilder + 'static,
+    S: 'static,
+    F: FormBuilder<S> + 'static,
 {
-    fn build_boxed(&self, form: Form) -> Box<dyn Future<Item = Form, Error = Error>> {
+    fn build_boxed(&self, form: Form<S>) -> Box<dyn Future<Item = Form<S>, Error = Error>> {
         Box::new(self.build(form).into_future())
     }
 }

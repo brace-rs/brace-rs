@@ -49,7 +49,7 @@ fn render(user: User, renderer: Data<Renderer>) -> impl Future<Item = HttpRespon
 
     match FormData::with(user) {
         Ok(data) => Either::A(
-            Form::build(UserForm, data)
+            Form::build(UserForm, (), data)
                 .map_err(ErrorInternalServerError)
                 .and_then(move |form| {
                     let template = Template::new(

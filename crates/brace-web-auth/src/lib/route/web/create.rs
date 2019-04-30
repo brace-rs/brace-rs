@@ -39,7 +39,7 @@ pub fn post(
 fn render(renderer: Data<Renderer>) -> impl Future<Item = HttpResponse, Error = Error> {
     match FormData::with(User::default()) {
         Ok(data) => Either::A(
-            Form::build(UserForm, data)
+            Form::build(UserForm, (), data)
                 .map_err(ErrorInternalServerError)
                 .and_then(move |form| {
                     let template = Template::new(
