@@ -5,10 +5,9 @@ use uuid::Uuid;
 pub struct LoginForm;
 
 impl FormBuilder for LoginForm {
-    type Context = ();
     type Future = Result<Form, Error>;
 
-    fn build(&self, mut form: Form, _: Self::Context) -> Self::Future {
+    fn build(&self, mut form: Form) -> Self::Future {
         form.insert(field::hidden("id").value(Uuid::new_v4().to_string()));
 
         form.insert(

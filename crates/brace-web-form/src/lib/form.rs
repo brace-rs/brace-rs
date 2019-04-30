@@ -31,16 +31,12 @@ impl Form {
         }
     }
 
-    pub fn build<F>(
-        form: F,
-        data: FormData,
-        ctx: F::Context,
-    ) -> impl Future<Item = Self, Error = Error>
+    pub fn build<F>(form: F, data: FormData) -> impl Future<Item = Self, Error = Error>
     where
         F: FormBuilder,
         F::Future: 'static,
     {
-        let builder = Box::new(form.build(Form::new(data), ctx).into_future());
+        let builder = Box::new(form.build(Form::new(data)).into_future());
 
         loop_fn(
             builder as Box<dyn Future<Item = Form, Error = Error>>,

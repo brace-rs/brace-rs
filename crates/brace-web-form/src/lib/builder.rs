@@ -4,10 +4,9 @@ use futures::future::{Future, IntoFuture};
 use super::form::Form;
 
 pub trait FormBuilder {
-    type Context;
     type Future: IntoFuture<Item = Form, Error = Error>;
 
-    fn build(&self, form: Form, ctx: Self::Context) -> Self::Future;
+    fn build(&self, form: Form) -> Self::Future;
 }
 
 pub trait FormCallback {

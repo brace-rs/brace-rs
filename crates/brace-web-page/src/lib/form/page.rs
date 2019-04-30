@@ -7,13 +7,14 @@ use failure::Error;
 use futures::future::Future;
 use uuid::Uuid;
 
-pub struct PageForm;
+pub struct PageForm {
+    pub database: Database,
+}
 
 impl FormBuilder for PageForm {
-    type Context = Database;
     type Future = Result<Form, Error>;
 
-    fn build(&self, mut form: Form, ctx: Self::Context) -> Self::Future {
+    fn build(&self, mut form: Form) -> Self::Future {
         form.insert(field::hidden("id").value(form.data().get::<String>("id")?));
 
         form.insert(
@@ -62,13 +63,14 @@ impl FormBuilder for PageForm {
         form.action(action::submit(""));
         form.action(action::cancel("/"));
 
-        form.builder(move |form| build_parent(form, &ctx));
+        let db = self.database.clone();
+        form.builder(move |form| build_parent(form, db.clone()));
 
         Ok(form)
     }
 }
 
-fn build_parent(mut form: Form, ctx: &Database) -> impl Future<Item = Form, Error = Error> {
+fn build_parent(mut form: Form, ctx: Database) -> impl Future<Item = Form, Error = Error> {
     crate::action::list::list(&ctx).and_then(|pages| {
         let mut map = HashMap::<String, String>::new();
 

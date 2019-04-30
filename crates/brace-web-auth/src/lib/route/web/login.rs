@@ -60,7 +60,7 @@ fn render(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match FormData::with(auth) {
         Ok(data) => Either::A(
-            Form::build(LoginForm, data, ())
+            Form::build(LoginForm, data)
                 .map_err(ErrorInternalServerError)
                 .and_then(move |form| {
                     let template = Template::new(

@@ -5,10 +5,9 @@ use failure::Error;
 pub struct UserForm;
 
 impl FormBuilder for UserForm {
-    type Context = ();
     type Future = Result<Form, Error>;
 
-    fn build(&self, mut form: Form, _: Self::Context) -> Self::Future {
+    fn build(&self, mut form: Form) -> Self::Future {
         form.insert(field::hidden("id").value(form.data().get::<String>("id")?));
 
         form.insert(
