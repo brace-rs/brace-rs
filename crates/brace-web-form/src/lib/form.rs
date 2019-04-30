@@ -92,3 +92,53 @@ impl<S> IntoFuture for Form<S> {
         ok(self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use futures::future::Future;
+
+    use crate::{action, field, Form, FormData};
+
+    struct FormState {
+        value: String,
+    }
+
+    fn build_form_without_state(mut form: Form) -> Form {
+        form.insert(field::hidden("field").value("value".to_owned()));
+        form.action(action::submit("submit"));
+        form
+    }
+
+    fn build_form_with_state(mut form: Form<FormState>) -> Form<FormState> {
+        form.insert(field::hidden("field").value(form.state().value.clone()));
+        form.action(action::submit("submit"));
+        form
+    }
+
+    #[test]
+    fn test_form_build_without_state() {
+        let mut form = Form::new((), FormData::new());
+
+        form.builder(build_form_without_state);
+
+        let form = form.build().wait().unwrap();
+
+        assert_eq!(form.fields.len(), 1);
+        assert_eq!(form.actions.len(), 1);
+    }
+
+    #[test]
+    fn test_form_build_with_state() {
+        let state = FormState {
+            value: "Hello".to_owned(),
+        };
+        let mut form = Form::new(state, FormData::new());
+
+        form.builder(build_form_with_state);
+
+        let form = form.build().wait().unwrap();
+
+        assert_eq!(form.fields.len(), 1);
+        assert_eq!(form.actions.len(), 1);
+    }
+}
