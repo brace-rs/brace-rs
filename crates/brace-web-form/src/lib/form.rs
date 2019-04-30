@@ -23,14 +23,19 @@ impl<S> Form<S>
 where
     S: 'static,
 {
-    pub fn new(state: S, data: FormData) -> Self {
+    pub fn new(state: S) -> Self {
         Self {
-            data,
+            data: FormData::new(),
             state: Box::new(state),
             fields: Vec::new(),
             actions: Vec::new(),
             builders: VecDeque::new(),
         }
+    }
+
+    pub fn with(mut self, data: FormData) -> Self {
+        self.data = data;
+        self
     }
 
     pub fn build(self) -> impl Future<Item = Self, Error = Error> {
@@ -97,7 +102,7 @@ impl<S> IntoFuture for Form<S> {
 mod tests {
     use futures::future::Future;
 
-    use crate::{action, field, Form, FormData};
+    use crate::{action, field, Form};
 
     struct FormState {
         value: String,
@@ -117,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_form_build_without_state() {
-        let mut form = Form::new((), FormData::new());
+        let mut form = Form::new(());
 
         form.builder(build_form_without_state);
 
@@ -132,7 +137,7 @@ mod tests {
         let state = FormState {
             value: "Hello".to_owned(),
         };
-        let mut form = Form::new(state, FormData::new());
+        let mut form = Form::new(state);
 
         form.builder(build_form_with_state);
 

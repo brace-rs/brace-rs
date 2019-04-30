@@ -39,7 +39,7 @@ pub fn post(
 fn render(renderer: Data<Renderer>) -> impl Future<Item = HttpResponse, Error = Error> {
     match FormData::with(User::default()) {
         Ok(data) => {
-            let mut form = Form::new((), data);
+            let mut form = Form::new(()).with(data);
 
             form.builder(UserForm);
 

@@ -44,7 +44,7 @@ fn render(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match FormData::with(Page::default()) {
         Ok(data) => {
-            let mut form = Form::new((), data);
+            let mut form = Form::new(()).with(data);
 
             form.builder(PageForm {
                 database: (*database).clone(),

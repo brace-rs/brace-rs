@@ -49,7 +49,7 @@ fn render(user: User, renderer: Data<Renderer>) -> impl Future<Item = HttpRespon
 
     match FormData::with(user) {
         Ok(data) => {
-            let mut form = Form::new((), data);
+            let mut form = Form::new(()).with(data);
 
             form.builder(UserForm);
 
