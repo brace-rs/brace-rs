@@ -5,7 +5,7 @@ use futures::future::{loop_fn, ok, Future, FutureResult, IntoFuture, Loop};
 use serde::{Deserialize, Serialize};
 
 use super::action::Action;
-use super::builder::{BoxedFormBuilder, FormBuilder};
+use super::builder::BoxedFormBuilder;
 use super::data::FormData;
 use super::field::Field;
 
@@ -19,7 +19,10 @@ pub struct Form<S = ()> {
     pub(crate) builders: VecDeque<Box<BoxedFormBuilder<S>>>,
 }
 
-impl<S> Form<S> {
+impl<S> Form<S>
+where
+    S: 'static,
+{
     pub fn new(state: S, data: FormData) -> Self {
         Self {
             data,
@@ -30,15 +33,11 @@ impl<S> Form<S> {
         }
     }
 
-    pub fn build<F>(form: F, state: S, data: FormData) -> impl Future<Item = Self, Error = Error>
-    where
-        F: FormBuilder<S>,
-        F::Future: 'static,
-    {
-        let builder = Box::new(form.build(Form::new(state, data)).into_future());
+    pub fn build(self) -> impl Future<Item = Self, Error = Error> {
+        let form = Box::new(self.into_future());
 
         loop_fn(
-            builder as Box<dyn Future<Item = Form<S>, Error = Error>>,
+            form as Box<dyn Future<Item = Form<S>, Error = Error>>,
             |form| {
                 form.into_future()
                     .and_then(|mut form| match form.builders.pop_front() {
