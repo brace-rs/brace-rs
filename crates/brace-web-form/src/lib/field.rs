@@ -71,6 +71,7 @@ pub struct Text {
     pub label: Option<String>,
     pub description: Option<String>,
     pub placeholder: Option<String>,
+    pub weight: i32,
 }
 
 impl Text {
@@ -84,6 +85,7 @@ impl Text {
             label: None,
             description: None,
             placeholder: None,
+            weight: 0,
         }
     }
 
@@ -116,6 +118,11 @@ impl Text {
         T: Into<String>,
     {
         self.placeholder = Some(placeholder.into());
+        self
+    }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
         self
     }
 }
@@ -133,6 +140,7 @@ pub struct Textarea {
     pub label: Option<String>,
     pub description: Option<String>,
     pub placeholder: Option<String>,
+    pub weight: i32,
 }
 
 impl Textarea {
@@ -146,6 +154,7 @@ impl Textarea {
             label: None,
             description: None,
             placeholder: None,
+            weight: 0,
         }
     }
 
@@ -180,6 +189,11 @@ impl Textarea {
         self.placeholder = Some(placeholder.into());
         self
     }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
+        self
+    }
 }
 
 impl From<Textarea> for Field {
@@ -192,6 +206,7 @@ impl From<Textarea> for Field {
 pub struct Hidden {
     pub name: String,
     pub value: String,
+    pub weight: i32,
 }
 
 impl Hidden {
@@ -202,6 +217,7 @@ impl Hidden {
         Self {
             name: name.into(),
             value: "".to_owned(),
+            weight: -100,
         }
     }
 
@@ -210,6 +226,11 @@ impl Hidden {
         T: Into<String>,
     {
         self.value = value.into();
+        self
+    }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
         self
     }
 }
@@ -227,6 +248,7 @@ pub struct Select {
     pub label: Option<String>,
     pub description: Option<String>,
     pub options: HashMap<String, String>,
+    pub weight: i32,
 }
 
 impl Select {
@@ -240,6 +262,7 @@ impl Select {
             label: None,
             description: None,
             options: HashMap::new(),
+            weight: 0,
         }
     }
 
@@ -271,6 +294,11 @@ impl Select {
         self.options = options;
         self
     }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
+        self
+    }
 }
 
 impl From<Select> for Field {
@@ -285,6 +313,7 @@ pub struct Datetime {
     pub value: DateTime<Utc>,
     pub label: Option<String>,
     pub description: Option<String>,
+    pub weight: i32,
 }
 
 impl Datetime {
@@ -297,6 +326,7 @@ impl Datetime {
             value: Utc::now(),
             label: None,
             description: None,
+            weight: 0,
         }
     }
 
@@ -320,6 +350,11 @@ impl Datetime {
         self.description = Some(description.into());
         self
     }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
+        self
+    }
 }
 
 impl From<Datetime> for Field {
@@ -335,6 +370,7 @@ pub struct Email {
     pub label: Option<String>,
     pub description: Option<String>,
     pub placeholder: Option<String>,
+    pub weight: i32,
 }
 
 impl Email {
@@ -348,6 +384,7 @@ impl Email {
             label: None,
             description: None,
             placeholder: None,
+            weight: 0,
         }
     }
 
@@ -380,6 +417,11 @@ impl Email {
         T: Into<String>,
     {
         self.placeholder = Some(placeholder.into());
+        self
+    }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
         self
     }
 }
@@ -397,6 +439,7 @@ pub struct Password {
     pub label: Option<String>,
     pub description: Option<String>,
     pub placeholder: Option<String>,
+    pub weight: i32,
 }
 
 impl Password {
@@ -410,6 +453,7 @@ impl Password {
             label: None,
             description: None,
             placeholder: None,
+            weight: 0,
         }
     }
 
@@ -442,6 +486,11 @@ impl Password {
         T: Into<String>,
     {
         self.placeholder = Some(placeholder.into());
+        self
+    }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
         self
     }
 }
