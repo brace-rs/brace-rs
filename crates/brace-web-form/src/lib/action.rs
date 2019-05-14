@@ -26,6 +26,7 @@ pub struct Submit {
     pub name: Option<String>,
     pub label: String,
     pub url: String,
+    pub weight: i32,
 }
 
 impl Submit {
@@ -37,6 +38,7 @@ impl Submit {
             name: None,
             label: "Submit".to_owned(),
             url: url.into(),
+            weight: 0,
         }
     }
 
@@ -55,6 +57,11 @@ impl Submit {
         self.label = label.into();
         self
     }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
+        self
+    }
 }
 
 impl From<Submit> for Action {
@@ -67,6 +74,7 @@ impl From<Submit> for Action {
 pub struct Cancel {
     pub label: String,
     pub url: String,
+    pub weight: i32,
 }
 
 impl Cancel {
@@ -77,6 +85,7 @@ impl Cancel {
         Self {
             label: "Cancel".to_owned(),
             url: url.into(),
+            weight: 0,
         }
     }
 
@@ -85,6 +94,11 @@ impl Cancel {
         T: Into<String>,
     {
         self.label = label.into();
+        self
+    }
+
+    pub fn weight(mut self, weight: i32) -> Self {
+        self.weight = weight;
         self
     }
 }
