@@ -21,21 +21,24 @@ impl FormBuilder for PageForm {
             field::text("title")
                 .label("Title")
                 .description("The title of the page.")
-                .value(form.data().get::<String>("title")?),
+                .value(form.data().get::<String>("title")?)
+                .weight(1),
         );
 
         form.insert(
             field::text("slug")
                 .label("Slug")
                 .description("The page slug.")
-                .value(form.data().get::<String>("slug")?),
+                .value(form.data().get::<String>("slug")?)
+                .weight(2),
         );
 
         form.insert(
             field::textarea("description")
                 .label("Description")
                 .description("The description of the page.")
-                .value(form.data().get::<String>("description")?),
+                .value(form.data().get::<String>("description")?)
+                .weight(3),
         );
 
         let created = DateTime::<Utc>::from_utc(
@@ -50,14 +53,16 @@ impl FormBuilder for PageForm {
             field::datetime("created")
                 .label("Created")
                 .description("The date/time of when the page was first created.")
-                .value(created),
+                .value(created)
+                .weight(5),
         );
 
         form.insert(
             field::datetime("updated")
                 .label("Updated")
                 .description("The date/time of when the page was last updated.")
-                .value(Utc::now()),
+                .value(Utc::now())
+                .weight(6),
         );
 
         form.action(action::submit(""));
@@ -92,7 +97,8 @@ fn build_parent(mut form: Form, ctx: Database) -> impl Future<Item = Form, Error
                         .get::<String>("parent")
                         .unwrap_or_else(|_| "".to_owned()),
                 )
-                .options(map),
+                .options(map)
+                .weight(4),
         );
 
         Ok(form)
