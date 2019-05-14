@@ -20,6 +20,7 @@ brace-db = { path = "../brace-db" }
 brace-theme = { path = "../brace-theme" }
 brace-web = { path = "../brace-web" }
 brace-web-auth = { path = "../brace-web-auth" }
+brace-web-form = { path = "../brace-web-form" }
 chrono = { version = "0.4", features = ["serde"] }
 failure = "0.1"
 futures = "0.1"

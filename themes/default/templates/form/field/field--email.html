@@ -1,0 +1,14 @@
+{% extends "field" %}
+
+{% block content %}
+  {% set input_id = "field-" ~ name %}
+  {% if label %}
+    <label for="{{ input_id }}" class="label">{{ label }}</label>
+  {% endif %}
+  <input type="email" id="{{ input_id }}" name="{{ name }}" class="input input--email" value="{{ value }}"{% if placeholder %} placeholder="{{ placeholder }}"{% endif %} />
+  {% if description %}
+    <span class="description">
+      {{ description }}
+    </span>
+  {% endif %}
+{% endblock content %}

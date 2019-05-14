@@ -1,0 +1,22 @@
+[package]
+name = "brace-web-form"
+version = "0.1.0"
+authors = ["Daniel Balcomb <daniel.balcomb@gmail.com>"]
+description = "The web form component of the brace project."
+edition = "2018"
+homepage = "https://github.com/brace-rs/brace"
+repository = "https://github.com/brace-rs/brace"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "brace_web_form"
+path = "src/lib/lib.rs"
+
+[dependencies]
+actix-web = "1.0.0-alpha.5"
+bytes = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
+failure = "0.1"
+futures = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

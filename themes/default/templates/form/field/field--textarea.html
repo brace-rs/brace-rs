@@ -1,0 +1,14 @@
+{% extends "field" %}
+
+{% block content %}
+  {% set input_id = "field-" ~ name %}
+  {% if label %}
+    <label for="{{ input_id }}" class="label">{{ label }}</label>
+  {% endif %}
+  <textarea id="{{ input_id }}" name="{{ name }}" class="input input--textarea"{% if placeholder %} placeholder="{{ placeholder }}"{% endif %}>{{ value }}</textarea>
+  {% if description %}
+    <span class="description">
+      {{ description }}
+    </span>
+  {% endif %}
+{% endblock content %}

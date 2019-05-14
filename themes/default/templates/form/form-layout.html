@@ -8,13 +8,10 @@
 
 {% block content %}
   {{ super() }}
-  <form method="post">
+  {% if message %}
     <div class="message">
-      Are you sure that you want to log out of <em>{{ user.email }}</em>?
+      {{ message }}
     </div>
-    <div class="actions">
-      <button type="submit" class="button button--primary">Confirm</button>
-      <a href="/" class="button">Cancel</a>
-    </div>
-  </form>
+  {% endif %}
+  {{ template(name="form", value=form) | safe }}
 {% endblock content %}

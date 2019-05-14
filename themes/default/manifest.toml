@@ -56,16 +56,6 @@ type = "tera"
 path = "templates/page/page-list.html"
 
 [[templates]]
-name = "page-form"
-type = "tera"
-path = "templates/page/page-form.html"
-
-[[templates]]
-name = "page-delete-form"
-type = "tera"
-path = "templates/page/page-delete-form.html"
-
-[[templates]]
 name = "user"
 type = "tera"
 path = "templates/user/user.html"
@@ -76,21 +66,71 @@ type = "tera"
 path = "templates/user/user-list.html"
 
 [[templates]]
-name = "user-form"
+name = "form"
 type = "tera"
-path = "templates/user/user-form.html"
+path = "templates/form/form.html"
 
 [[templates]]
-name = "user-delete-form"
+name = "form-confirm"
 type = "tera"
-path = "templates/user/user-delete-form.html"
+path = "templates/form/form-confirm.html"
 
 [[templates]]
-name = "login-form"
+name = "form-layout"
 type = "tera"
-path = "templates/auth/login-form.html"
+path = "templates/form/form-layout.html"
 
 [[templates]]
-name = "logout-form"
+name = "field"
 type = "tera"
-path = "templates/auth/logout-form.html"
+path = "templates/form/field/field.html"
+
+[[templates]]
+name = "field--datetime"
+type = "tera"
+path = "templates/form/field/field--datetime.html"
+
+[[templates]]
+name = "field--email"
+type = "tera"
+path = "templates/form/field/field--email.html"
+
+[[templates]]
+name = "field--hidden"
+type = "tera"
+path = "templates/form/field/field--hidden.html"
+
+[[templates]]
+name = "field--password"
+type = "tera"
+path = "templates/form/field/field--password.html"
+
+[[templates]]
+name = "field--select"
+type = "tera"
+path = "templates/form/field/field--select.html"
+
+[[templates]]
+name = "field--text"
+type = "tera"
+path = "templates/form/field/field--text.html"
+
+[[templates]]
+name = "field--textarea"
+type = "tera"
+path = "templates/form/field/field--textarea.html"
+
+[[templates]]
+name = "action"
+type = "tera"
+path = "templates/form/action/action.html"
+
+[[templates]]
+name = "action--cancel"
+type = "tera"
+path = "templates/form/action/action--cancel.html"
+
+[[templates]]
+name = "action--submit"
+type = "tera"
+path = "templates/form/action/action--submit.html"

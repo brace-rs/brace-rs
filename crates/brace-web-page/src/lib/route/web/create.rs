@@ -1,14 +1,16 @@
 use actix_web::error::{Error, ErrorForbidden, ErrorInternalServerError};
-use actix_web::web::{Data, Form};
+use actix_web::web::{Data, Form as FormExtractor};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
 use brace_web_auth::model::CurrentUser;
+use brace_web_form::{Form, FormData};
 use futures::future::{err, Either, Future};
 use serde_json::json;
 
-use crate::model::{Page, PageWithPath};
+use crate::form::page::PageForm;
+use crate::model::Page;
 
 pub fn get(
     user: CurrentUser,
@@ -17,17 +19,13 @@ pub fn get(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match user {
         CurrentUser::Anonymous => Either::A(err(ErrorForbidden("Forbidden"))),
-        CurrentUser::Authenticated(_) => Either::B(
-            crate::action::list::list(&database)
-                .map_err(ErrorInternalServerError)
-                .and_then(move |pages| render(pages, &renderer)),
-        ),
+        CurrentUser::Authenticated(_) => Either::B(render(database, renderer)),
     }
 }
 
 pub fn post(
     user: CurrentUser,
-    page: Form<Page>,
+    page: FormExtractor<Page>,
     database: Data<Database>,
 ) -> impl Future<Item = HttpRedirect, Error = Error> {
     match user {
@@ -41,23 +39,41 @@ pub fn post(
 }
 
 fn render(
-    pages: Vec<PageWithPath>,
-    renderer: &Renderer,
+    database: Data<Database>,
+    renderer: Data<Renderer>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
-    let template = Template::new(
-        "page-form",
-        json!({
-            "title": "Create page",
-            "page": Page::default(),
-            "pages": pages,
-        }),
-    );
+    match FormData::with(Page::default()) {
+        Ok(data) => {
+            let mut form = Form::new(()).with(data);
 
-    renderer
-        .send(template)
-        .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
-            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-            Err(err) => Err(ErrorInternalServerError(err)),
-        })
+            form.builder(PageForm {
+                database: (*database).clone(),
+            });
+
+            Either::A(
+                form.build()
+                    .map_err(ErrorInternalServerError)
+                    .and_then(move |form| {
+                        let template = Template::new(
+                            "form-layout",
+                            json!({
+                                "title": "Create page",
+                                "form": form,
+                            }),
+                        );
+
+                        renderer
+                            .send(template)
+                            .map_err(ErrorInternalServerError)
+                            .and_then(move |res| match res {
+                                Ok(body) => {
+                                    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+                                }
+                                Err(err) => Err(ErrorInternalServerError(err)),
+                            })
+                    }),
+            )
+        }
+        Err(e) => Either::B(err(ErrorInternalServerError(e))),
+    }
 }

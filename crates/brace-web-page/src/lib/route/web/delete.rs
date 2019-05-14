@@ -45,10 +45,10 @@ pub fn post(
 
 fn render(page: Page, renderer: &Renderer) -> impl Future<Item = HttpResponse, Error = Error> {
     let template = Template::new(
-        "page-delete-form",
+        "form-confirm",
         json!({
             "title": format!("Delete page <em>{}</em>?", page.title),
-            "page": page,
+            "message": format!("Are you sure that you want to delete the page <em>{}</em>?", page.title),
         }),
     );
 

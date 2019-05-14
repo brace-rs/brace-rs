@@ -1,13 +1,15 @@
 use actix_web::error::{Error, ErrorInternalServerError};
 use actix_web::middleware::identity::Identity;
-use actix_web::web::{Data, Form};
+use actix_web::web::{Data, Form as FormExtractor};
 use actix_web::HttpResponse;
 use brace_db::Database;
 use brace_web::redirect::HttpRedirect;
 use brace_web::render::{Renderer, Template};
+use brace_web_form::{Form, FormData};
 use futures::future::{err, ok, Either, Future};
 use serde_json::json;
 
+use crate::form::login::LoginForm;
 use crate::model::UserAuth;
 use crate::util::verify;
 
@@ -17,13 +19,13 @@ pub fn get(
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     match id.identity() {
         Some(_) => Either::A(ok(HttpRedirect::to("/").into_response())),
-        None => Either::B(render(UserAuth::default(), &renderer, None)),
+        None => Either::B(render(UserAuth::default(), renderer, None)),
     }
 }
 
 pub fn post(
     id: Identity,
-    auth: Form<UserAuth>,
+    auth: FormExtractor<UserAuth>,
     database: Data<Database>,
     renderer: Data<Renderer>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
@@ -36,7 +38,7 @@ pub fn post(
                 } else {
                     Either::B(Box::new(render(
                         auth.into_inner(),
-                        &renderer,
+                        renderer,
                         Some("Invalid user credentials"),
                     )))
                 }
@@ -45,7 +47,7 @@ pub fn post(
         },
         Err(_) => Either::B(Box::new(render(
             auth.into_inner(),
-            &renderer,
+            renderer,
             Some("Invalid user credentials"),
         ))),
     })
@@ -53,23 +55,40 @@ pub fn post(
 
 fn render(
     auth: UserAuth,
-    renderer: &Renderer,
-    message: Option<&str>,
+    renderer: Data<Renderer>,
+    message: Option<&'static str>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
-    let template = Template::new(
-        "login-form",
-        json!({
-            "title": "Log in",
-            "message": message,
-            "auth": auth,
-        }),
-    );
+    match FormData::with(auth) {
+        Ok(data) => {
+            let mut form = Form::new(()).with(data);
 
-    renderer
-        .send(template)
-        .map_err(ErrorInternalServerError)
-        .and_then(|res| match res {
-            Ok(body) => Ok(HttpResponse::Ok().content_type("text/html").body(body)),
-            Err(err) => Err(ErrorInternalServerError(err)),
-        })
+            form.builder(LoginForm);
+
+            Either::A(
+                form.build()
+                    .map_err(ErrorInternalServerError)
+                    .and_then(move |form| {
+                        let template = Template::new(
+                            "form-layout",
+                            json!({
+                                "title": "Log in",
+                                "message": message,
+                                "form": form,
+                            }),
+                        );
+
+                        renderer
+                            .send(template)
+                            .map_err(ErrorInternalServerError)
+                            .and_then(|res| match res {
+                                Ok(body) => {
+                                    Ok(HttpResponse::Ok().content_type("text/html").body(body))
+                                }
+                                Err(err) => Err(ErrorInternalServerError(err)),
+                            })
+                    }),
+            )
+        }
+        Err(e) => Either::B(err(ErrorInternalServerError(e))),
+    }
 }

@@ -1,0 +1,24 @@
+{% extends "field" %}
+
+{% block content %}
+  {% set input_id = "field-" ~ name %}
+  {% set placeholder = placeholder | default(value="Please enter a description.") %}
+  {% if label %}
+    <label for="{{ input_id }}" class="label">{{ label }}</label>
+  {% endif %}
+  <select id="{{ input_id }}" name="{{ name }}" class="input input--select">
+    <option value="">- None -</option>
+    {% for key, val in options %}
+      {% if key == value %}
+        <option value="{{ key }}" selected="true">{{ val }}</option>
+      {% else %}
+        <option value="{{ key }}">{{ val }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+  {% if description %}
+    <span class="description">
+      {{ description }}
+    </span>
+  {% endif %}
+{% endblock content %}

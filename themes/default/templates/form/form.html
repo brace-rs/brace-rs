@@ -1,0 +1,14 @@
+{% set action = actions | filter(attribute="type", value="submit") | first %}
+{% set action = action.url %}
+<form method="post"{% if action %} action="{{ action }}"{% endif %}>
+  <div class="fields">
+    {% for field in fields %}
+      {{ template(name="field--" ~ field.type, value=field) | safe }}
+    {% endfor %}
+  </div>
+  <div class="actions">
+    {% for action in actions %}
+      {{ template(name="action--" ~ action.type, value=action) | safe }}
+    {% endfor %}
+  </div>
+</form>
