@@ -14,4 +14,5 @@ resources:
 
 stages:
 - template: ci/stages/build.yml
+- template: ci/stages/test.yml
 - template: ci/stages/release.yml

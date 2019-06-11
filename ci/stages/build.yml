@@ -22,11 +22,6 @@ stages:
       name: rust_check_minver
       rust_version: 1.33.0
 
-  - template: ../jobs/rust-test.yml
-    parameters:
-      name: rust_test_stable
-      rust_version: stable
-
   - template: ../jobs/rust-cross-build.yml
     parameters:
       name: build
