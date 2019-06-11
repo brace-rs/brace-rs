@@ -1,6 +1,6 @@
 parameters:
-  name: check
-  label: Check
+  name: build
+  label: Build
   toolchain: stable
 
 jobs:
@@ -12,6 +12,18 @@ jobs:
   - template: ../steps/install-rust.yml
     parameters:
       toolchain: ${{ parameters.toolchain }}
+      components:
+      - rustfmt
+      - clippy
 
   - script: cargo check --all
     displayName: Check
+
+  - script: cargo fmt --all -- --check
+    displayName: Rustfmt
+
+  - script: cargo build --all
+    displayName: Build
+
+  - script: cargo clippy --all -- -D warnings
+    displayName: Clippy

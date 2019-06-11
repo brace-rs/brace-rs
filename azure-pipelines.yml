@@ -13,7 +13,6 @@ resources:
       POSTGRES_DB: postgres
 
 stages:
-- template: ci/stages/lint.yml
 - template: ci/stages/build.yml
 - template: ci/stages/test.yml
 - template: ci/stages/release.yml

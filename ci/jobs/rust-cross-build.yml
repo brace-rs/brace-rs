@@ -1,20 +1,23 @@
 parameters:
-  version: stable
+  name: cross_build
+  label: Cross Build
+  toolchain: stable
+  target: x86_64-unknown-linux-musl
 
 jobs:
 - job: ${{ parameters.name }}
-  displayName: Cross Build (${{ parameters.target }})
+  displayName: ${{ parameters.label }}
   pool:
     vmImage: ubuntu-16.04
   steps:
   - template: ../steps/install-rust.yml
     parameters:
-      version: ${{ parameters.version }}
+      toolchain: ${{ parameters.toolchain }}
 
   - template: ../steps/install-cross.yml
 
   - script: cross build --release --target ${{ parameters.target }} --verbose
-    displayName: Compile release
+    displayName: Build
 
   - task: ArchiveFiles@2
     displayName: Create artifact

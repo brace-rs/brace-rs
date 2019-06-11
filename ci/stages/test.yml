@@ -4,5 +4,6 @@ stages:
   jobs:
   - template: ../jobs/rust-test.yml
     parameters:
-      name: rust_test_stable
-      version: stable
+      name: test_stable
+      label: Test (stable)
+      toolchain: stable

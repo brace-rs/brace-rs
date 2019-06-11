@@ -1,5 +1,6 @@
 parameters:
-  version: stable
+  toolchain: stable
+  components: []
 
 steps:
 - script: |
@@ -8,7 +9,7 @@ steps:
     echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
   displayName: "Install rust (*nix)"
   env:
-    RUSTUP_TOOLCHAIN: ${{ parameters.version }}
+    RUSTUP_TOOLCHAIN: ${{ parameters.toolchain }}
   condition: not(eq(variables['Agent.OS'], 'Windows_NT'))
 
 - script: |
@@ -18,10 +19,14 @@ steps:
     echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
   displayName: "Install rust (windows)"
   env:
-    RUSTUP_TOOLCHAIN: ${{ parameters.version }}
+    RUSTUP_TOOLCHAIN: ${{ parameters.toolchain }}
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
 - script: |
     rustc -Vv
     cargo -V
   displayName: Query rust and cargo versions
+
+- ${{ each component in parameters.components }}:
+  - script: rustup component add ${{ component }}
+    displayName: Install ${{ component }}

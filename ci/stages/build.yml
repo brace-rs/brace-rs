@@ -2,23 +2,27 @@ stages:
 - stage: build
   displayName: Build
   jobs:
-  - template: ../jobs/rust-check.yml
+  - template: ../jobs/rust-build.yml
     parameters:
-      name: rust_check_stable
-      version: stable
+      name: build_stable
+      label: Build (stable)
+      toolchain: stable
 
   - template: ../jobs/rust-check.yml
     parameters:
-      name: rust_check_nightly
-      version: nightly
+      name: check_nightly
+      label: Check (nightly)
+      toolchain: nightly
 
   - template: ../jobs/rust-check.yml
     parameters:
-      name: rust_check_minimum
-      version: 1.33.0
+      name: check_minimum
+      label: Check (minimum)
+      toolchain: 1.33.0
 
   - template: ../jobs/rust-cross-build.yml
     parameters:
-      name: rust_cross_build_musl
+      name: cross_build_x86_64_unknown_linux_musl
+      label: Cross Build (x86_64-unknown-linux-musl)
       target: x86_64-unknown-linux-musl
-      version: stable
+      toolchain: stable

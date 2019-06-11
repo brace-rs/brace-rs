@@ -1,9 +1,11 @@
 parameters:
-  version: stable
+  name: test
+  label: Test
+  toolchain: stable
 
 jobs:
 - job: ${{ parameters.name }}
-  displayName: Rust Test (${{ parameters.version }})
+  displayName: ${{ parameters.label }}
   pool:
     vmImage: ubuntu-16.04
   services:
@@ -11,7 +13,7 @@ jobs:
   steps:
   - template: ../steps/install-rust.yml
     parameters:
-      version: ${{ parameters.version }}
+      toolchain: ${{ parameters.toolchain }}
 
   - script: cargo test --all -- --test-threads=1
-    displayName: Run cargo test
+    displayName: Test
