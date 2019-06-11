@@ -1,0 +1,35 @@
+stages:
+- stage: build
+  displayName: Build
+  jobs:
+  - template: ../jobs/rust-lint.yml
+    parameters:
+      name: rust_lint
+      rust_version: stable
+
+  - template: ../jobs/rust-check.yml
+    parameters:
+      name: rust_check_stable
+      rust_version: stable
+
+  - template: ../jobs/rust-check.yml
+    parameters:
+      name: rust_check_nightly
+      rust_version: nightly
+
+  - template: ../jobs/rust-check.yml
+    parameters:
+      name: rust_check_minver
+      rust_version: 1.33.0
+
+  - template: ../jobs/rust-test.yml
+    parameters:
+      name: rust_test_stable
+      rust_version: stable
+
+  - template: ../jobs/rust-cross-build.yml
+    parameters:
+      name: build
+      rust_version: stable
+      rust_targets:
+      - x86_64-unknown-linux-musl

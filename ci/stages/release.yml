@@ -1,0 +1,16 @@
+stages:
+- stage: release
+  displayName: Release
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - template: ../jobs/docker-push.yml
+    parameters:
+      name: docker_push
+      images:
+      - alpine
+
+  - template: ../jobs/helm-chart.yml
+    parameters:
+      name: helm_chart
+      charts:
+      - brace
