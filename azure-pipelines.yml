@@ -12,47 +12,54 @@ resources:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
 
-jobs:
-- template: ci/azure-pipelines/job-rust-lint.yml
-  parameters:
-    name: rust_lint
-    rust_version: stable
+stages:
+- stage: build
+  displayName: Build
+  jobs:
+  - template: ci/azure-pipelines/job-rust-lint.yml
+    parameters:
+      name: rust_lint
+      rust_version: stable
 
-- template: ci/azure-pipelines/job-rust-check.yml
-  parameters:
-    name: rust_check_stable
-    rust_version: stable
+  - template: ci/azure-pipelines/job-rust-check.yml
+    parameters:
+      name: rust_check_stable
+      rust_version: stable
 
-- template: ci/azure-pipelines/job-rust-check.yml
-  parameters:
-    name: rust_check_nightly
-    rust_version: nightly
+  - template: ci/azure-pipelines/job-rust-check.yml
+    parameters:
+      name: rust_check_nightly
+      rust_version: nightly
 
-- template: ci/azure-pipelines/job-rust-check.yml
-  parameters:
-    name: rust_check_minver
-    rust_version: 1.33.0
+  - template: ci/azure-pipelines/job-rust-check.yml
+    parameters:
+      name: rust_check_minver
+      rust_version: 1.33.0
 
-- template: ci/azure-pipelines/job-rust-test.yml
-  parameters:
-    name: rust_test_stable
-    rust_version: stable
+  - template: ci/azure-pipelines/job-rust-test.yml
+    parameters:
+      name: rust_test_stable
+      rust_version: stable
 
-- template: ci/azure-pipelines/job-cross-build.yml
-  parameters:
-    name: build
-    rust_version: stable
-    rust_targets:
-    - x86_64-unknown-linux-musl
+  - template: ci/azure-pipelines/job-cross-build.yml
+    parameters:
+      name: build
+      rust_version: stable
+      rust_targets:
+      - x86_64-unknown-linux-musl
 
-- template: ci/azure-pipelines/job-docker-push.yml
-  parameters:
-    name: docker_push
-    images:
-    - alpine
+- stage: release
+  displayName: Release
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - template: ci/azure-pipelines/job-docker-push.yml
+    parameters:
+      name: docker_push
+      images:
+      - alpine
 
-- template: ci/azure-pipelines/job-helm-chart.yml
-  parameters:
-    name: helm_chart
-    charts:
-    - brace
+  - template: ci/azure-pipelines/job-helm-chart.yml
+    parameters:
+      name: helm_chart
+      charts:
+      - brace
