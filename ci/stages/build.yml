@@ -19,7 +19,6 @@ stages:
 
   - template: ../jobs/rust-cross-build.yml
     parameters:
-      name: build
+      name: rust_cross_build_musl
+      target: x86_64-unknown-linux-musl
       version: stable
-      targets:
-      - x86_64-unknown-linux-musl

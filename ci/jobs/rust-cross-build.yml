@@ -1,10 +1,9 @@
 parameters:
   version: stable
-  targets: []
 
 jobs:
 - job: ${{ parameters.name }}
-  displayName: Cross Build
+  displayName: Cross Build (${{ parameters.target }})
   pool:
     vmImage: ubuntu-16.04
   steps:
@@ -14,22 +13,21 @@ jobs:
 
   - template: ../steps/install-cross.yml
 
-  - ${{ each target in parameters.targets }}:
-    - script: cross build --release --target ${{ target }} --verbose
-      displayName: Release ${{ target }}
+  - script: cross build --release --target ${{ parameters.target }} --verbose
+    displayName: Compile release
 
-    - task: ArchiveFiles@2
-      displayName: Create artifact ${{ target }}.tar.gz
-      inputs:
-        rootFolderOrFile: '$(Build.SourcesDirectory)/target/${{ target }}/release/brace'
-        archiveType: 'tar'
-        tarCompression: 'gz'
-        archiveFile: '$(Build.ArtifactStagingDirectory)/brace-${{ target }}.tar.gz'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  - task: ArchiveFiles@2
+    displayName: Create artifact
+    inputs:
+      rootFolderOrFile: '$(Build.SourcesDirectory)/target/${{ parameters.target }}/release/brace'
+      archiveType: 'tar'
+      tarCompression: 'gz'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/brace-${{ parameters.target }}.tar.gz'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
-    - task: PublishBuildArtifacts@1
-      displayName: Publish artifact ${{ target }}.tar.gz
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)/brace-${{ target }}.tar.gz'
-        artifactName: 'brace-${{ target }}'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  - task: PublishBuildArtifacts@1
+    displayName: Publish artifact
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)/brace-${{ parameters.target }}.tar.gz'
+      artifactName: 'brace-${{ parameters.target }}'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
