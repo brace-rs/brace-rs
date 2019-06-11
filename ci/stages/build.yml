@@ -2,11 +2,6 @@ stages:
 - stage: build
   displayName: Build
   jobs:
-  - template: ../jobs/rust-lint.yml
-    parameters:
-      name: rust_lint
-      rust_version: stable
-
   - template: ../jobs/rust-check.yml
     parameters:
       name: rust_check_stable

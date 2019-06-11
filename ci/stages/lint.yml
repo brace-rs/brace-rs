@@ -1,0 +1,9 @@
+stages:
+- stage: lint
+  displayName: Lint
+  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - template: ../jobs/rust-lint.yml
+    parameters:
+      name: rust_lint
+      rust_version: stable
