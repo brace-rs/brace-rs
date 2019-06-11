@@ -13,8 +13,7 @@ name = "brace_web_form"
 path = "src/lib/lib.rs"
 
 [dependencies]
-actix-web = "1.0.0-alpha.5"
-bytes = "0.4"
+actix-web = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 failure = "0.1"
 futures = "0.1"

@@ -55,11 +55,12 @@ pub enum CurrentUser {
     Authenticated(User),
 }
 
-impl<P> FromRequest<P> for CurrentUser {
+impl FromRequest for CurrentUser {
     type Error = Error;
     type Future = Either<FutureResult<Self, Self::Error>, BoxedFuture<Self, Self::Error>>;
+    type Config = ();
 
-    fn from_request(req: &HttpRequest, payload: &mut Payload<P>) -> Self::Future {
+    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
         if let Ok(id) = Identity::from_request(req, payload) {
             if let Some(user) = id.identity() {
                 if let Ok(uuid) = user.parse::<Uuid>() {
@@ -91,11 +92,12 @@ pub enum CurrentAuth {
     Authenticated(User),
 }
 
-impl<P> FromRequest<P> for CurrentAuth {
+impl FromRequest for CurrentAuth {
     type Error = Error;
     type Future = Either<FutureResult<Self, Self::Error>, BoxedFuture<Self, Self::Error>>;
+    type Config = ();
 
-    fn from_request(req: &HttpRequest, payload: &mut Payload<P>) -> Self::Future {
+    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
         if let Some(header) = req.headers().get("Authorization") {
             if let Ok(header) = header.to_str() {
                 let parts = header.split(' ').collect::<Vec<&str>>();

@@ -1,11 +1,9 @@
 use actix_web::dev::Payload;
-use actix_web::error::{Error as WebError, PayloadError};
+use actix_web::error::Error as WebError;
 use actix_web::web::Form as FormExtractor;
 use actix_web::{FromRequest, HttpRequest};
-use bytes::Bytes;
 use failure::{format_err, Error};
 use futures::future::{ok, Future};
-use futures::stream::Stream;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_value, to_value, Value};
@@ -46,14 +44,12 @@ impl Default for FormData {
     }
 }
 
-impl<P> FromRequest<P> for FormData
-where
-    P: Stream<Item = Bytes, Error = PayloadError> + 'static,
-{
+impl FromRequest for FormData {
     type Error = WebError;
     type Future = Box<dyn Future<Item = Self, Error = Self::Error>>;
+    type Config = ();
 
-    fn from_request(req: &HttpRequest, payload: &mut Payload<P>) -> Self::Future {
+    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
         Box::new(
             FormExtractor::<Value>::from_request(req, payload)
                 .and_then(|data| ok(Self(data.into_inner()))),

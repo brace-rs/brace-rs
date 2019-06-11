@@ -1,6 +1,4 @@
-use actix_web::error::PayloadError;
-use actix_web::web::{self, Bytes, RouterConfig};
-use futures::Stream;
+use actix_web::web::{self, ServiceConfig};
 
 use crate::router::PageRouter;
 
@@ -11,9 +9,7 @@ pub mod locate;
 pub mod retrieve;
 pub mod update;
 
-type PayloadStream = Box<dyn Stream<Item = Bytes, Error = PayloadError>>;
-
-pub fn config(conf: &mut RouterConfig<PayloadStream>) {
+pub fn config(conf: &mut ServiceConfig) {
     conf.service(
         web::scope("/pages")
             .service(web::resource("/").route(web::get().to_async(list::get)))

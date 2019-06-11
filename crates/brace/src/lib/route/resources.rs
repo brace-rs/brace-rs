@@ -8,10 +8,10 @@ use actix_files::NamedFile;
 use actix_service::boxed::{self, BoxedNewService, BoxedService};
 use actix_service::{IntoNewService, NewService, Service};
 use actix_web::dev::{
-    HttpServiceFactory, Payload, ResourceDef, ServiceConfig, ServiceRequest, ServiceResponse,
+    AppService, HttpServiceFactory, ResourceDef, ServiceRequest, ServiceResponse,
 };
 use actix_web::error::Error;
-use actix_web::{HttpRequest, Responder};
+use actix_web::Responder;
 use brace_config::load;
 use brace_theme::config::ThemeConfig;
 use brace_theme::manifest::ManifestConfig;
@@ -20,8 +20,8 @@ use futures::future::{ok, Either, Future, FutureResult};
 use futures::{Async, Poll};
 use serde::Deserialize;
 
-type HttpService<P> = BoxedService<ServiceRequest<P>, ServiceResponse, Error>;
-type HttpNewService<P> = BoxedNewService<(), ServiceRequest<P>, ServiceResponse, Error, ()>;
+type HttpService = BoxedService<ServiceRequest, ServiceResponse, Error>;
+type HttpNewService = BoxedNewService<(), ServiceRequest, ServiceResponse, Error, ()>;
 type FutureResponse = Box<Future<Item = ServiceResponse, Error = Error>>;
 
 #[derive(Deserialize)]
@@ -31,13 +31,13 @@ pub struct ThemeResource {
     pub resource: String,
 }
 
-pub struct ThemeResources<S> {
+pub struct ThemeResources {
     path: String,
-    default: Rc<RefCell<Option<Rc<HttpNewService<S>>>>>,
+    default: Rc<RefCell<Option<Rc<HttpNewService>>>>,
     themes: Vec<(ThemeConfig, PathBuf)>,
 }
 
-impl<S: 'static> ThemeResources<S> {
+impl ThemeResources {
     pub fn new(path: &str, themes: Vec<(ThemeConfig, PathBuf)>) -> Self {
         Self {
             path: path.to_string(),
@@ -49,8 +49,12 @@ impl<S: 'static> ThemeResources<S> {
     pub fn default_handler<F, U>(mut self, f: F) -> Self
     where
         F: IntoNewService<U>,
-        U: NewService<Request = ServiceRequest<S>, Response = ServiceResponse, Error = Error>
-            + 'static,
+        U: NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+            > + 'static,
     {
         self.default = Rc::new(RefCell::new(Some(Rc::new(boxed::new_service(
             f.into_new_service().map_init_err(|_| ()),
@@ -60,8 +64,8 @@ impl<S: 'static> ThemeResources<S> {
     }
 }
 
-impl<S: 'static> HttpServiceFactory<S> for ThemeResources<S> {
-    fn register(self, config: &mut ServiceConfig<S>) {
+impl HttpServiceFactory for ThemeResources {
+    fn register(self, config: &mut AppService) {
         if self.default.borrow().is_none() {
             *self.default.borrow_mut() = Some(config.default_service());
         }
@@ -76,13 +80,14 @@ impl<S: 'static> HttpServiceFactory<S> for ThemeResources<S> {
     }
 }
 
-impl<S: 'static> NewService for ThemeResources<S> {
-    type Request = ServiceRequest<S>;
+impl NewService for ThemeResources {
+    type Request = ServiceRequest;
     type Response = ServiceResponse;
     type Error = Error;
-    type Service = ThemeResourcesService<S>;
+    type Service = ThemeResourcesService;
     type InitError = ();
     type Future = Box<Future<Item = Self::Service, Error = Self::InitError>>;
+    type Config = ();
 
     fn new_service(&self, _: &()) -> Self::Future {
         let mut srv = ThemeResourcesService {
@@ -106,29 +111,27 @@ impl<S: 'static> NewService for ThemeResources<S> {
     }
 }
 
-pub struct ThemeResourcesService<P> {
-    default: Option<HttpService<P>>,
+pub struct ThemeResourcesService {
+    default: Option<HttpService>,
     themes: Vec<(ThemeConfig, PathBuf)>,
 }
 
-impl<P> ThemeResourcesService<P> {
+impl ThemeResourcesService {
     fn handle_err(
         &mut self,
-        err: std::io::Error,
-        req: HttpRequest,
-        payload: Payload<P>,
+        err: IoError,
+        req: ServiceRequest,
     ) -> Either<FutureResult<ServiceResponse, Error>, FutureResponse> {
-        log::debug!("ThemeResources: Failed to handle {}: {}", req.path(), err);
         if let Some(ref mut default) = self.default {
-            default.call(ServiceRequest::from_parts(req, payload))
+            default.call(req)
         } else {
-            Either::A(ok(ServiceResponse::from_err(err, req.clone())))
+            Either::A(ok(req.error_response(err)))
         }
     }
 }
 
-impl<P> Service for ThemeResourcesService<P> {
-    type Request = ServiceRequest<P>;
+impl Service for ThemeResourcesService {
+    type Request = ServiceRequest;
     type Response = ServiceResponse;
     type Error = Error;
     type Future = Either<FutureResult<Self::Response, Self::Error>, FutureResponse>;
@@ -137,9 +140,7 @@ impl<P> Service for ThemeResourcesService<P> {
         Ok(Async::Ready(()))
     }
 
-    fn call(&mut self, req: ServiceRequest<P>) -> Self::Future {
-        let (req, payload) = req.into_parts();
-
+    fn call(&mut self, req: ServiceRequest) -> Self::Future {
         let mut path = req.match_info().clone();
         let rdef = ResourceDef::new("/{theme}/{kind}/{resource:.*}");
 
@@ -189,11 +190,17 @@ impl<P> Service for ThemeResourcesService<P> {
 
                 if let Some(res) = res {
                     return match NamedFile::open(res.location().to_string()) {
-                        Ok(named_file) => match named_file.respond_to(&req) {
-                            Ok(item) => Either::A(ok(ServiceResponse::new(req.clone(), item))),
-                            Err(err) => Either::A(ok(ServiceResponse::from_err(err, req.clone()))),
-                        },
-                        Err(err) => self.handle_err(err, req, payload),
+                        Ok(named_file) => {
+                            let (req, _) = req.into_parts();
+
+                            match named_file.respond_to(&req) {
+                                Ok(item) => Either::A(ok(ServiceResponse::new(req.clone(), item))),
+                                Err(err) => {
+                                    Either::A(ok(ServiceResponse::from_err(err, req.clone())))
+                                }
+                            }
+                        }
+                        Err(err) => self.handle_err(err, req),
                     };
                 }
             }
@@ -202,7 +209,6 @@ impl<P> Service for ThemeResourcesService<P> {
         self.handle_err(
             IoError::new(IoErrorKind::NotFound, "Resource not found"),
             req,
-            payload,
         )
     }
 }
