@@ -4,25 +4,24 @@ use std::rc::Rc;
 use actix_service::boxed::{self, BoxedNewService, BoxedService};
 use actix_service::{IntoNewService, NewService, Service};
 use actix_web::dev::{
-    HttpServiceFactory, Payload, ResourceDef, ServiceConfig, ServiceRequest, ServiceResponse,
+    AppService, HttpServiceFactory, ResourceDef, ServiceRequest, ServiceResponse,
 };
 use actix_web::error::{Error, ErrorNotFound};
-use actix_web::HttpRequest;
 use brace_db::Database;
 use brace_web::render::Renderer;
 use futures::future::{ok, Either, Future, FutureResult};
 use futures::{Async, Poll};
 
-type HttpService<P> = BoxedService<ServiceRequest<P>, ServiceResponse, Error>;
-type HttpNewService<P> = BoxedNewService<(), ServiceRequest<P>, ServiceResponse, Error, ()>;
+type HttpService = BoxedService<ServiceRequest, ServiceResponse, Error>;
+type HttpNewService = BoxedNewService<(), ServiceRequest, ServiceResponse, Error, ()>;
 type FutureResponse = Box<Future<Item = ServiceResponse, Error = Error>>;
 
-pub struct PageRouter<S> {
+pub struct PageRouter {
     path: String,
-    default: Rc<RefCell<Option<Rc<HttpNewService<S>>>>>,
+    default: Rc<RefCell<Option<Rc<HttpNewService>>>>,
 }
 
-impl<S: 'static> PageRouter<S> {
+impl PageRouter {
     pub fn new(path: &str) -> Self {
         Self {
             path: path.to_string(),
@@ -33,8 +32,12 @@ impl<S: 'static> PageRouter<S> {
     pub fn default_handler<F, U>(mut self, f: F) -> Self
     where
         F: IntoNewService<U>,
-        U: NewService<Request = ServiceRequest<S>, Response = ServiceResponse, Error = Error>
-            + 'static,
+        U: NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+            > + 'static,
     {
         self.default = Rc::new(RefCell::new(Some(Rc::new(boxed::new_service(
             f.into_new_service().map_init_err(|_| ()),
@@ -44,8 +47,8 @@ impl<S: 'static> PageRouter<S> {
     }
 }
 
-impl<S: 'static> HttpServiceFactory<S> for PageRouter<S> {
-    fn register(self, config: &mut ServiceConfig<S>) {
+impl HttpServiceFactory for PageRouter {
+    fn register(self, config: &mut AppService) {
         if self.default.borrow().is_none() {
             *self.default.borrow_mut() = Some(config.default_service());
         }
@@ -60,13 +63,14 @@ impl<S: 'static> HttpServiceFactory<S> for PageRouter<S> {
     }
 }
 
-impl<S: 'static> NewService for PageRouter<S> {
-    type Request = ServiceRequest<S>;
+impl NewService for PageRouter {
+    type Request = ServiceRequest;
     type Response = ServiceResponse;
     type Error = Error;
-    type Service = PageRouterService<S>;
+    type Service = PageRouterService;
     type InitError = ();
     type Future = Box<Future<Item = Self::Service, Error = Self::InitError>>;
+    type Config = ();
 
     fn new_service(&self, _: &()) -> Self::Future {
         let mut srv = PageRouterService { default: None };
@@ -87,27 +91,26 @@ impl<S: 'static> NewService for PageRouter<S> {
     }
 }
 
-pub struct PageRouterService<P> {
-    default: Option<HttpService<P>>,
+pub struct PageRouterService {
+    default: Option<HttpService>,
 }
 
-impl<P> PageRouterService<P> {
+impl PageRouterService {
     fn handle_err(
         &mut self,
         err: Error,
-        req: HttpRequest,
-        payload: Payload<P>,
+        req: ServiceRequest,
     ) -> Either<FutureResult<ServiceResponse, Error>, FutureResponse> {
         if let Some(ref mut default) = self.default {
-            default.call(ServiceRequest::from_parts(req, payload))
+            default.call(req)
         } else {
-            Either::A(ok(ServiceResponse::from_err(err, req.clone())))
+            Either::A(ok(req.error_response(err)))
         }
     }
 }
 
-impl<P: 'static> Service for PageRouterService<P> {
-    type Request = ServiceRequest<P>;
+impl Service for PageRouterService {
+    type Request = ServiceRequest;
     type Response = ServiceResponse;
     type Error = Error;
     type Future = Either<FutureResult<Self::Response, Self::Error>, FutureResponse>;
@@ -116,13 +119,14 @@ impl<P: 'static> Service for PageRouterService<P> {
         Ok(Async::Ready(()))
     }
 
-    fn call(&mut self, req: ServiceRequest<P>) -> Self::Future {
-        let (req, payload) = req.into_parts();
+    fn call(&mut self, req: ServiceRequest) -> Self::Future {
         let database = req.app_data::<Database>();
         let renderer = req.app_data::<Renderer>();
 
         if let Some(database) = database {
             if let Some(renderer) = renderer {
+                let (req, _) = req.into_parts();
+
                 return Either::B(Box::new(
                     crate::route::web::locate::get(req.clone(), database, renderer)
                         .map_err(ErrorNotFound)
@@ -134,6 +138,6 @@ impl<P: 'static> Service for PageRouterService<P> {
             }
         }
 
-        self.handle_err(ErrorNotFound("Page not found"), req, payload)
+        self.handle_err(ErrorNotFound("Page not found"), req)
     }
 }

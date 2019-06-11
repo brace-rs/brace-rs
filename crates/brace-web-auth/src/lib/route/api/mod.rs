@@ -1,6 +1,4 @@
-use actix_web::error::PayloadError;
-use actix_web::web::{self, Bytes, RouterConfig};
-use futures::Stream;
+use actix_web::web::{self, ServiceConfig};
 
 pub mod auth;
 pub mod create;
@@ -9,9 +7,7 @@ pub mod list;
 pub mod retrieve;
 pub mod update;
 
-type PayloadStream = Box<dyn Stream<Item = Bytes, Error = PayloadError>>;
-
-pub fn config(conf: &mut RouterConfig<PayloadStream>) {
+pub fn config(conf: &mut ServiceConfig) {
     conf.service(web::resource("/api/auth").route(web::post().to_async(auth::post)))
         .service(
             web::scope("/api/users")
