@@ -1,6 +1,6 @@
 jobs:
 - job: ${{ parameters.name }}
-  displayName: Helm chart
+  displayName: Helm Chart
   pool:
     vmImage: ubuntu-16.04
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))

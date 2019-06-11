@@ -5,21 +5,21 @@ stages:
   - template: ../jobs/rust-check.yml
     parameters:
       name: rust_check_stable
-      rust_version: stable
+      version: stable
 
   - template: ../jobs/rust-check.yml
     parameters:
       name: rust_check_nightly
-      rust_version: nightly
+      version: nightly
 
   - template: ../jobs/rust-check.yml
     parameters:
-      name: rust_check_minver
-      rust_version: 1.33.0
+      name: rust_check_minimum
+      version: 1.33.0
 
   - template: ../jobs/rust-cross-build.yml
     parameters:
       name: build
-      rust_version: stable
-      rust_targets:
+      version: stable
+      targets:
       - x86_64-unknown-linux-musl

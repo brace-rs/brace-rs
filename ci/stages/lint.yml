@@ -6,4 +6,4 @@ stages:
   - template: ../jobs/rust-lint.yml
     parameters:
       name: rust_lint
-      rust_version: stable
+      version: stable

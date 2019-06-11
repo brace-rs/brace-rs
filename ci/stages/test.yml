@@ -5,4 +5,4 @@ stages:
   - template: ../jobs/rust-test.yml
     parameters:
       name: rust_test_stable
-      rust_version: stable
+      version: stable

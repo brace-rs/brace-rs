@@ -1,12 +1,15 @@
+parameters:
+  version: stable
+
 jobs:
 - job: ${{ parameters.name }}
-  displayName: Rust check ${{ parameters.rust_version }}
+  displayName: Rust Check (${{ parameters.version }})
   pool:
     vmImage: ubuntu-16.04
   steps:
   - template: ../steps/install-rust.yml
     parameters:
-      rust_version: ${{ parameters.rust_version }}
+      version: ${{ parameters.version }}
 
   - script: cargo check --all
     displayName: Run cargo check
