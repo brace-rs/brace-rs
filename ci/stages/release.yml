@@ -1,7 +1,6 @@
 stages:
 - stage: release
   displayName: Release
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - template: ../jobs/docker-push.yml
     parameters:

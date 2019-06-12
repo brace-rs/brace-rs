@@ -3,7 +3,6 @@ jobs:
   displayName: Helm Package
   pool:
     vmImage: ubuntu-16.04
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn:
   - docker_push
   steps:
