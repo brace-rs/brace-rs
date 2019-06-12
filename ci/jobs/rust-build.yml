@@ -16,9 +16,6 @@ jobs:
       - rustfmt
       - clippy
 
-  - script: cargo check --all
-    displayName: Check
-
   - script: cargo fmt --all -- --check
     displayName: Rustfmt
 

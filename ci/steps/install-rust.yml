@@ -22,11 +22,11 @@ steps:
     RUSTUP_TOOLCHAIN: ${{ parameters.toolchain }}
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
+- ${{ each component in parameters.components }}:
+  - script: rustup component add ${{ component }}
+    displayName: Install ${{ component }}
+
 - script: |
     rustc -Vv
     cargo -V
   displayName: Query rust and cargo versions
-
-- ${{ each component in parameters.components }}:
-  - script: rustup component add ${{ component }}
-    displayName: Install ${{ component }}

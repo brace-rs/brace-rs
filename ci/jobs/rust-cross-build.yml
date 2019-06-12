@@ -16,7 +16,7 @@ jobs:
 
   - template: ../steps/install-cross.yml
 
-  - script: cross build --release --target ${{ parameters.target }} --verbose
+  - script: cross build --release --target ${{ parameters.target }}
     displayName: Build
 
   - task: ArchiveFiles@2
