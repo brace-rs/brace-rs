@@ -13,6 +13,22 @@ resources:
       POSTGRES_DB: postgres
 
 stages:
+- stage: check
+  displayName: Check
+  dependsOn: []
+  jobs:
+  - template: ci/job-cargo-check.yml
+    parameters:
+      name: check_nightly
+      label: Nightly
+      toolchain: nightly
+
+  - template: ci/job-cargo-check.yml
+    parameters:
+      name: check_minimum
+      label: Minimum
+      toolchain: 1.33.0
+
 - stage: build
   displayName: Build
   dependsOn: []
@@ -51,21 +67,10 @@ stages:
       label: Stable
       toolchain: stable
 
-  - template: ci/job-cargo-check.yml
-    parameters:
-      name: test_nightly
-      label: Nightly
-      toolchain: nightly
-
-  - template: ci/job-cargo-check.yml
-    parameters:
-      name: test_minimum
-      label: Minimum
-      toolchain: 1.33.0
-
 - stage: release
   displayName: Release
   dependsOn:
+  - check
   - build
   - test
   jobs:
