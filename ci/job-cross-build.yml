@@ -4,11 +4,11 @@ jobs:
   pool:
     vmImage: ubuntu-16.04
   steps:
-  - template: ../step-install-rust.yml
+  - template: step-install-rust.yml
     parameters:
       toolchain: ${{ parameters.toolchain }}
 
-  - template: ../step-install-cross.yml
+  - template: step-install-cross.yml
 
   - script: cross build --release --target ${{ parameters.target }}
     displayName: Build

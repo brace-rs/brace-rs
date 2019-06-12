@@ -6,7 +6,7 @@ jobs:
   services:
     postgres: postgres
   steps:
-  - template: ../step-install-rust.yml
+  - template: step-install-rust.yml
     parameters:
       toolchain: ${{ parameters.toolchain }}
       components:

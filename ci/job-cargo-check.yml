@@ -4,7 +4,7 @@ jobs:
   pool:
     vmImage: ubuntu-16.04
   steps:
-  - template: ../step-install-rust.yml
+  - template: step-install-rust.yml
     parameters:
       toolchain: ${{ parameters.toolchain }}
 
