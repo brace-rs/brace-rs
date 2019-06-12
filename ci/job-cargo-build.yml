@@ -13,6 +13,7 @@ jobs:
 
   - task: ArchiveFiles@2
     displayName: Archive
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       rootFolderOrFile: '$(Build.SourcesDirectory)/target/${{ parameters.target }}/release/brace'
       archiveType: 'tar'
@@ -21,6 +22,7 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     displayName: Publish
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       pathToPublish: '$(Build.ArtifactStagingDirectory)/brace-${{ parameters.target }}.tar.gz'
       artifactName: 'brace-${{ parameters.target }}'
