@@ -1,26 +1,18 @@
-parameters:
-  name: cross_build
-  label: Cross Build
-  toolchain: stable
-  target: x86_64-unknown-linux-musl
-
 jobs:
 - job: ${{ parameters.name }}
   displayName: ${{ parameters.label }}
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ${{ parameters.image }}
   steps:
-  - template: ../steps/install-rust.yml
+  - template: ../step-install-rust.yml
     parameters:
       toolchain: ${{ parameters.toolchain }}
 
-  - template: ../steps/install-cross.yml
-
-  - script: cross build --release --target ${{ parameters.target }}
+  - script: cargo build --release --target ${{ parameters.target }}
     displayName: Build
 
   - task: ArchiveFiles@2
-    displayName: Create artifact
+    displayName: Archive
     inputs:
       rootFolderOrFile: '$(Build.SourcesDirectory)/target/${{ parameters.target }}/release/brace'
       archiveType: 'tar'
@@ -28,7 +20,7 @@ jobs:
       archiveFile: '$(Build.ArtifactStagingDirectory)/brace-${{ parameters.target }}.tar.gz'
 
   - task: PublishBuildArtifacts@1
-    displayName: Publish artifact
+    displayName: Publish
     inputs:
       pathToPublish: '$(Build.ArtifactStagingDirectory)/brace-${{ parameters.target }}.tar.gz'
       artifactName: 'brace-${{ parameters.target }}'

@@ -1,15 +1,10 @@
-parameters:
-  name: check
-  label: Check
-  toolchain: stable
-
 jobs:
 - job: ${{ parameters.name }}
   displayName: ${{ parameters.label }}
   pool:
     vmImage: ubuntu-16.04
   steps:
-  - template: ../steps/install-rust.yml
+  - template: ../step-install-rust.yml
     parameters:
       toolchain: ${{ parameters.toolchain }}
 

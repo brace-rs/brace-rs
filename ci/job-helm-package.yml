@@ -1,10 +1,8 @@
 jobs:
 - job: ${{ parameters.name }}
-  displayName: Helm Package
+  displayName: ${{ parameters.label }}
   pool:
     vmImage: ubuntu-16.04
-  dependsOn:
-  - docker_push
   steps:
   - task: HelmInstaller@0
     displayName: Install helm
@@ -17,20 +15,20 @@ jobs:
 
   - ${{ each chart in parameters.charts }}:
     - task: DeleteFiles@1
-      displayName: Clean artifact directory
+      displayName: Clean
       inputs:
         sourceFolder: '$(Build.ArtifactStagingDirectory)'
         contents: '**'
 
     - task: HelmDeploy@0
-      displayName: Package chart ${{ chart }}
+      displayName: Package ${{ chart }}
       inputs:
         command: package
         chartPath: charts/${{ chart }}
         destination: '$(Build.ArtifactStagingDirectory)'
 
     - task: PublishBuildArtifacts@1
-      displayName: Publish chart artifact ${{ chart }}
+      displayName: Publish ${{ chart }}
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)'
         artifactName: 'chart-${{ chart }}'

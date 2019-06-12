@@ -13,6 +13,72 @@ resources:
       POSTGRES_DB: postgres
 
 stages:
-- template: ci/stages/build.yml
-- template: ci/stages/test.yml
-- template: ci/stages/release.yml
+- stage: build
+  displayName: Build
+  dependsOn: []
+  jobs:
+  - template: ci/job-cargo-build.yml
+    parameters:
+      name: build_x86_64_unknown_linux_gnu
+      label: x86_64-unknown-linux-gnu
+      target: x86_64-unknown-linux-gnu
+      toolchain: stable
+      image: ubuntu-16.04
+
+  - template: ci/job-cargo-build.yml
+    parameters:
+      name: build_x86_64_apple_darwin
+      label: x86_64-apple-darwin
+      target: x86_64-apple-darwin
+      toolchain: stable
+      image: macos-10.13
+
+  - template: ci/job-cross-build.yml
+    parameters:
+      name: build_x86_64_unknown_linux_musl
+      label: x86_64-unknown-linux-musl
+      target: x86_64-unknown-linux-musl
+      toolchain: stable
+      image: ubuntu-16.04
+
+- stage: test
+  displayName: Test
+  dependsOn: []
+  jobs:
+  - template: ci/job-cargo-test.yml
+    parameters:
+      name: test_stable
+      label: Stable
+      toolchain: stable
+
+  - template: ci/job-cargo-check.yml
+    parameters:
+      name: test_nightly
+      label: Nightly
+      toolchain: nightly
+
+  - template: ci/job-cargo-check.yml
+    parameters:
+      name: test_minimum
+      label: Minimum
+      toolchain: 1.33.0
+
+- stage: release
+  displayName: Release
+  dependsOn:
+  - build
+  - test
+  jobs:
+  - template: ci/job-docker-push.yml
+    parameters:
+      name: release_docker_push
+      label: Docker Push
+      images:
+      - alpine
+
+  - template: ci/job-helm-package.yml
+    parameters:
+      name: release_helm_package
+      label: Helm Package
+      charts:
+      - brace

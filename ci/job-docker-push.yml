@@ -1,6 +1,6 @@
 jobs:
 - job: ${{ parameters.name }}
-  displayName: Docker Push
+  displayName: ${{ parameters.label }}
   pool:
     vmImage: ubuntu-16.04
   variables:

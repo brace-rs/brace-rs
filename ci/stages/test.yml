@@ -1,9 +1,0 @@
-stages:
-- stage: test
-  displayName: Test
-  jobs:
-  - template: ../jobs/rust-test.yml
-    parameters:
-      name: test_stable
-      label: Test (stable)
-      toolchain: stable

@@ -1,8 +1,3 @@
-parameters:
-  name: test
-  label: Test
-  toolchain: stable
-
 jobs:
 - job: ${{ parameters.name }}
   displayName: ${{ parameters.label }}
@@ -11,9 +6,18 @@ jobs:
   services:
     postgres: postgres
   steps:
-  - template: ../steps/install-rust.yml
+  - template: ../step-install-rust.yml
     parameters:
       toolchain: ${{ parameters.toolchain }}
+      components:
+      - rustfmt
+      - clippy
+
+  - script: cargo fmt --all -- --check
+    displayName: Rustfmt
+
+  - script: cargo clippy --all -- -D warnings
+    displayName: Clippy
 
   - script: cargo test --all -- --test-threads=1
     displayName: Test
