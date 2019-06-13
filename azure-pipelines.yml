@@ -29,6 +29,16 @@ stages:
       label: Minimum
       toolchain: 1.33.0
 
+- stage: lint
+  displayName: Lint
+  dependsOn: []
+  jobs:
+  - template: ci/job-cargo-lint.yml
+    parameters:
+      name: lint_rust
+      label: Rust
+      toolchain: stable
+
 - stage: build
   displayName: Build
   dependsOn: []
@@ -72,6 +82,7 @@ stages:
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn:
   - check
+  - lint
   - build
   - test
   jobs:

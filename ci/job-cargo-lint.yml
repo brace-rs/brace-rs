@@ -3,12 +3,16 @@ jobs:
   displayName: ${{ parameters.label }}
   pool:
     vmImage: ubuntu-16.04
-  services:
-    postgres: postgres
   steps:
   - template: step-install-rust.yml
     parameters:
       toolchain: ${{ parameters.toolchain }}
+      components:
+      - rustfmt
+      - clippy
 
-  - script: cargo test --all -- --test-threads=1
-    displayName: Test
+  - script: cargo fmt --all -- --check
+    displayName: Rustfmt
+
+  - script: cargo clippy --all -- -D warnings
+    displayName: Clippy
