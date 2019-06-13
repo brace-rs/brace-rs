@@ -1,14 +1,14 @@
 jobs:
 - job: ${{ parameters.name }}
-  displayName: Rust test ${{ parameters.rust_version }}
+  displayName: ${{ parameters.label }}
   pool:
     vmImage: ubuntu-16.04
   services:
     postgres: postgres
   steps:
-  - template: step-rust-install.yml
+  - template: step-install-rust.yml
     parameters:
-      rust_version: ${{ parameters.rust_version }}
+      toolchain: ${{ parameters.toolchain }}
 
   - script: cargo test --all -- --test-threads=1
-    displayName: Run cargo test
+    displayName: Test
