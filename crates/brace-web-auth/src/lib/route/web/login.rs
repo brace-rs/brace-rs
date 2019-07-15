@@ -1,5 +1,5 @@
+use actix_identity::Identity;
 use actix_web::error::{Error, ErrorInternalServerError};
-use actix_web::middleware::identity::Identity;
 use actix_web::web::{Data, Form as FormExtractor};
 use actix_web::HttpResponse;
 use brace_db::Database;

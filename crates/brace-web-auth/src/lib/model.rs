@@ -1,6 +1,6 @@
+use actix_identity::Identity;
 use actix_web::dev::Payload;
 use actix_web::error::Error;
-use actix_web::middleware::identity::Identity;
 use actix_web::web::Data;
 use actix_web::{FromRequest, HttpRequest};
 use chrono::{DateTime, Duration, Local, Utc};

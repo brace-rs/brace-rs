@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use actix::System;
-use actix_web::middleware::identity::{CookieIdentityPolicy, IdentityService};
+use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::middleware::Logger;
 use actix_web::web::{get, resource};
 use actix_web::App;
