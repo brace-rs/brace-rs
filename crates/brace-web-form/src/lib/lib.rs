@@ -5,5 +5,6 @@ pub use self::form::Form;
 pub mod action;
 pub mod builder;
 pub mod data;
+pub mod extractor;
 pub mod field;
 pub mod form;
