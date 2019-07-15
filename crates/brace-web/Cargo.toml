@@ -14,7 +14,7 @@ path = "src/lib/lib.rs"
 
 [dependencies]
 actix = "0.8"
-actix-web = "1.0"
+actix-web = "1.0.3"
 brace-config = { path = "../brace-config" }
 brace-theme = { path = "../brace-theme" }
 failure = "0.1"

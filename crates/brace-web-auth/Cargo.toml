@@ -14,8 +14,9 @@ path = "src/lib/lib.rs"
 
 [dependencies]
 actix = "0.8"
+actix-identity = "0.1"
 actix-service = "0.4"
-actix-web = "1.0"
+actix-web = "1.0.3"
 argon2rs = "0.2"
 brace-db = { path = "../brace-db" }
 brace-theme = { path = "../brace-theme" }
