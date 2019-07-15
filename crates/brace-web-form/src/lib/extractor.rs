@@ -238,18 +238,25 @@ mod tests {
     #[derive(Deserialize, Debug, PartialEq)]
     struct Info {
         hello: String,
+        world: NestedInfo,
+    }
+
+    #[derive(Deserialize, Debug, PartialEq)]
+    struct NestedInfo {
+        hello: String,
     }
 
     #[test]
     fn test_form() {
         let (req, mut pl) =
             TestRequest::with_header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-                .header(CONTENT_LENGTH, "11")
-                .set_payload(Bytes::from_static(b"hello=world"))
+                .header(CONTENT_LENGTH, "33")
+                .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
                 .to_http_parts();
 
         let s = block_on(Form::<Info>::from_request(&req, &mut pl)).unwrap();
         assert_eq!(s.hello, "world");
+        assert_eq!(s.world.hello, "universe")
     }
 
     fn eq(err: UrlencodedError, other: UrlencodedError) -> bool {
@@ -297,15 +304,18 @@ mod tests {
     fn test_urlencoded() {
         let (req, mut pl) =
             TestRequest::with_header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-                .header(CONTENT_LENGTH, "11")
-                .set_payload(Bytes::from_static(b"hello=world"))
+                .header(CONTENT_LENGTH, "33")
+                .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
                 .to_http_parts();
 
         let info = block_on(UrlEncoded::<Info>::new(&req, &mut pl)).unwrap();
         assert_eq!(
             info,
             Info {
-                hello: "world".to_owned()
+                hello: "world".to_owned(),
+                world: NestedInfo {
+                    hello: "universe".to_owned(),
+                },
             }
         );
 
@@ -313,15 +323,18 @@ mod tests {
             CONTENT_TYPE,
             "application/x-www-form-urlencoded; charset=utf-8",
         )
-        .header(CONTENT_LENGTH, "11")
-        .set_payload(Bytes::from_static(b"hello=world"))
+        .header(CONTENT_LENGTH, "33")
+        .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
         .to_http_parts();
 
         let info = block_on(UrlEncoded::<Info>::new(&req, &mut pl)).unwrap();
         assert_eq!(
             info,
             Info {
-                hello: "world".to_owned()
+                hello: "world".to_owned(),
+                world: NestedInfo {
+                    hello: "universe".to_owned(),
+                },
             }
         );
     }
