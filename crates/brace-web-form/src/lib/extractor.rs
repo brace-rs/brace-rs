@@ -11,6 +11,7 @@ use bytes::BytesMut;
 use encoding_rs::{Encoding, UTF_8};
 use futures::{Future, Poll, Stream};
 use serde::de::DeserializeOwned;
+use serde_qs::Config;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct Form<T>(pub T);
@@ -46,14 +47,16 @@ where
     #[inline]
     fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
         let req2 = req.clone();
-        let (limit, err) = req
+        let (limit, depth, strict, err) = req
             .app_data::<FormConfig>()
-            .map(|c| (c.limit, c.ehandler.clone()))
-            .unwrap_or((16384, None));
+            .map(|c| (c.limit, c.depth, c.strict, c.ehandler.clone()))
+            .unwrap_or((16384, 5, true, None));
 
         Box::new(
             UrlEncoded::new(req, payload)
                 .limit(limit)
+                .depth(depth)
+                .strict(strict)
                 .map_err(move |e| {
                     if let Some(err) = err {
                         (*err)(e, &req2)
@@ -81,12 +84,24 @@ impl<T: Display> Display for Form<T> {
 #[derive(Clone)]
 pub struct FormConfig {
     limit: usize,
+    depth: usize,
+    strict: bool,
     ehandler: Option<Rc<Fn(UrlencodedError, &HttpRequest) -> Error>>,
 }
 
 impl FormConfig {
     pub fn limit(mut self, limit: usize) -> Self {
         self.limit = limit;
+        self
+    }
+
+    pub fn depth(mut self, depth: usize) -> Self {
+        self.depth = depth;
+        self
+    }
+
+    pub fn strict(mut self, strict: bool) -> Self {
+        self.strict = strict;
         self
     }
 
@@ -103,6 +118,8 @@ impl Default for FormConfig {
     fn default() -> Self {
         FormConfig {
             limit: 16384,
+            depth: 5,
+            strict: true,
             ehandler: None,
         }
     }
@@ -111,6 +128,8 @@ impl Default for FormConfig {
 pub struct UrlEncoded<U> {
     stream: Option<Decompress<Payload>>,
     limit: usize,
+    depth: usize,
+    strict: bool,
     length: Option<usize>,
     encoding: &'static Encoding,
     err: Option<UrlencodedError>,
@@ -148,6 +167,8 @@ impl<U> UrlEncoded<U> {
             encoding,
             stream: Some(payload),
             limit: 32_768,
+            depth: 5,
+            strict: true,
             length: len,
             fut: None,
             err: None,
@@ -158,6 +179,8 @@ impl<U> UrlEncoded<U> {
         UrlEncoded {
             stream: None,
             limit: 32_768,
+            depth: 5,
+            strict: true,
             fut: None,
             err: Some(e),
             length: None,
@@ -167,6 +190,16 @@ impl<U> UrlEncoded<U> {
 
     pub fn limit(mut self, limit: usize) -> Self {
         self.limit = limit;
+        self
+    }
+
+    pub fn depth(mut self, depth: usize) -> Self {
+        self.depth = depth;
+        self
+    }
+
+    pub fn strict(mut self, strict: bool) -> Self {
+        self.strict = strict;
         self
     }
 }
@@ -194,6 +227,8 @@ where
             }
         }
 
+        let depth = self.depth;
+        let strict = self.strict;
         let encoding = self.encoding;
         let fut = self
             .stream
@@ -210,14 +245,18 @@ where
             })
             .and_then(move |body| {
                 if encoding == UTF_8 {
-                    serde_qs::from_bytes::<U>(&body).map_err(|_| UrlencodedError::Parse)
+                    Config::new(depth, strict)
+                        .deserialize_bytes::<U>(&body)
+                        .map_err(|_| UrlencodedError::Parse)
                 } else {
                     let body = encoding
                         .decode_without_bom_handling_and_without_replacement(&body)
                         .map(|s| s.into_owned())
                         .ok_or(UrlencodedError::Parse)?;
 
-                    serde_qs::from_str::<U>(&body).map_err(|_| UrlencodedError::Parse)
+                    Config::new(depth, strict)
+                        .deserialize_str::<U>(&body)
+                        .map_err(|_| UrlencodedError::Parse)
                 }
             });
 
@@ -337,5 +376,47 @@ mod tests {
                 },
             }
         );
+    }
+
+    #[test]
+    fn test_depth_flat() {
+        let (req, mut pl) = TestRequest::default()
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(CONTENT_LENGTH, "33")
+            .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
+            .to_http_parts();
+
+        let encoded = UrlEncoded::<Info>::new(&req, &mut pl).depth(0);
+        let info = block_on(encoded);
+
+        assert!(info.is_err());
+    }
+
+    #[test]
+    fn test_depth_shallow() {
+        let (req, mut pl) = TestRequest::default()
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(CONTENT_LENGTH, "33")
+            .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
+            .to_http_parts();
+
+        let encoded = UrlEncoded::<Info>::new(&req, &mut pl).depth(1);
+        let info = block_on(encoded);
+
+        assert!(info.is_ok());
+    }
+
+    #[test]
+    fn test_depth_deep() {
+        let (req, mut pl) = TestRequest::default()
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(CONTENT_LENGTH, "33")
+            .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
+            .to_http_parts();
+
+        let encoded = UrlEncoded::<Info>::new(&req, &mut pl).depth(2);
+        let info = block_on(encoded);
+
+        assert!(info.is_ok());
     }
 }
