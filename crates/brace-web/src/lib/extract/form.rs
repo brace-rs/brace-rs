@@ -5,9 +5,10 @@ use std::rc::Rc;
 use actix_http::{Error, Payload};
 use actix_web::error::UrlencodedError;
 use actix_web::{FromRequest, HttpRequest};
-use brace_web::parse::UrlEncoded;
 use futures::future::Future;
 use serde::de::DeserializeOwned;
+
+use crate::parse::UrlEncoded;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct Form<T>(pub T);
