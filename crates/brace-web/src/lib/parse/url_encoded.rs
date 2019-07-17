@@ -1,84 +1,124 @@
-use actix_http::{HttpMessage, Payload};
-use actix_web::dev::Decompress;
-use actix_web::error::UrlencodedError;
-use actix_web::http::header::CONTENT_LENGTH;
-use actix_web::HttpRequest;
-use bytes::BytesMut;
+use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
+use std::ops::{Deref, DerefMut};
+
+use bytes::{Bytes, BytesMut};
 use encoding_rs::{Encoding, UTF_8};
-use futures::{Future, Poll, Stream};
+use futures::{Future, Stream};
 use serde::de::DeserializeOwned;
 use serde_qs::Config;
 
-pub struct UrlEncoded<U> {
-    stream: Option<Decompress<Payload>>,
-    limit: usize,
-    depth: usize,
-    strict: bool,
-    length: Option<usize>,
-    encoding: &'static Encoding,
-    err: Option<UrlencodedError>,
-    fut: Option<Box<Future<Item = U, Error = UrlencodedError>>>,
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub struct UrlEncoded<T>(pub T);
+
+impl<T> UrlEncoded<T> {
+    pub fn into_inner(self) -> T {
+        self.0
+    }
 }
 
-impl<U> UrlEncoded<U> {
-    pub fn new(req: &HttpRequest, payload: &mut Payload) -> UrlEncoded<U> {
-        if req.content_type().to_lowercase() != "application/x-www-form-urlencoded" {
-            return Self::err(UrlencodedError::ContentType);
+impl<T> Deref for UrlEncoded<T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        &self.0
+    }
+}
+
+impl<T> DerefMut for UrlEncoded<T> {
+    fn deref_mut(&mut self) -> &mut T {
+        &mut self.0
+    }
+}
+
+impl<T> Debug for UrlEncoded<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        self.0.fmt(f)
+    }
+}
+
+impl<T> Display for UrlEncoded<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        self.0.fmt(f)
+    }
+}
+
+impl<T> UrlEncoded<T>
+where
+    T: DeserializeOwned,
+{
+    pub fn from_bytes(cfg: UrlEncodedConfig, bytes: &[u8]) -> Result<Self, UrlEncodedError> {
+        if bytes.len() > cfg.max_length {
+            return Err(UrlEncodedError::Overflow);
         }
 
-        let encoding = match req.encoding() {
-            Ok(enc) => enc,
-            Err(_) => return Self::err(UrlencodedError::ContentType),
-        };
+        Config::new(cfg.max_depth, cfg.strict)
+            .deserialize_bytes::<T>(bytes)
+            .map_err(|_| UrlEncodedError::Parse)
+            .map(UrlEncoded)
+    }
 
-        let mut len = None;
+    pub fn from_str(cfg: UrlEncodedConfig, str: &str) -> Result<Self, UrlEncodedError> {
+        Self::from_bytes(cfg, str.as_bytes())
+    }
 
-        if let Some(l) = req.headers().get(CONTENT_LENGTH) {
-            if let Ok(s) = l.to_str() {
-                if let Ok(l) = s.parse::<usize>() {
-                    len = Some(l)
+    pub fn from_stream<S, E>(
+        cfg: UrlEncodedConfig,
+        stream: S,
+    ) -> impl Future<Item = UrlEncoded<T>, Error = UrlEncodedError>
+    where
+        S: Stream<Item = Bytes, Error = E>,
+    {
+        let max_length = cfg.max_length;
+        let encoding = cfg.encoding;
+
+        stream
+            .map_err(|_| UrlEncodedError::Stream)
+            .fold(BytesMut::with_capacity(8192), move |mut body, chunk| {
+                if (body.len() + chunk.len()) > max_length {
+                    Err(UrlEncodedError::Overflow)
                 } else {
-                    return Self::err(UrlencodedError::UnknownLength);
+                    body.extend_from_slice(&chunk);
+
+                    Ok(body)
                 }
-            } else {
-                return Self::err(UrlencodedError::UnknownLength);
-            }
-        };
+            })
+            .and_then(move |body| {
+                if encoding == UTF_8 {
+                    UrlEncoded::from_bytes(cfg, &body)
+                } else {
+                    let body = encoding
+                        .decode_without_bom_handling_and_without_replacement(&body)
+                        .map(|s| s.into_owned())
+                        .ok_or(UrlEncodedError::Parse)?;
 
-        let payload = Decompress::from_headers(payload.take(), req.headers());
-
-        UrlEncoded {
-            encoding,
-            stream: Some(payload),
-            limit: 32_768,
-            depth: 5,
-            strict: true,
-            length: len,
-            fut: None,
-            err: None,
-        }
+                    UrlEncoded::from_str(cfg, &body)
+                }
+            })
     }
+}
 
-    fn err(e: UrlencodedError) -> Self {
-        UrlEncoded {
-            stream: None,
-            limit: 32_768,
-            depth: 5,
-            strict: true,
-            fut: None,
-            err: Some(e),
-            length: None,
-            encoding: UTF_8,
-        }
-    }
+#[derive(Clone)]
+pub struct UrlEncodedConfig {
+    pub(crate) max_length: usize,
+    pub(crate) max_depth: usize,
+    pub(crate) strict: bool,
+    pub(crate) encoding: &'static Encoding,
+}
 
-    pub fn limit(mut self, limit: usize) -> Self {
-        self.limit = limit;
+impl UrlEncodedConfig {
+    pub fn max_length(mut self, max_length: usize) -> Self {
+        self.max_length = max_length;
         self
     }
 
-    pub fn depth(mut self, depth: usize) -> Self {
-        self.depth = depth;
+    pub fn max_depth(mut self, max_depth: usize) -> Self {
+        self.max_depth = max_depth;
         self
     }
 
@@ -86,78 +126,39 @@ impl<U> UrlEncoded<U> {
         self.strict = strict;
         self
     }
+
+    pub fn encoding(mut self, encoding: &'static Encoding) -> Self {
+        self.encoding = encoding;
+        self
+    }
 }
 
-impl<U> Future for UrlEncoded<U>
-where
-    U: DeserializeOwned + 'static,
-{
-    type Item = U;
-    type Error = UrlencodedError;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        if let Some(ref mut fut) = self.fut {
-            return fut.poll();
+impl Default for UrlEncodedConfig {
+    fn default() -> Self {
+        Self {
+            max_length: 32_768,
+            max_depth: 5,
+            strict: true,
+            encoding: UTF_8,
         }
-
-        if let Some(err) = self.err.take() {
-            return Err(err);
-        }
-
-        let limit = self.limit;
-        if let Some(len) = self.length.take() {
-            if len > limit {
-                return Err(UrlencodedError::Overflow);
-            }
-        }
-
-        let depth = self.depth;
-        let strict = self.strict;
-        let encoding = self.encoding;
-        let fut = self
-            .stream
-            .take()
-            .unwrap()
-            .from_err()
-            .fold(BytesMut::with_capacity(8192), move |mut body, chunk| {
-                if (body.len() + chunk.len()) > limit {
-                    Err(UrlencodedError::Overflow)
-                } else {
-                    body.extend_from_slice(&chunk);
-                    Ok(body)
-                }
-            })
-            .and_then(move |body| {
-                if encoding == UTF_8 {
-                    Config::new(depth, strict)
-                        .deserialize_bytes::<U>(&body)
-                        .map_err(|_| UrlencodedError::Parse)
-                } else {
-                    let body = encoding
-                        .decode_without_bom_handling_and_without_replacement(&body)
-                        .map(|s| s.into_owned())
-                        .ok_or(UrlencodedError::Parse)?;
-
-                    Config::new(depth, strict)
-                        .deserialize_str::<U>(&body)
-                        .map_err(|_| UrlencodedError::Parse)
-                }
-            });
-
-        self.fut = Some(Box::new(fut));
-        self.poll()
     }
+}
+
+#[derive(Debug)]
+pub enum UrlEncodedError {
+    Stream,
+    Overflow,
+    Parse,
 }
 
 #[cfg(test)]
 mod tests {
-    use actix_web::error::UrlencodedError;
-    use actix_web::http::header::{CONTENT_LENGTH, CONTENT_TYPE};
-    use actix_web::test::{block_on, TestRequest};
+    use actix_http::h1::Payload;
+    use actix_web::test::block_on;
     use bytes::Bytes;
     use serde::Deserialize;
 
-    use super::UrlEncoded;
+    use super::{UrlEncoded, UrlEncodedConfig};
 
     #[derive(Deserialize, Debug, PartialEq)]
     struct Info {
@@ -170,125 +171,77 @@ mod tests {
         hello: String,
     }
 
-    fn eq(err: UrlencodedError, other: UrlencodedError) -> bool {
-        match err {
-            UrlencodedError::Overflow => match other {
-                UrlencodedError::Overflow => true,
-                _ => false,
-            },
-            UrlencodedError::UnknownLength => match other {
-                UrlencodedError::UnknownLength => true,
-                _ => false,
-            },
-            UrlencodedError::ContentType => match other {
-                UrlencodedError::ContentType => true,
-                _ => false,
-            },
-            _ => false,
-        }
+    #[test]
+    fn test_from_str() {
+        let data = "hello=world&world[hello]=universe";
+        let conf = UrlEncodedConfig::default();
+        let info = UrlEncoded::<Info>::from_str(conf, data);
+
+        assert!(info.is_ok());
     }
 
     #[test]
-    fn test_urlencoded_error() {
-        let (req, mut pl) =
-            TestRequest::with_header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-                .header(CONTENT_LENGTH, "xxxx")
-                .to_http_parts();
-        let info = block_on(UrlEncoded::<Info>::new(&req, &mut pl));
-        assert!(eq(info.err().unwrap(), UrlencodedError::UnknownLength));
+    fn test_from_bytes() {
+        let data = b"hello=world&world[hello]=universe";
+        let conf = UrlEncodedConfig::default();
+        let info = UrlEncoded::<Info>::from_bytes(conf, data);
 
-        let (req, mut pl) =
-            TestRequest::with_header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-                .header(CONTENT_LENGTH, "1000000")
-                .to_http_parts();
-        let info = block_on(UrlEncoded::<Info>::new(&req, &mut pl));
-        assert!(eq(info.err().unwrap(), UrlencodedError::Overflow));
-
-        let (req, mut pl) = TestRequest::with_header(CONTENT_TYPE, "text/plain")
-            .header(CONTENT_LENGTH, "10")
-            .to_http_parts();
-        let info = block_on(UrlEncoded::<Info>::new(&req, &mut pl));
-        assert!(eq(info.err().unwrap(), UrlencodedError::ContentType));
+        assert!(info.is_ok());
     }
 
     #[test]
-    fn test_urlencoded() {
-        let (req, mut pl) =
-            TestRequest::with_header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-                .header(CONTENT_LENGTH, "33")
-                .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
-                .to_http_parts();
+    fn test_from_stream() {
+        let (mut sender, payload) = Payload::create(false);
 
-        let info = block_on(UrlEncoded::<Info>::new(&req, &mut pl)).unwrap();
-        assert_eq!(
-            info,
-            Info {
-                hello: "world".to_owned(),
-                world: NestedInfo {
-                    hello: "universe".to_owned(),
-                },
-            }
-        );
+        sender.feed_data(Bytes::from("hello=world&world[hello]=universe"));
+        sender.feed_eof();
 
-        let (req, mut pl) = TestRequest::with_header(
-            CONTENT_TYPE,
-            "application/x-www-form-urlencoded; charset=utf-8",
-        )
-        .header(CONTENT_LENGTH, "33")
-        .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
-        .to_http_parts();
+        let conf = UrlEncodedConfig::default();
+        let info = block_on(UrlEncoded::<Info>::from_stream(conf, payload));
 
-        let info = block_on(UrlEncoded::<Info>::new(&req, &mut pl)).unwrap();
-        assert_eq!(
-            info,
-            Info {
-                hello: "world".to_owned(),
-                world: NestedInfo {
-                    hello: "universe".to_owned(),
-                },
-            }
-        );
+        assert!(info.is_ok());
     }
 
     #[test]
-    fn test_depth_flat() {
-        let (req, mut pl) = TestRequest::default()
-            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-            .header(CONTENT_LENGTH, "33")
-            .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
-            .to_http_parts();
-
-        let encoded = UrlEncoded::<Info>::new(&req, &mut pl).depth(0);
-        let info = block_on(encoded);
+    fn test_nesting_flat() {
+        let data = b"hello=world&world[hello]=universe";
+        let conf = UrlEncodedConfig::default().max_depth(0);
+        let info = UrlEncoded::<Info>::from_bytes(conf, data);
 
         assert!(info.is_err());
     }
 
     #[test]
-    fn test_depth_shallow() {
-        let (req, mut pl) = TestRequest::default()
-            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-            .header(CONTENT_LENGTH, "33")
-            .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
-            .to_http_parts();
+    fn test_nesting_shallow() {
+        let data = b"hello=world&world[hello]=universe";
+        let conf = UrlEncodedConfig::default().max_depth(1);
+        let info = UrlEncoded::<Info>::from_bytes(conf, data);
 
-        let encoded = UrlEncoded::<Info>::new(&req, &mut pl).depth(1);
-        let info = block_on(encoded);
-
-        assert!(info.is_ok());
+        assert_eq!(
+            info.unwrap().into_inner(),
+            Info {
+                hello: "world".to_owned(),
+                world: NestedInfo {
+                    hello: "universe".to_owned(),
+                },
+            }
+        );
     }
 
     #[test]
-    fn test_depth_deep() {
-        let (req, mut pl) = TestRequest::default()
-            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-            .header(CONTENT_LENGTH, "33")
-            .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
-            .to_http_parts();
+    fn test_nesting_deep() {
+        let data = b"hello=world&world[hello]=universe";
+        let conf = UrlEncodedConfig::default().max_depth(2);
+        let info = UrlEncoded::<Info>::from_bytes(conf, data);
 
-        let encoded = UrlEncoded::<Info>::new(&req, &mut pl).depth(2);
-        let info = block_on(encoded);
-
-        assert!(info.is_ok());
+        assert_eq!(
+            info.unwrap().into_inner(),
+            Info {
+                hello: "world".to_owned(),
+                world: NestedInfo {
+                    hello: "universe".to_owned(),
+                },
+            }
+        );
     }
 }

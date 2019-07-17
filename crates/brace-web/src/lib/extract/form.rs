@@ -1,14 +1,19 @@
-use std::fmt::{self, Debug, Display, Formatter};
+use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
-use actix_http::{Error, Payload};
-use actix_web::error::UrlencodedError;
+use actix_http::encoding::Decoder;
+use actix_http::error::{
+    ErrorBadRequest, ErrorInternalServerError, ErrorPayloadTooLarge, ErrorUnsupportedMediaType,
+};
+use actix_http::http::header::CONTENT_LENGTH;
+use actix_http::{Error, HttpMessage, Payload};
 use actix_web::{FromRequest, HttpRequest};
-use futures::future::Future;
+use encoding_rs::UTF_8;
+use futures::future::{err, Future};
 use serde::de::DeserializeOwned;
 
-use crate::parse::UrlEncoded;
+use crate::parse::{UrlEncoded, UrlEncodedConfig, UrlEncodedError};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct Form<T>(pub T);
@@ -33,67 +38,83 @@ impl<T> DerefMut for Form<T> {
     }
 }
 
+impl<T> Debug for Form<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        self.0.fmt(f)
+    }
+}
+
+impl<T> Display for Form<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        self.0.fmt(f)
+    }
+}
+
 impl<T> FromRequest for Form<T>
 where
     T: DeserializeOwned + 'static,
 {
     type Config = FormConfig;
     type Error = Error;
-    type Future = Box<Future<Item = Self, Error = Error>>;
+    type Future = Box<dyn Future<Item = Self, Error = Error>>;
 
     #[inline]
     fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
-        let req2 = req.clone();
-        let (limit, depth, strict, err) = req
-            .app_data::<FormConfig>()
-            .map(|c| (c.limit, c.depth, c.strict, c.ehandler.clone()))
-            .unwrap_or((16384, 5, true, None));
+        if req.content_type().to_lowercase() != "application/x-www-form-urlencoded" {
+            return Box::new(err(handle_err(req, FormError::UnsupportedContentType)));
+        }
+
+        let len = content_length(req);
+        let enc = match req.encoding() {
+            Ok(enc) => enc,
+            Err(_) => return Box::new(err(handle_err(req, FormError::UnknownEncoding))),
+        };
+        let cfg = req
+            .app_data::<Self::Config>()
+            .map(|cfg| cfg.clone().into())
+            .unwrap_or_else(UrlEncodedConfig::default)
+            .encoding(enc);
+
+        if let Some(len) = len {
+            if len > cfg.max_length {
+                return Box::new(err(handle_err(req, FormError::PayloadTooLarge)));
+            }
+        }
+
+        let request = req.clone();
+        let payload = Decoder::from_headers(payload.take(), req.headers());
 
         Box::new(
-            UrlEncoded::new(req, payload)
-                .limit(limit)
-                .depth(depth)
-                .strict(strict)
-                .map_err(move |e| {
-                    if let Some(err) = err {
-                        (*err)(e, &req2)
-                    } else {
-                        e.into()
-                    }
-                })
-                .map(Form),
+            UrlEncoded::<T>::from_stream(cfg, Box::new(payload))
+                .from_err()
+                .map_err(move |err| handle_err(&request, err))
+                .map(|item| Form(item.into_inner())),
         )
-    }
-}
-
-impl<T: Debug> Debug for Form<T> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl<T: Display> Display for Form<T> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        self.0.fmt(f)
     }
 }
 
 #[derive(Clone)]
 pub struct FormConfig {
-    limit: usize,
-    depth: usize,
+    max_length: usize,
+    max_depth: usize,
     strict: bool,
-    ehandler: Option<Rc<Fn(UrlencodedError, &HttpRequest) -> Error>>,
+    ehandler: Option<Rc<Fn(FormError, &HttpRequest) -> Error>>,
 }
 
 impl FormConfig {
-    pub fn limit(mut self, limit: usize) -> Self {
-        self.limit = limit;
+    pub fn max_length(mut self, max_length: usize) -> Self {
+        self.max_length = max_length;
         self
     }
 
-    pub fn depth(mut self, depth: usize) -> Self {
-        self.depth = depth;
+    pub fn max_depth(mut self, max_depth: usize) -> Self {
+        self.max_depth = max_depth;
         self
     }
 
@@ -104,7 +125,7 @@ impl FormConfig {
 
     pub fn error_handler<F>(mut self, f: F) -> Self
     where
-        F: Fn(UrlencodedError, &HttpRequest) -> Error + 'static,
+        F: Fn(FormError, &HttpRequest) -> Error + 'static,
     {
         self.ehandler = Some(Rc::new(f));
         self
@@ -113,12 +134,80 @@ impl FormConfig {
 
 impl Default for FormConfig {
     fn default() -> Self {
-        FormConfig {
-            limit: 16384,
-            depth: 5,
+        Self {
+            max_length: 16_384,
+            max_depth: 5,
             strict: true,
             ehandler: None,
         }
+    }
+}
+
+impl From<FormConfig> for UrlEncodedConfig {
+    fn from(from: FormConfig) -> Self {
+        Self {
+            max_length: from.max_length,
+            max_depth: from.max_depth,
+            strict: from.strict,
+            encoding: UTF_8,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum FormError {
+    InternalServerError,
+    MalformedSyntax,
+    PayloadTooLarge,
+    UnknownEncoding,
+    UnsupportedContentType,
+}
+
+impl From<UrlEncodedError> for FormError {
+    fn from(from: UrlEncodedError) -> Self {
+        match from {
+            UrlEncodedError::Stream => FormError::InternalServerError,
+            UrlEncodedError::Overflow => FormError::PayloadTooLarge,
+            UrlEncodedError::Parse => FormError::MalformedSyntax,
+        }
+    }
+}
+
+impl From<FormError> for Error {
+    fn from(from: FormError) -> Self {
+        match from {
+            FormError::InternalServerError => ErrorInternalServerError("Internal server error"),
+            FormError::MalformedSyntax => ErrorBadRequest("Malformed syntax"),
+            FormError::PayloadTooLarge => ErrorPayloadTooLarge("Payload too large"),
+            FormError::UnknownEncoding => ErrorUnsupportedMediaType("Unknown encoding"),
+            FormError::UnsupportedContentType => {
+                ErrorUnsupportedMediaType("Unsupported content type")
+            }
+        }
+    }
+}
+
+fn content_length(req: &HttpRequest) -> Option<usize> {
+    if let Some(len) = req.headers().get(CONTENT_LENGTH) {
+        if let Ok(len) = len.to_str() {
+            if let Ok(len) = len.parse::<usize>() {
+                return Some(len);
+            }
+        }
+    }
+
+    None
+}
+
+fn handle_err(req: &HttpRequest, err: FormError) -> Error {
+    let err_handler = req
+        .app_data::<FormConfig>()
+        .map(|cfg| cfg.ehandler.clone())
+        .unwrap_or(None);
+
+    match err_handler {
+        Some(err_handler) => (*err_handler)(err, &req),
+        None => err.into(),
     }
 }
 
@@ -144,15 +233,24 @@ mod tests {
     }
 
     #[test]
-    fn test_form() {
-        let (req, mut pl) =
-            TestRequest::with_header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-                .header(CONTENT_LENGTH, "33")
-                .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
-                .to_http_parts();
+    fn test_request_form_url_encoded() {
+        let (req, mut pl) = TestRequest::default()
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(CONTENT_LENGTH, "33")
+            .set_payload(Bytes::from_static(b"hello=world&world[hello]=universe"))
+            .to_http_parts();
 
-        let s = block_on(Form::<Info>::from_request(&req, &mut pl)).unwrap();
-        assert_eq!(s.hello, "world");
-        assert_eq!(s.world.hello, "universe")
+        let form = block_on(Form::<Info>::from_request(&req, &mut pl)).unwrap();
+        let info = form.into_inner();
+
+        assert_eq!(
+            info,
+            Info {
+                hello: "world".to_owned(),
+                world: NestedInfo {
+                    hello: "universe".to_owned(),
+                },
+            }
+        );
     }
 }
