@@ -1,24 +1,22 @@
+use std::collections::HashMap;
 use std::str::FromStr;
 
+use brace_config::{from_value, Value};
 use bytes::{Bytes, BytesMut};
 use encoding_rs::{Encoding, UTF_8};
 use futures::{Future, Stream};
 use serde::de::DeserializeOwned;
 use serde_qs::Config;
 
-pub struct UrlEncoded {
-    val: Bytes,
-    cfg: UrlEncodedConfig,
-}
+#[derive(Debug, Clone)]
+pub struct UrlEncoded(HashMap<String, Value>);
 
 impl UrlEncoded {
     pub fn to_value<T>(&self) -> Result<T, UrlEncodedError>
     where
         T: DeserializeOwned,
     {
-        Config::new(self.cfg.max_depth, self.cfg.strict)
-            .deserialize_bytes::<T>(&self.val)
-            .map_err(|_| UrlEncodedError::Parse)
+        from_value::<T>(Value::from(self.0.clone())).map_err(|_| UrlEncodedError::Parse)
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, UrlEncodedError> {
@@ -30,10 +28,10 @@ impl UrlEncoded {
             return Err(UrlEncodedError::Overflow);
         }
 
-        Ok(Self {
-            val: Bytes::from(bytes),
-            cfg,
-        })
+        Config::new(cfg.max_depth, cfg.strict)
+            .deserialize_bytes::<HashMap<String, Value>>(bytes)
+            .map_err(|_| UrlEncodedError::Parse)
+            .map(Self)
     }
 
     pub fn from_str_with(cfg: UrlEncodedConfig, str: &str) -> Result<Self, UrlEncodedError> {
@@ -141,6 +139,8 @@ pub enum UrlEncodedError {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use actix_http::h1::Payload;
     use actix_web::test::block_on;
     use bytes::Bytes;
@@ -157,6 +157,65 @@ mod tests {
     #[derive(Deserialize, Debug, PartialEq)]
     struct NestedInfo {
         hello: String,
+    }
+
+    #[derive(Deserialize, Debug, PartialEq)]
+    struct TestInt {
+        one: usize,
+        two: isize,
+    }
+
+    #[derive(Deserialize, Debug, PartialEq)]
+    struct TestList {
+        list: Vec<isize>,
+    }
+
+    #[derive(Deserialize, Debug, PartialEq)]
+    struct TestMap {
+        map: HashMap<String, TestList>,
+    }
+
+    #[test]
+    fn test_value_integer() {
+        let data = "one=1&two=-5";
+        let conf = UrlEncodedConfig::default();
+        let info = UrlEncoded::from_str_with(conf, data)
+            .unwrap()
+            .to_value::<TestInt>();
+
+        assert_eq!(info.unwrap(), TestInt { one: 1, two: -5 });
+    }
+
+    #[test]
+    fn test_value_list() {
+        let data = "list[0]=1&list[1]=-5";
+        let conf = UrlEncodedConfig::default();
+        let info = UrlEncoded::from_str_with(conf, data)
+            .unwrap()
+            .to_value::<TestList>();
+
+        assert_eq!(info.unwrap(), TestList { list: vec![1, -5] });
+    }
+
+    #[test]
+    fn test_value_map() {
+        let data = "map[a][list][0]=7&map[a][list][1]=-55&map[b][list][0]=2563";
+        let conf = UrlEncodedConfig::default();
+        let info = UrlEncoded::from_str_with(conf, data)
+            .unwrap()
+            .to_value::<TestMap>();
+
+        assert_eq!(
+            info.unwrap(),
+            TestMap {
+                map: {
+                    let mut map = HashMap::new();
+                    map.insert("a".to_owned(), TestList { list: vec![7, -55] });
+                    map.insert("b".to_owned(), TestList { list: vec![2563] });
+                    map
+                },
+            },
+        );
     }
 
     #[test]
