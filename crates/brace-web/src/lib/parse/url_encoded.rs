@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::{Display, Error as FmtError, Formatter, Result as FmtResult};
 use std::str::FromStr;
 
 use brace_config::{from_value, Value};
@@ -6,9 +7,10 @@ use bytes::{Bytes, BytesMut};
 use encoding_rs::{Encoding, UTF_8};
 use futures::{Future, Stream};
 use serde::de::DeserializeOwned;
-use serde_qs::Config;
+use serde::{Deserialize, Serialize};
+use serde_qs::{to_string, Config};
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UrlEncoded(HashMap<String, Value>);
 
 impl UrlEncoded {
@@ -86,6 +88,15 @@ impl FromStr for UrlEncoded {
 
     fn from_str(str: &str) -> Result<Self, Self::Err> {
         Self::from_bytes_with(UrlEncodedConfig::default(), str.as_bytes())
+    }
+}
+
+impl Display for UrlEncoded {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match to_string(&self.0) {
+            Ok(str) => write!(f, "{}", str),
+            Err(_) => Err(FmtError),
+        }
     }
 }
 
@@ -302,5 +313,24 @@ mod tests {
                 },
             }
         );
+    }
+
+    #[test]
+    fn test_parse() {
+        let str = "hello=world&world[hello]=universe";
+        let enc: UrlEncoded = str.parse().unwrap();
+        let val = enc.to_value::<Info>().unwrap();
+
+        assert_eq!(
+            val,
+            Info {
+                hello: "world".to_owned(),
+                world: NestedInfo {
+                    hello: "universe".to_owned(),
+                },
+            }
+        );
+
+        assert_eq!(enc.to_string(), "hello=world&world[hello]=universe");
     }
 }
