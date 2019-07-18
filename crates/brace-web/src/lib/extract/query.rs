@@ -66,9 +66,13 @@ where
             .map(|cfg| cfg.clone().into())
             .unwrap_or_else(UrlEncodedConfig::default);
 
-        UrlEncoded::<T>::from_str(cfg, req.query_string())
-            .map_err(move |err| handle_err(&req, err.into()))
-            .map(|item| Query(item.into_inner()))
+        match UrlEncoded::from_str_with(cfg, req.query_string()) {
+            Ok(enc) => match enc.to_value::<T>() {
+                Ok(val) => Ok(Self(val)),
+                Err(err) => Err(handle_err(&req, err.into())),
+            },
+            Err(err) => Err(handle_err(&req, err.into())),
+        }
     }
 }
 

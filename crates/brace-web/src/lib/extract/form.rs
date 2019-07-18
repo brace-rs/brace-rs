@@ -91,10 +91,12 @@ where
         let payload = Decoder::from_headers(payload.take(), req.headers());
 
         Box::new(
-            UrlEncoded::<T>::from_stream(cfg, Box::new(payload))
+            UrlEncoded::from_stream_with(cfg, payload)
                 .from_err()
-                .map_err(move |err| handle_err(&request, err))
-                .map(|item| Form(item.into_inner())),
+                .map(|enc| enc.to_value::<T>())
+                .flatten()
+                .map_err(move |err| handle_err(&request, err.into()))
+                .map(Self),
         )
     }
 }

@@ -1,5 +1,4 @@
-use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
-use std::ops::{Deref, DerefMut};
+use std::str::FromStr;
 
 use bytes::{Bytes, BytesMut};
 use encoding_rs::{Encoding, UTF_8};
@@ -7,70 +6,51 @@ use futures::{Future, Stream};
 use serde::de::DeserializeOwned;
 use serde_qs::Config;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub struct UrlEncoded<T>(pub T);
-
-impl<T> UrlEncoded<T> {
-    pub fn into_inner(self) -> T {
-        self.0
-    }
+pub struct UrlEncoded {
+    val: Bytes,
+    cfg: UrlEncodedConfig,
 }
 
-impl<T> Deref for UrlEncoded<T> {
-    type Target = T;
-
-    fn deref(&self) -> &T {
-        &self.0
+impl UrlEncoded {
+    pub fn to_value<T>(&self) -> Result<T, UrlEncodedError>
+    where
+        T: DeserializeOwned,
+    {
+        Config::new(self.cfg.max_depth, self.cfg.strict)
+            .deserialize_bytes::<T>(&self.val)
+            .map_err(|_| UrlEncodedError::Parse)
     }
-}
 
-impl<T> DerefMut for UrlEncoded<T> {
-    fn deref_mut(&mut self) -> &mut T {
-        &mut self.0
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, UrlEncodedError> {
+        Self::from_bytes_with(UrlEncodedConfig::default(), bytes)
     }
-}
 
-impl<T> Debug for UrlEncoded<T>
-where
-    T: Debug,
-{
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        self.0.fmt(f)
-    }
-}
-
-impl<T> Display for UrlEncoded<T>
-where
-    T: Display,
-{
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        self.0.fmt(f)
-    }
-}
-
-impl<T> UrlEncoded<T>
-where
-    T: DeserializeOwned,
-{
-    pub fn from_bytes(cfg: UrlEncodedConfig, bytes: &[u8]) -> Result<Self, UrlEncodedError> {
+    pub fn from_bytes_with(cfg: UrlEncodedConfig, bytes: &[u8]) -> Result<Self, UrlEncodedError> {
         if bytes.len() > cfg.max_length {
             return Err(UrlEncodedError::Overflow);
         }
 
-        Config::new(cfg.max_depth, cfg.strict)
-            .deserialize_bytes::<T>(bytes)
-            .map_err(|_| UrlEncodedError::Parse)
-            .map(UrlEncoded)
+        Ok(Self {
+            val: Bytes::from(bytes),
+            cfg,
+        })
     }
 
-    pub fn from_str(cfg: UrlEncodedConfig, str: &str) -> Result<Self, UrlEncodedError> {
-        Self::from_bytes(cfg, str.as_bytes())
+    pub fn from_str_with(cfg: UrlEncodedConfig, str: &str) -> Result<Self, UrlEncodedError> {
+        Self::from_bytes_with(cfg, str.as_bytes())
     }
 
-    pub fn from_stream<S, E>(
+    pub fn from_stream<S, E>(stream: S) -> impl Future<Item = Self, Error = UrlEncodedError>
+    where
+        S: Stream<Item = Bytes, Error = E>,
+    {
+        Self::from_stream_with(UrlEncodedConfig::default(), stream)
+    }
+
+    pub fn from_stream_with<S, E>(
         cfg: UrlEncodedConfig,
         stream: S,
-    ) -> impl Future<Item = UrlEncoded<T>, Error = UrlEncodedError>
+    ) -> impl Future<Item = Self, Error = UrlEncodedError>
     where
         S: Stream<Item = Bytes, Error = E>,
     {
@@ -90,16 +70,24 @@ where
             })
             .and_then(move |body| {
                 if encoding == UTF_8 {
-                    UrlEncoded::from_bytes(cfg, &body)
+                    UrlEncoded::from_bytes_with(cfg, &body)
                 } else {
                     let body = encoding
                         .decode_without_bom_handling_and_without_replacement(&body)
                         .map(|s| s.into_owned())
                         .ok_or(UrlEncodedError::Parse)?;
 
-                    UrlEncoded::from_str(cfg, &body)
+                    UrlEncoded::from_str_with(cfg, &body)
                 }
             })
+    }
+}
+
+impl FromStr for UrlEncoded {
+    type Err = UrlEncodedError;
+
+    fn from_str(str: &str) -> Result<Self, Self::Err> {
+        Self::from_bytes_with(UrlEncodedConfig::default(), str.as_bytes())
     }
 }
 
@@ -175,7 +163,9 @@ mod tests {
     fn test_from_str() {
         let data = "hello=world&world[hello]=universe";
         let conf = UrlEncodedConfig::default();
-        let info = UrlEncoded::<Info>::from_str(conf, data);
+        let info = UrlEncoded::from_str_with(conf, data)
+            .unwrap()
+            .to_value::<Info>();
 
         assert!(info.is_ok());
     }
@@ -184,7 +174,9 @@ mod tests {
     fn test_from_bytes() {
         let data = b"hello=world&world[hello]=universe";
         let conf = UrlEncodedConfig::default();
-        let info = UrlEncoded::<Info>::from_bytes(conf, data);
+        let info = UrlEncoded::from_bytes_with(conf, data)
+            .unwrap()
+            .to_value::<Info>();
 
         assert!(info.is_ok());
     }
@@ -197,7 +189,9 @@ mod tests {
         sender.feed_eof();
 
         let conf = UrlEncodedConfig::default();
-        let info = block_on(UrlEncoded::<Info>::from_stream(conf, payload));
+        let info = block_on(UrlEncoded::from_stream_with(conf, payload))
+            .unwrap()
+            .to_value::<Info>();
 
         assert!(info.is_ok());
     }
@@ -206,7 +200,9 @@ mod tests {
     fn test_nesting_flat() {
         let data = b"hello=world&world[hello]=universe";
         let conf = UrlEncodedConfig::default().max_depth(0);
-        let info = UrlEncoded::<Info>::from_bytes(conf, data);
+        let info = UrlEncoded::from_bytes_with(conf, data)
+            .unwrap()
+            .to_value::<Info>();
 
         assert!(info.is_err());
     }
@@ -215,10 +211,12 @@ mod tests {
     fn test_nesting_shallow() {
         let data = b"hello=world&world[hello]=universe";
         let conf = UrlEncodedConfig::default().max_depth(1);
-        let info = UrlEncoded::<Info>::from_bytes(conf, data);
+        let info = UrlEncoded::from_bytes_with(conf, data)
+            .unwrap()
+            .to_value::<Info>();
 
         assert_eq!(
-            info.unwrap().into_inner(),
+            info.unwrap(),
             Info {
                 hello: "world".to_owned(),
                 world: NestedInfo {
@@ -232,10 +230,12 @@ mod tests {
     fn test_nesting_deep() {
         let data = b"hello=world&world[hello]=universe";
         let conf = UrlEncodedConfig::default().max_depth(2);
-        let info = UrlEncoded::<Info>::from_bytes(conf, data);
+        let info = UrlEncoded::from_bytes_with(conf, data)
+            .unwrap()
+            .to_value::<Info>();
 
         assert_eq!(
-            info.unwrap().into_inner(),
+            info.unwrap(),
             Info {
                 hello: "world".to_owned(),
                 world: NestedInfo {
