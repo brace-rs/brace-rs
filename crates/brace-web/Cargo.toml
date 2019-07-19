@@ -14,15 +14,19 @@ path = "src/lib/lib.rs"
 
 [dependencies]
 actix = "0.8"
+actix-http = "0.2"
 actix-web = "1.0.3"
 brace-config = { path = "../brace-config" }
 brace-theme = { path = "../brace-theme" }
+bytes = "0.4"
+encoding_rs = "0.8"
 failure = "0.1"
 futures = "0.1"
 log = "0.4"
 path-absolutize = "1.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_qs = "0.5"
 tera = "1.0.0-beta.3"
 
 [dev-dependencies]
