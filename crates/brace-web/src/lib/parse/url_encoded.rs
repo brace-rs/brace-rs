@@ -317,12 +317,12 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        let str = "hello=world&world[hello]=universe";
-        let enc: UrlEncoded = str.parse().unwrap();
-        let val = enc.to_value::<Info>().unwrap();
+        let str1 = "hello=world&world[hello]=universe";
+        let enc1: UrlEncoded = str1.parse().unwrap();
+        let val1 = enc1.to_value::<Info>().unwrap();
 
         assert_eq!(
-            val,
+            val1,
             Info {
                 hello: "world".to_owned(),
                 world: NestedInfo {
@@ -331,6 +331,10 @@ mod tests {
             }
         );
 
-        assert_eq!(enc.to_string(), "hello=world&world[hello]=universe");
+        let str2 = enc1.to_string();
+        let enc2: UrlEncoded = str2.parse().unwrap();
+        let val2 = enc2.to_value::<Info>().unwrap();
+
+        assert_eq!(val1, val2);
     }
 }
