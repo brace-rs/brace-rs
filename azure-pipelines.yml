@@ -13,22 +13,6 @@ resources:
       POSTGRES_DB: postgres
 
 stages:
-- stage: check
-  displayName: Check
-  dependsOn: []
-  jobs:
-  - template: ci/job-cargo-check.yml
-    parameters:
-      name: check_nightly
-      label: Nightly
-      toolchain: nightly
-
-  - template: ci/job-cargo-check.yml
-    parameters:
-      name: check_minimum
-      label: Minimum
-      toolchain: 1.33.0
-
 - stage: lint
   displayName: Lint
   dependsOn: []
@@ -81,7 +65,6 @@ stages:
   displayName: Release
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn:
-  - check
   - lint
   - build
   - test
