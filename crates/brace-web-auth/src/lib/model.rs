@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::util::decode_token;
 
-type BoxedFuture<I, E> = Box<Future<Item = I, Error = E>>;
+type BoxedFuture<I, E> = Box<dyn Future<Item = I, Error = E>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct User {

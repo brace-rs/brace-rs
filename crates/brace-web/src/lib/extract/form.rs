@@ -106,7 +106,7 @@ pub struct FormConfig {
     max_length: usize,
     max_depth: usize,
     strict: bool,
-    ehandler: Option<Rc<Fn(FormError, &HttpRequest) -> Error>>,
+    ehandler: Option<Rc<dyn Fn(FormError, &HttpRequest) -> Error>>,
 }
 
 impl FormConfig {
