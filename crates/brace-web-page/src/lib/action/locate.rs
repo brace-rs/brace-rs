@@ -5,7 +5,7 @@ use futures::future::Future;
 
 use crate::model::Page;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     WITH RECURSIVE cte AS (
         SELECT id, parent, slug, title, description, document, created, updated, '/' || slug AS path
         FROM pages

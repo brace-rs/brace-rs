@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::model::User;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     SELECT id, email, password, created, updated
     FROM users
     WHERE id = $1

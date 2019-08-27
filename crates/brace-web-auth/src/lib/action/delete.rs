@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::model::User;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     DELETE FROM users *
     WHERE id = $1
     RETURNING id, email, password, created, updated

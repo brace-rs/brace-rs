@@ -6,7 +6,7 @@ use futures::future::Future;
 use crate::model::User;
 use crate::util::hash;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     UPDATE users
     SET email = $2, password = $3, created = $4, updated = $5
     WHERE id = $1

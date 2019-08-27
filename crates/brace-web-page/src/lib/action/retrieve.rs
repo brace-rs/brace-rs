@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::model::Page;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     SELECT id, parent, slug, title, description, document, created, updated
     FROM pages
     WHERE id = $1

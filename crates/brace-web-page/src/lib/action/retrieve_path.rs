@@ -4,7 +4,7 @@ use failure::{format_err, Error};
 use futures::future::Future;
 use uuid::Uuid;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     WITH RECURSIVE cte AS (
         SELECT id, parent, slug, '/' || slug AS path
         FROM pages
