@@ -6,7 +6,7 @@ steps:
   displayName: "Install rust"
 
 - bash: |
-    if [ "$RUSTUP_TOOLCHAIN" = "default" ]; then
+    if [ "$RUSTUP_TOOLCHAIN" = "target" ]; then
       RUSTUP_TOOLCHAIN="$(<$RUSTUP_TOOLCHAIN_FILE)"
     fi
     rustup install "$RUSTUP_TOOLCHAIN"

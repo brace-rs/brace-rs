@@ -21,7 +21,7 @@ stages:
     parameters:
       name: lint_rust
       label: Rust
-      toolchain: default
+      toolchain: target
 
 - stage: build
   displayName: Build
@@ -32,7 +32,7 @@ stages:
       name: build_x86_64_unknown_linux_gnu
       label: x86_64-unknown-linux-gnu
       target: x86_64-unknown-linux-gnu
-      toolchain: default
+      toolchain: target
       image: ubuntu-16.04
 
   - template: ci/job-cargo-build.yml
@@ -40,7 +40,7 @@ stages:
       name: build_x86_64_apple_darwin
       label: x86_64-apple-darwin
       target: x86_64-apple-darwin
-      toolchain: default
+      toolchain: target
       image: macos-10.13
 
   - template: ci/job-cross-build.yml
@@ -48,7 +48,7 @@ stages:
       name: build_x86_64_unknown_linux_musl
       label: x86_64-unknown-linux-musl
       target: x86_64-unknown-linux-musl
-      toolchain: default
+      toolchain: target
       image: ubuntu-16.04
 
 - stage: test
@@ -59,7 +59,7 @@ stages:
     parameters:
       name: test_stable
       label: Stable
-      toolchain: default
+      toolchain: target
 
 - stage: release
   displayName: Release
