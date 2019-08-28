@@ -22,7 +22,7 @@ use serde::Deserialize;
 
 type HttpService = BoxedService<ServiceRequest, ServiceResponse, Error>;
 type HttpNewService = BoxedNewService<(), ServiceRequest, ServiceResponse, Error, ()>;
-type FutureResponse = Box<Future<Item = ServiceResponse, Error = Error>>;
+type FutureResponse = Box<dyn Future<Item = ServiceResponse, Error = Error>>;
 
 #[derive(Deserialize)]
 pub struct ThemeResource {
@@ -86,7 +86,7 @@ impl NewService for ThemeResources {
     type Error = Error;
     type Service = ThemeResourcesService;
     type InitError = ();
-    type Future = Box<Future<Item = Self::Service, Error = Self::InitError>>;
+    type Future = Box<dyn Future<Item = Self::Service, Error = Self::InitError>>;
     type Config = ();
 
     fn new_service(&self, _: &()) -> Self::Future {

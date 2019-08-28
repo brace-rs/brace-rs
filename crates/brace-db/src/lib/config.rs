@@ -27,7 +27,7 @@ impl Default for DatabaseConfig {
 }
 
 impl IntoConnectParams for DatabaseConfig {
-    fn into_connect_params(self) -> Result<ConnectParams, Box<Error + Sync + Send>> {
+    fn into_connect_params(self) -> Result<ConnectParams, Box<dyn Error + Sync + Send>> {
         let mut builder = ConnectParams::builder();
 
         builder.user(&self.username, Some(&self.password));

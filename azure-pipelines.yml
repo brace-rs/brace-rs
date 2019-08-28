@@ -13,22 +13,6 @@ resources:
       POSTGRES_DB: postgres
 
 stages:
-- stage: check
-  displayName: Check
-  dependsOn: []
-  jobs:
-  - template: ci/job-cargo-check.yml
-    parameters:
-      name: check_nightly
-      label: Nightly
-      toolchain: nightly
-
-  - template: ci/job-cargo-check.yml
-    parameters:
-      name: check_minimum
-      label: Minimum
-      toolchain: 1.33.0
-
 - stage: lint
   displayName: Lint
   dependsOn: []
@@ -37,7 +21,7 @@ stages:
     parameters:
       name: lint_rust
       label: Rust
-      toolchain: stable
+      toolchain: target
 
 - stage: build
   displayName: Build
@@ -48,7 +32,7 @@ stages:
       name: build_x86_64_unknown_linux_gnu
       label: x86_64-unknown-linux-gnu
       target: x86_64-unknown-linux-gnu
-      toolchain: stable
+      toolchain: target
       image: ubuntu-16.04
 
   - template: ci/job-cargo-build.yml
@@ -56,7 +40,7 @@ stages:
       name: build_x86_64_apple_darwin
       label: x86_64-apple-darwin
       target: x86_64-apple-darwin
-      toolchain: stable
+      toolchain: target
       image: macos-10.13
 
   - template: ci/job-cross-build.yml
@@ -64,7 +48,7 @@ stages:
       name: build_x86_64_unknown_linux_musl
       label: x86_64-unknown-linux-musl
       target: x86_64-unknown-linux-musl
-      toolchain: stable
+      toolchain: target
       image: ubuntu-16.04
 
 - stage: test
@@ -73,15 +57,14 @@ stages:
   jobs:
   - template: ci/job-cargo-test.yml
     parameters:
-      name: test_stable
-      label: Stable
-      toolchain: stable
+      name: test_rust
+      label: Rust
+      toolchain: target
 
 - stage: release
   displayName: Release
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn:
-  - check
   - lint
   - build
   - test

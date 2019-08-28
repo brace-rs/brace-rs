@@ -3,7 +3,7 @@ use brace_db::{Database, DatabaseInner};
 use failure::{format_err, Error};
 use futures::future::Future;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     CREATE TABLE pages (
         id uuid PRIMARY KEY,
         parent uuid REFERENCES pages(id),

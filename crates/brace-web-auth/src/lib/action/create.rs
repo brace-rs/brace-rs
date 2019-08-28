@@ -6,7 +6,7 @@ use futures::future::Future;
 use crate::model::User;
 use crate::util::hash;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     INSERT INTO users (id, email, password, created, updated)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING id, email, password, created, updated

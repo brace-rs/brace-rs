@@ -14,7 +14,7 @@ use futures::{Async, Poll};
 
 type HttpService = BoxedService<ServiceRequest, ServiceResponse, Error>;
 type HttpNewService = BoxedNewService<(), ServiceRequest, ServiceResponse, Error, ()>;
-type FutureResponse = Box<Future<Item = ServiceResponse, Error = Error>>;
+type FutureResponse = Box<dyn Future<Item = ServiceResponse, Error = Error>>;
 
 pub struct PageRouter {
     path: String,
@@ -69,7 +69,7 @@ impl NewService for PageRouter {
     type Error = Error;
     type Service = PageRouterService;
     type InitError = ();
-    type Future = Box<Future<Item = Self::Service, Error = Self::InitError>>;
+    type Future = Box<dyn Future<Item = Self::Service, Error = Self::InitError>>;
     type Config = ();
 
     fn new_service(&self, _: &()) -> Self::Future {

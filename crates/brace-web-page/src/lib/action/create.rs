@@ -5,7 +5,7 @@ use futures::future::Future;
 
 use crate::model::Page;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     INSERT INTO pages (id, parent, slug, title, description, document, created, updated)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING id, parent, slug, title, description, document, created, updated

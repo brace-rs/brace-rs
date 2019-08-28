@@ -16,7 +16,7 @@ pub struct Form<S = ()> {
     pub(crate) fields: Vec<Field>,
     pub(crate) actions: Vec<Action>,
     #[serde(skip, default = "VecDeque::new")]
-    pub(crate) builders: VecDeque<Box<BoxedFormBuilder<S>>>,
+    pub(crate) builders: VecDeque<Box<dyn BoxedFormBuilder<S>>>,
 }
 
 impl<S> Form<S>

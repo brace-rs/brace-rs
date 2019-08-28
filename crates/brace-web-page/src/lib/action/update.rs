@@ -5,7 +5,7 @@ use futures::future::Future;
 
 use crate::model::Page;
 
-static QUERY: &'static str = r#"
+static QUERY: &str = r#"
     UPDATE pages
     SET parent = $2, slug = $3, title = $4, description = $5, document = $6, created = $7, updated = $8
     WHERE id = $1

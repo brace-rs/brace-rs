@@ -81,7 +81,7 @@ pub struct QueryConfig {
     max_length: usize,
     max_depth: usize,
     strict: bool,
-    ehandler: Option<Rc<Fn(QueryError, &HttpRequest) -> Error>>,
+    ehandler: Option<Rc<dyn Fn(QueryError, &HttpRequest) -> Error>>,
 }
 
 impl QueryConfig {
